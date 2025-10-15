@@ -19,4 +19,41 @@
     </div>
   </div>
 
-  
+  <!-- 愛心接籃子遊戲 -->
+  <div class="click-game">
+    <div class="game-header">
+      <h3>愛心接籃子 💕</h3>
+      <button class="close-btn" onclick="toggleGame()">×</button>
+    </div>
+    <div class="game-content">
+      <div class="score-display">
+        <span>分數：</span>
+        <span id="score">0</span>
+      </div>
+
+      <!-- 遊戲場景 -->
+      <div class="game-scene">
+        <!-- 人物角色 -->
+        <div class="character">
+          <img src="images/character.svg" alt="角色" class="character-img">
+        </div>
+
+        <!-- 籃子 -->
+        <div class="basket" id="basket">
+          <img src="images/basket.svg" alt="籃子" class="basket-img">
+        </div>
+
+        <!-- 愛心容器 -->
+        <div class="hearts-container" id="heartsContainer"></div>
+      </div>
+
+      <button class="game-btn" onclick="throwHeart()">丟愛心！</button>
+    </div>
+  </div>
+
+  <!-- 開啟遊戲的按鈕 -->
+  <button class="game-toggle-btn" onclick="toggleGame()">🎮</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
