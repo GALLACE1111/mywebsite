@@ -1,3 +1,3 @@
 function sayHello() {
-  alert("你好！歡迎學習前端開發！");
+  alert("恭喜獲得一顆愛心！");
 }
