@@ -18,6 +18,25 @@
       </button>
     </div>
   </div>
+
+  <!-- 點擊小遊戲 -->
+  <div class="click-game">
+    <div class="game-header">
+      <h3>點擊小遊戲 🎮</h3>
+      <button class="close-btn" onclick="toggleGame()">×</button>
+    </div>
+    <div class="game-content">
+      <div class="score-display">
+        <span>分數：</span>
+        <span id="score">0</span>
+      </div>
+      <button class="game-btn" onclick="incrementScore()">點我得分！</button>
+    </div>
+  </div>
+
+  <!-- 開啟遊戲的按鈕 -->
+  <button class="game-toggle-btn" onclick="toggleGame()">🎮</button>
+
   <script src="script.js"></script>
 </body>
 </html>  

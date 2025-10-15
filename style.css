@@ -184,3 +184,138 @@ body {
     font-size: 16px;
   }
 }
+
+/* ===== 點擊小遊戲樣式 ===== */
+.click-game {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transform: translateY(400px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.click-game.active {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.game-header {
+  background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.game-header h3 {
+  color: white;
+  font-size: 18px;
+  margin: 0;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: white;
+  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: rotate(90deg);
+}
+
+.game-content {
+  padding: 20px;
+}
+
+.score-display {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+#score {
+  color: var(--primary-pink);
+  font-size: 32px;
+  margin-left: 5px;
+}
+
+.game-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+}
+
+.game-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 157, 0.4);
+}
+
+.game-btn:active {
+  transform: scale(0.95);
+}
+
+/* 開啟遊戲的按鈕 */
+.game-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-toggle-btn:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 8px 30px rgba(255, 107, 157, 0.5);
+}
+
+.game-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+/* 手機響應式 */
+@media (max-width: 600px) {
+  .click-game {
+    width: calc(100% - 40px);
+    right: 20px;
+    left: 20px;
+  }
+}
