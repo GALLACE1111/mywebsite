@@ -1,0 +1,186 @@
+/* ===== CSS 變數定義 ===== */
+:root {
+  --primary-pink: #ff6b9d;
+  --primary-purple: #c44dff;
+  --secondary-pink: #ffa8d5;
+  --text-dark: #2d3436;
+  --text-light: #636e72;
+  --card-shadow: 0 20px 60px rgba(255, 107, 157, 0.3);
+  --card-hover-shadow: 0 25px 80px rgba(255, 107, 157, 0.4);
+}
+
+/* ===== 全域樣式 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 75%, #f5576c 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  padding: 20px;
+}
+
+/* ===== 背景動畫 ===== */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===== 容器 ===== */
+.container {
+  width: 100%;
+  max-width: 500px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== 卡片設計 ===== */
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 60px 40px;
+  border-radius: 30px;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* ===== Emoji 裝飾 ===== */
+.emoji-decoration {
+  font-size: 60px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+/* ===== 標題 ===== */
+.title {
+  font-size: 48px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 15px;
+  animation: titlePulse 2s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* ===== 副標題 ===== */
+.subtitle {
+  font-size: 22px;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* ===== 描述文字 ===== */
+.description {
+  font-size: 16px;
+  color: var(--text-light);
+  margin-bottom: 35px;
+  line-height: 1.6;
+}
+
+/* ===== 按鈕設計 ===== */
+.btn {
+  padding: 16px 48px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+  transition: left 0.3s ease;
+  z-index: 0;
+}
+
+.btn:hover::before {
+  left: 0;
+}
+
+.btn span {
+  position: relative;
+  z-index: 1;
+}
+
+.btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5);
+}
+
+.btn:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(255, 107, 157, 0.4);
+}
+
+/* ===== 響應式設計 ===== */
+@media (max-width: 600px) {
+  .card {
+    padding: 40px 30px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .subtitle {
+    font-size: 18px;
+  }
+
+  .emoji-decoration {
+    font-size: 50px;
+  }
+
+  .btn {
+    padding: 14px 36px;
+    font-size: 16px;
+  }
+}

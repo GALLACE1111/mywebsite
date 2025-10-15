@@ -1,0 +1,13 @@
+# 作業系統檔案
+.DS_Store
+Thumbs.db
+
+# 編輯器
+.vscode/settings.json
+
+# Node modules (如果未來需要)
+node_modules/
+
+# 臨時檔案
+*.log
+*.tmp
