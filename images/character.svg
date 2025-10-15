@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- 像素風格可愛女孩角色 -->
+
+  <!-- 頭髮 -->
+  <rect x="20" y="8" width="24" height="4" fill="#8B4513"/>
+  <rect x="16" y="12" width="32" height="4" fill="#8B4513"/>
+  <rect x="16" y="16" width="4" height="8" fill="#8B4513"/>
+  <rect x="44" y="16" width="4" height="8" fill="#8B4513"/>
+
+  <!-- 臉部 -->
+  <rect x="20" y="16" width="24" height="16" fill="#FFD4A3"/>
+
+  <!-- 眼睛 -->
+  <rect x="24" y="20" width="4" height="4" fill="#000000"/>
+  <rect x="36" y="20" width="4" height="4" fill="#000000"/>
+
+  <!-- 腮紅 -->
+  <rect x="20" y="24" width="4" height="4" fill="#FFB6C1" opacity="0.6"/>
+  <rect x="40" y="24" width="4" height="4" fill="#FFB6C1" opacity="0.6"/>
+
+  <!-- 微笑 -->
+  <rect x="28" y="28" width="8" height="2" fill="#000000"/>
+  <rect x="26" y="26" width="2" height="2" fill="#000000"/>
+  <rect x="36" y="26" width="2" height="2" fill="#000000"/>
+
+  <!-- 身體（粉色衣服） -->
+  <rect x="20" y="32" width="24" height="4" fill="#FF69B4"/>
+  <rect x="16" y="36" width="32" height="12" fill="#FF69B4"/>
+
+  <!-- 手臂 -->
+  <rect x="12" y="36" width="4" height="12" fill="#FFD4A3"/>
+  <rect x="48" y="36" width="4" height="12" fill="#FFD4A3"/>
+
+  <!-- 右手向上（丟愛心的手勢） -->
+  <g class="throwing-arm">
+    <rect x="48" y="32" width="4" height="8" fill="#FFD4A3"/>
+    <rect x="52" y="28" width="4" height="4" fill="#FFD4A3"/>
+  </g>
+
+  <!-- 腿 -->
+  <rect x="24" y="48" width="6" height="12" fill="#FFD4A3"/>
+  <rect x="34" y="48" width="6" height="12" fill="#FFD4A3"/>
+
+  <!-- 鞋子 -->
+  <rect x="22" y="60" width="10" height="4" fill="#FF1493"/>
+  <rect x="32" y="60" width="10" height="4" fill="#FF1493"/>
+
+  <!-- 裝飾：蝴蝶結 -->
+  <rect x="28" y="8" width="8" height="4" fill="#FF1493"/>
+  <rect x="24" y="10" width="4" height="2" fill="#FF1493"/>
+  <rect x="36" y="10" width="4" height="2" fill="#FF1493"/>
+
+  <!-- 動畫：手臂揮動 -->
+  <style>
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-20deg); }
+    }
+    .throwing-arm {
+      transform-origin: 48px 36px;
+      animation: wave 1s ease-in-out infinite;
+    }
+  </style>
+</svg>

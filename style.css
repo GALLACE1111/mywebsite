@@ -319,3 +319,185 @@ body {
     left: 20px;
   }
 }
+
+/* ===== 愛心接籃子遊戲場景 ===== */
+.game-scene {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+  border-radius: 15px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  border: 3px solid #FFB6C1;
+}
+
+/* 角色樣式 */
+.character {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 2;
+}
+
+.character-img {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* 籃子樣式 */
+.basket {
+  position: absolute;
+  right: 30px;
+  bottom: 20px;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.basket-img {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.basket:hover {
+  transform: scale(1.1);
+}
+
+/* 愛心容器 */
+.hearts-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* 飛行中的愛心 */
+.flying-heart {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  animation: heartFly 2s ease-in-out forwards;
+}
+
+/* 愛心拋物線動畫 */
+@keyframes heartFly {
+  0% {
+    left: 70px;
+    bottom: 70px;
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    left: 120px;
+    bottom: 150px;
+    transform: scale(1.2) rotate(45deg);
+  }
+  50% {
+    left: 170px;
+    bottom: 180px;
+    transform: scale(1.3) rotate(90deg);
+  }
+  75% {
+    left: 200px;
+    bottom: 120px;
+    transform: scale(1.1) rotate(180deg);
+  }
+  100% {
+    left: 220px;
+    bottom: 30px;
+    opacity: 1;
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+/* 成功接住的效果 */
+@keyframes heartCatch {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+.heart-caught {
+  animation: heartCatch 0.5s ease forwards !important;
+}
+
+/* 地面裝飾 */
+.game-scene::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 15px;
+  background: repeating-linear-gradient(
+    90deg,
+    #90EE90 0px,
+    #90EE90 10px,
+    #98FB98 10px,
+    #98FB98 20px
+  );
+}
+
+/* 雲朵裝飾 */
+.game-scene::before {
+  content: '☁️';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  opacity: 0.6;
+  animation: cloudFloat 10s ease-in-out infinite;
+}
+
+@keyframes cloudFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-10px); }
+}
+
+/* 更大的遊戲視窗 */
+.click-game {
+  width: 350px;
+}
+
+@media (max-width: 600px) {
+  .click-game {
+    width: calc(100% - 40px);
+  }
+
+  .game-scene {
+    height: 200px;
+  }
+
+  .character-img,
+  .basket-img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .flying-heart {
+    width: 24px;
+    height: 24px;
+  }
+}
