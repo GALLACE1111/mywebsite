@@ -3,57 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hien 💕 Kitty</title>
+  <title>阿賢的小窩</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Canvas 動畫背景層 -->
+  <canvas id="mainCanvas"></canvas>
+
+  <!-- 原有的卡片內容 -->
   <div class="container">
     <div class="card">
       <div class="emoji-decoration">🐱✨</div>
-      <h1 class="title">Hien Love Kitty</h1>
-      <p class="subtitle">歡迎來到我的可愛世界 💖</p>
-      <p class="description">這是一個充滿愛與溫暖的小天地</p>
+      <h1 class="title">阿賢的小窩</h1>
+
+      <!-- 歡迎文字區域 -->
+      <div class="welcome-text">
+        <p class="welcome-line1">歡迎來到我的可愛星球 💕</p>
+        <p class="welcome-line2">這是一個充滿愛與溫暖的小天地</p>
+      </div>
+
       <button class="btn" onclick="sayHello()">
         <span>點我！</span>
       </button>
     </div>
   </div>
 
-  <!-- 愛心接籃子遊戲 -->
-  <div class="click-game">
-    <div class="game-header">
-      <h3>愛心接籃子 💕</h3>
-      <button class="close-btn" onclick="toggleGame()">×</button>
-    </div>
-    <div class="game-content">
-      <div class="score-display">
-        <span>分數：</span>
-        <span id="score">0</span>
-      </div>
-
-      <!-- 遊戲場景 -->
-      <div class="game-scene">
-        <!-- 人物角色 -->
-        <div class="character">
-          <img src="images/character.svg" alt="角色" class="character-img">
-        </div>
-
-        <!-- 籃子 -->
-        <div class="basket" id="basket">
-          <img src="images/basket.svg" alt="籃子" class="basket-img">
-        </div>
-
-        <!-- 愛心容器 -->
-        <div class="hearts-container" id="heartsContainer"></div>
-      </div>
-
-      <button class="game-btn" onclick="throwHeart()">丟愛心！</button>
+  <!-- 右上角顯示區域 -->
+  <div class="info-panel">
+    <div class="clock-display" id="clock">00:00:00</div>
+    <div class="counter-display">
+      <span class="counter-label">我收到的愛</span>
+      <span class="counter-value" id="counter">0</span>
     </div>
   </div>
 
-  <!-- 開啟遊戲的按鈕 -->
-  <button class="game-toggle-btn" onclick="toggleGame()">🎮</button>
+  <!-- 提示訊息 -->
+  <div class="hint-text">星星發射按鈕 ✨</div>
 
   <script src="script.js"></script>
 </body>
-</html><!-- Updated at 西元2025年10月16日 (星期四) 06時08分11秒     -->
+</html>
+
