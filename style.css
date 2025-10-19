@@ -541,50 +541,58 @@ body.mobile-mode .btn {
   border-radius: 60px;
 }
 
-/* 手機版：月亮鬧鐘移到左上角 */
+/* 手機版：月亮鬧鐘移到左上角（縮小並可拖動） */
 body.mobile-mode .info-panel {
   top: 15px !important;
   left: 15px !important;
   right: auto !important;
-  width: 140px !important;
-  height: 140px !important;
+  width: 100px !important;
+  height: 100px !important;
+  cursor: grab;
+  touch-action: none; /* 防止觸控滾動 */
+  user-select: none;
+}
+
+body.mobile-mode .info-panel.dragging {
+  cursor: grabbing;
+  box-shadow: 0 20px 60px rgba(240, 230, 140, 0.8), 0 0 40px rgba(255, 248, 220, 1) !important;
 }
 
 body.mobile-mode .info-panel::before {
-  top: -18px;
-  font-size: 20px;
+  top: -14px;
+  font-size: 16px;
 }
 
 body.mobile-mode .info-panel::after {
-  top: -6px;
-  left: -12px;
-  font-size: 14px;
-  text-shadow: 140px 0 0 currentColor;
+  top: -5px;
+  left: -10px;
+  font-size: 12px;
+  text-shadow: 100px 0 0 currentColor;
 }
 
 body.mobile-mode .clock-display {
-  font-size: 18px;
-  margin-bottom: 6px;
+  font-size: 14px;
+  margin-bottom: 4px;
 }
 
 body.mobile-mode .counter-label {
-  font-size: 11px;
+  font-size: 9px;
 }
 
 body.mobile-mode .counter-value {
-  font-size: 24px;
+  font-size: 18px;
 }
 
 body.mobile-mode .moon-crater {
   display: none; /* 簡化效果：隱藏月球坑洞 */
 }
 
-/* 手機版：星星發射按鈕更大 */
+/* 手機版：星星發射按鈕（縮小避免遮擋） */
 body.mobile-mode .hint-text {
-  bottom: 20px;
-  padding: 24px 48px;
-  font-size: 24px;
-  border-radius: 40px;
+  bottom: 15px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 25px;
 }
 
 /* 手機版：切換按鈕移到右上角 */
