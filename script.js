@@ -3,7 +3,7 @@ function sayHello() {
   alert("恭喜獲得一顆愛心！💕");
 }
 
-// ===== 裝置偵測與模式切換系統 =====
+// ===== 裝置偵測 =====
 let isMobileMode = false;
 
 // 偵測是否為手機裝置
@@ -12,22 +12,13 @@ function isMobileDevice() {
     || window.innerWidth <= 768;
 }
 
-// 初始化視圖模式
+// 初始化視圖模式（自動偵測）
 function initViewMode() {
-  // 檢查 localStorage 是否有保存的設定
-  const savedMode = localStorage.getItem('viewMode');
-
-  if (savedMode) {
-    // 使用保存的設定
-    isMobileMode = (savedMode === 'mobile');
-  } else {
-    // 自動偵測裝置
-    isMobileMode = isMobileDevice();
-  }
+  // 自動偵測裝置
+  isMobileMode = isMobileDevice();
 
   // 應用模式
   applyViewMode();
-  updateToggleButton();
 }
 
 // 應用視圖模式
@@ -64,32 +55,6 @@ function updateCharacterSize() {
     character.height = character.width;
     character.x = character.width / 2 + 50;
   }
-}
-
-// 切換視圖模式
-function toggleViewMode() {
-  isMobileMode = !isMobileMode;
-
-  console.log('切換模式到:', isMobileMode ? '手機版' : '桌面版');
-
-  // 保存到 localStorage
-  localStorage.setItem('viewMode', isMobileMode ? 'mobile' : 'desktop');
-
-  // 應用新模式
-  applyViewMode();
-  updateToggleButton();
-
-  // 重新初始化月亮拖動（先清理再初始化）
-  setTimeout(() => {
-    console.log('重新初始化月亮拖動');
-    cleanupMoonDrag();
-    initMoonDrag();
-  }, 200);
-}
-
-// 更新切換按鈕（圖標固定，不需要更新）
-function updateToggleButton() {
-  // 按鈕圖標固定為 ⚙，不需要動態更新
 }
 
 // ===== Canvas 初始化 =====
@@ -803,14 +768,7 @@ function fixMoonPosition() {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('DOM 載入完成');
 
-  // 綁定切換按鈕事件
-  const toggleButton = document.getElementById('viewModeToggle');
-  if (toggleButton) {
-    toggleButton.addEventListener('click', toggleViewMode);
-    console.log('切換按鈕已綁定');
-  }
-
-  // 初始化視圖模式
+  // 初始化視圖模式（自動偵測）
   initViewMode();
 
   // 初始化月亮拖動（僅手機版）- 延遲確保元素完全渲染
