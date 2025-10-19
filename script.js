@@ -16,31 +16,29 @@ let characterLoaded = false;
 
 // 背景圖片
 const backgroundImages = {
-  morning: null,
   afternoon: null,
   night: null,
   lateNight: null
 };
 let backgroundImagesLoaded = {
-  morning: false,
   afternoon: false,
   night: false,
   lateNight: false
 };
 
 // ===== 背景循環系統 =====
-// 5分鐘內循環4種背景圖片
-// 每種背景顯示時間 = 5分鐘 / 4 = 75秒
+// 5分鐘內循環3種背景圖片
+// 每種背景顯示時間 = 5分鐘 / 3 = 100秒
 const BACKGROUND_CYCLE_DURATION = 5 * 60 * 1000; // 5分鐘（毫秒）
-const BACKGROUNDS_COUNT = 4; // 4種背景
-const EACH_BACKGROUND_DURATION = BACKGROUND_CYCLE_DURATION / BACKGROUNDS_COUNT; // 每種背景75秒
+const BACKGROUNDS_COUNT = 3; // 3種背景
+const EACH_BACKGROUND_DURATION = BACKGROUND_CYCLE_DURATION / BACKGROUNDS_COUNT; // 每種背景100秒
 const backgroundStartTime = Date.now(); // 背景循環開始時間
 
-// 獲取當前應該顯示第幾個背景（0-3）
+// 獲取當前應該顯示第幾個背景（0-2）
 function getCurrentBackgroundIndex() {
   const elapsed = Date.now() - backgroundStartTime;
   const cyclePosition = elapsed % BACKGROUND_CYCLE_DURATION; // 在5分鐘循環中的位置
-  const index = Math.floor(cyclePosition / EACH_BACKGROUND_DURATION); // 0, 1, 2, 3
+  const index = Math.floor(cyclePosition / EACH_BACKGROUND_DURATION); // 0, 1, 2
   return index;
 }
 
@@ -73,17 +71,6 @@ window.addEventListener('resize', resizeCanvas);
 
 // ===== 載入背景圖片 =====
 function loadBackgroundImages() {
-  // 載入早晨背景
-  backgroundImages.morning = new Image();
-  backgroundImages.morning.src = 'images/0612.png';
-  backgroundImages.morning.onload = () => {
-    backgroundImagesLoaded.morning = true;
-    console.log('早晨背景載入成功！');
-  };
-  backgroundImages.morning.onerror = () => {
-    console.log('早晨背景載入失敗: images/0612.png');
-  };
-
   // 載入下午/傍晚背景
   backgroundImages.afternoon = new Image();
   backgroundImages.afternoon.src = 'images/1219.png';
@@ -153,22 +140,19 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // ===== 獲取當前背景圖片 =====
-// 每75秒切換一次，5分鐘循環4種背景
+// 每100秒切換一次，5分鐘循環3種背景
 function getCurrentBackgroundImage() {
   const index = getCurrentBackgroundIndex();
 
   switch(index) {
     case 0:
-      // 第1階段（0-75秒）：早晨
-      return backgroundImagesLoaded.morning ? backgroundImages.morning : null;
-    case 1:
-      // 第2階段（75-150秒）：下午/傍晚
+      // 第1階段（0-100秒）：下午/傍晚
       return backgroundImagesLoaded.afternoon ? backgroundImages.afternoon : null;
-    case 2:
-      // 第3階段（150-225秒）：夜晚
+    case 1:
+      // 第2階段（100-200秒）：夜晚
       return backgroundImagesLoaded.night ? backgroundImages.night : null;
-    case 3:
-      // 第4階段（225-300秒）：深夜
+    case 2:
+      // 第3階段（200-300秒）：深夜
       return backgroundImagesLoaded.lateNight ? backgroundImages.lateNight : null;
     default:
       return null;
@@ -183,24 +167,18 @@ function getSkyColor() {
 
   switch(index) {
     case 0:
-      // 早晨 - 粉橙色
-      hue = 15;
-      saturation = 75;
-      lightness = 75;
-      break;
-    case 1:
       // 下午/傍晚 - 淡粉紫色
       hue = 320;
       saturation = 50;
       lightness = 80;
       break;
-    case 2:
+    case 1:
       // 夜晚 - 深紫色
       hue = 280;
       saturation = 60;
       lightness = 30;
       break;
-    case 3:
+    case 2:
       // 深夜 - 深紫藍色
       hue = 260;
       saturation = 55;
