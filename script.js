@@ -87,18 +87,9 @@ function toggleViewMode() {
   }, 200);
 }
 
-// 更新切換按鈕的文字
+// 更新切換按鈕（圖標固定，不需要更新）
 function updateToggleButton() {
-  const toggleButton = document.getElementById('viewModeToggle');
-  if (!toggleButton) return; // 如果元素還不存在，直接返回
-
-  const text = toggleButton.querySelector('.toggle-text');
-
-  if (isMobileMode) {
-    text.textContent = '桌面版';
-  } else {
-    text.textContent = '手機版';
-  }
+  // 按鈕圖標固定為 ⚙，不需要動態更新
 }
 
 // ===== Canvas 初始化 =====

@@ -466,37 +466,40 @@ body {
   position: fixed;
   top: 25px;
   left: 25px;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(128, 128, 128, 0.5);
   backdrop-filter: blur(10px);
-  border: 2px solid rgba(0, 0, 0, 0.95);
+  border: 2px solid rgba(128, 128, 128, 0.6);
   border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 15px;
-  font-weight: 600;
+  padding: 8px 8px;
+  font-size: 20px;
   color: #ffffff;
   cursor: pointer;
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
 }
 
 .view-mode-toggle:hover {
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(128, 128, 128, 0.7);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .view-mode-toggle:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.toggle-text {
-  font-size: 15px;
-  letter-spacing: 0.5px;
+.toggle-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
 }
 
 /* ===== 手機版模式樣式 ===== */
@@ -512,6 +515,7 @@ body.mobile-mode .card {
   padding: 30px 20px;
   border-radius: 20px;
   background: linear-gradient(135deg, rgba(64, 224, 208, 0.06), rgba(0, 191, 255, 0.06)); /* 手機版更透明 */
+  position: relative; /* 讓切換按鈕可以相對於卡片定位 */
 }
 
 body.mobile-mode .title {
@@ -598,17 +602,22 @@ body.mobile-mode .hint-text {
   border-radius: 25px;
 }
 
-/* 手機版：切換按鈕移到右上角 */
+/* 手機版：切換按鈕移到卡片內部右上角 */
 body.mobile-mode .view-mode-toggle {
+  position: absolute;
   top: 15px;
   right: 15px;
   left: auto;
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 6px 6px;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  z-index: 100;
 }
 
-body.mobile-mode .toggle-text {
-  font-size: 13px;
+body.mobile-mode .toggle-icon {
+  width: 20px;
+  height: 20px;
 }
 
 /* 手機版：簡化動畫效果 */
