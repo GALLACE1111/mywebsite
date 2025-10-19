@@ -87,19 +87,16 @@ function toggleViewMode() {
   }, 200);
 }
 
-// 更新切換按鈕的圖標和文字
+// 更新切換按鈕的文字
 function updateToggleButton() {
   const toggleButton = document.getElementById('viewModeToggle');
   if (!toggleButton) return; // 如果元素還不存在，直接返回
 
-  const icon = toggleButton.querySelector('.toggle-icon');
   const text = toggleButton.querySelector('.toggle-text');
 
   if (isMobileMode) {
-    icon.textContent = '🖥️';
     text.textContent = '桌面版';
   } else {
-    icon.textContent = '📱';
     text.textContent = '手機版';
   }
 }
@@ -231,11 +228,10 @@ function updateClock() {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+  document.getElementById('clock').textContent = `${hours}:${minutes}`;
 }
-// 每秒更新時鐘顯示真實時間
-setInterval(updateClock, 1000);
+// 每分鐘更新時鐘（不需要每秒更新了）
+setInterval(updateClock, 60000); // 60秒 = 1分鐘
 updateClock();
 
 // ===== 獲取當前背景圖片 =====
