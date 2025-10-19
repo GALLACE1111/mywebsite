@@ -62,21 +62,21 @@ body {
 
 /* ===== 卡片設計 ===== */
 .card {
-  background: linear-gradient(135deg, rgba(64, 224, 208, 0.15), rgba(0, 191, 255, 0.15)); /* 青綠色到青藍色 */
-  backdrop-filter: blur(15px);
+  background: linear-gradient(135deg, rgba(64, 224, 208, 0.08), rgba(0, 191, 255, 0.08)); /* 青綠色到青藍色（更透明） */
+  backdrop-filter: none; /* 移除模糊效果 */
   padding: 35px 60px; /* 減少垂直空間，水平空間也略減 */
   border-radius: 25px;
-  box-shadow: 0 20px 60px rgba(0, 191, 255, 0.3), 0 0 30px rgba(64, 224, 208, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 191, 255, 0.2), 0 0 30px rgba(64, 224, 208, 0.15);
   text-align: center;
   transition: all 0.3s ease;
-  border: 2px solid rgba(100, 255, 218, 0.3); /* 科技感邊框 */
+  border: 2px solid rgba(100, 255, 218, 0.25); /* 邊框適度透明 */
   position: relative;
   overflow: hidden;
   width: 100%; /* 佔滿容器寬度 */
   max-width: 800px; /* 長矩形最大寬度 */
 }
 
-/* 科技光效背景 */
+/* 科技光效背景（更透明） */
 .card::before {
   content: '';
   position: absolute;
@@ -84,20 +84,20 @@ body {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(100, 255, 218, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(100, 255, 218, 0.05) 0%, transparent 70%);
   animation: techGlow 4s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes techGlow {
-  0%, 100% { transform: translate(0, 0); opacity: 0.3; }
-  50% { transform: translate(10px, 10px); opacity: 0.6; }
+  0%, 100% { transform: translate(0, 0); opacity: 0.2; }
+  50% { transform: translate(10px, 10px); opacity: 0.4; }
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 25px 80px rgba(0, 191, 255, 0.4), 0 0 40px rgba(64, 224, 208, 0.3);
-  border-color: rgba(100, 255, 218, 0.5);
+  box-shadow: 0 25px 80px rgba(0, 191, 255, 0.3), 0 0 40px rgba(64, 224, 208, 0.25);
+  border-color: rgba(100, 255, 218, 0.35);
 }
 
 /* ===== Emoji 裝飾 ===== */
@@ -514,6 +514,7 @@ body.mobile-mode .card {
   max-width: 100%;
   padding: 30px 20px;
   border-radius: 20px;
+  background: linear-gradient(135deg, rgba(64, 224, 208, 0.06), rgba(0, 191, 255, 0.06)); /* 手機版更透明 */
 }
 
 body.mobile-mode .title {
