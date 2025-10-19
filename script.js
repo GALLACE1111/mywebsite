@@ -14,6 +14,36 @@ const particles = [];
 let characterImage = null;
 let characterLoaded = false;
 
+// 背景圖片
+const backgroundImages = {
+  morning: null,
+  afternoon: null,
+  night: null,
+  lateNight: null
+};
+let backgroundImagesLoaded = {
+  morning: false,
+  afternoon: false,
+  night: false,
+  lateNight: false
+};
+
+// ===== 背景循環系統 =====
+// 5分鐘內循環4種背景圖片
+// 每種背景顯示時間 = 5分鐘 / 4 = 75秒
+const BACKGROUND_CYCLE_DURATION = 5 * 60 * 1000; // 5分鐘（毫秒）
+const BACKGROUNDS_COUNT = 4; // 4種背景
+const EACH_BACKGROUND_DURATION = BACKGROUND_CYCLE_DURATION / BACKGROUNDS_COUNT; // 每種背景75秒
+const backgroundStartTime = Date.now(); // 背景循環開始時間
+
+// 獲取當前應該顯示第幾個背景（0-3）
+function getCurrentBackgroundIndex() {
+  const elapsed = Date.now() - backgroundStartTime;
+  const cyclePosition = elapsed % BACKGROUND_CYCLE_DURATION; // 在5分鐘循環中的位置
+  const index = Math.floor(cyclePosition / EACH_BACKGROUND_DURATION); // 0, 1, 2, 3
+  return index;
+}
+
 // 角色位置（左下角，腳平貼底部）
 // 計算角色寬度為視窗寬度的 1/3
 const getCharacterSize = () => {
@@ -40,6 +70,54 @@ function resizeCanvas() {
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
+
+// ===== 載入背景圖片 =====
+function loadBackgroundImages() {
+  // 載入早晨背景
+  backgroundImages.morning = new Image();
+  backgroundImages.morning.src = 'images/0612.png';
+  backgroundImages.morning.onload = () => {
+    backgroundImagesLoaded.morning = true;
+    console.log('早晨背景載入成功！');
+  };
+  backgroundImages.morning.onerror = () => {
+    console.log('早晨背景載入失敗: images/0612.png');
+  };
+
+  // 載入下午/傍晚背景
+  backgroundImages.afternoon = new Image();
+  backgroundImages.afternoon.src = 'images/1219.png';
+  backgroundImages.afternoon.onload = () => {
+    backgroundImagesLoaded.afternoon = true;
+    console.log('下午/傍晚背景載入成功！');
+  };
+  backgroundImages.afternoon.onerror = () => {
+    console.log('下午/傍晚背景載入失敗: images/1219.png');
+  };
+
+  // 載入夜晚背景
+  backgroundImages.night = new Image();
+  backgroundImages.night.src = 'images/1922.png';
+  backgroundImages.night.onload = () => {
+    backgroundImagesLoaded.night = true;
+    console.log('夜晚背景載入成功！');
+  };
+  backgroundImages.night.onerror = () => {
+    console.log('夜晚背景載入失敗: images/1922.png');
+  };
+
+  // 載入深夜背景
+  backgroundImages.lateNight = new Image();
+  backgroundImages.lateNight.src = 'images/2206.png';
+  backgroundImages.lateNight.onload = () => {
+    backgroundImagesLoaded.lateNight = true;
+    console.log('深夜背景載入成功！');
+  };
+  backgroundImages.lateNight.onerror = () => {
+    console.log('深夜背景載入失敗: images/2206.png');
+  };
+}
+loadBackgroundImages();
 
 // ===== 載入角色圖片 =====
 function loadCharacter() {
@@ -70,59 +148,90 @@ function updateClock() {
   const seconds = String(now.getSeconds()).padStart(2, '0');
   document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
 }
-// 每秒更新時鐘
+// 每秒更新時鐘顯示真實時間
 setInterval(updateClock, 1000);
 updateClock();
 
-// ===== 天空背景系統 =====
-function getSkyColor() {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const timeInHours = hours + minutes / 60;
+// ===== 獲取當前背景圖片 =====
+// 每75秒切換一次，5分鐘循環4種背景
+function getCurrentBackgroundImage() {
+  const index = getCurrentBackgroundIndex();
 
+  switch(index) {
+    case 0:
+      // 第1階段（0-75秒）：早晨
+      return backgroundImagesLoaded.morning ? backgroundImages.morning : null;
+    case 1:
+      // 第2階段（75-150秒）：下午/傍晚
+      return backgroundImagesLoaded.afternoon ? backgroundImages.afternoon : null;
+    case 2:
+      // 第3階段（150-225秒）：夜晚
+      return backgroundImagesLoaded.night ? backgroundImages.night : null;
+    case 3:
+      // 第4階段（225-300秒）：深夜
+      return backgroundImagesLoaded.lateNight ? backgroundImages.lateNight : null;
+    default:
+      return null;
+  }
+}
+
+// ===== 天空背景顏色系統（備用） =====
+// 當背景圖片載入失敗時使用
+function getSkyColor() {
+  const index = getCurrentBackgroundIndex();
   let hue, saturation, lightness;
 
-  if (timeInHours >= 6 && timeInHours < 12) {
-    // 早晨 6:00-12:00 - 淺藍色
-    hue = 200;
-    saturation = 70;
-    lightness = 60 + (timeInHours - 6) * 2;
-  } else if (timeInHours >= 12 && timeInHours < 17) {
-    // 下午 12:00-17:00 - 明亮藍色
-    hue = 210;
-    saturation = 75;
-    lightness = 70;
-  } else if (timeInHours >= 17 && timeInHours < 19) {
-    // 傍晚 17:00-19:00 - 橙紅色
-    const progress = (timeInHours - 17) / 2;
-    hue = 200 - progress * 180; // 200 -> 20
-    saturation = 70 + progress * 20;
-    lightness = 70 - progress * 30;
-  } else if (timeInHours >= 19 && timeInHours < 22) {
-    // 夜晚 19:00-22:00 - 深藍色
-    const progress = (timeInHours - 19) / 3;
-    hue = 220;
-    saturation = 60;
-    lightness = 40 - progress * 20;
-  } else {
-    // 深夜 22:00-6:00 - 深紫藍色
-    hue = 240;
-    saturation = 50;
-    lightness = 15;
+  switch(index) {
+    case 0:
+      // 早晨 - 粉橙色
+      hue = 15;
+      saturation = 75;
+      lightness = 75;
+      break;
+    case 1:
+      // 下午/傍晚 - 淡粉紫色
+      hue = 320;
+      saturation = 50;
+      lightness = 80;
+      break;
+    case 2:
+      // 夜晚 - 深紫色
+      hue = 280;
+      saturation = 60;
+      lightness = 30;
+      break;
+    case 3:
+      // 深夜 - 深紫藍色
+      hue = 260;
+      saturation = 55;
+      lightness = 18;
+      break;
+    default:
+      hue = 200;
+      saturation = 50;
+      lightness = 50;
   }
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 function drawSky() {
-  const skyColor = getSkyColor();
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, skyColor);
-  gradient.addColorStop(1, adjustBrightness(skyColor, -15));
+  // 獲取當前背景圖片
+  const bgImage = getCurrentBackgroundImage();
 
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (bgImage) {
+    // 繪製背景圖片（覆蓋整個 Canvas）
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+  } else {
+    // 如果圖片未載入，使用純色背景
+    const skyColor = getSkyColor();
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, skyColor);
+    gradient.addColorStop(1, adjustBrightness(skyColor, -15));
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 }
 
 // 調整顏色亮度

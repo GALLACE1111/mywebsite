@@ -211,74 +211,135 @@ body {
   box-shadow: 0 8px 20px rgba(255, 107, 157, 0.4);
 }
 
-/* ===== 右上角可愛圓形鬧鐘 ===== */
+/* ===== 右上角可愛月亮鬧鐘 ===== */
 .info-panel {
   position: fixed !important;
   top: 25px !important;
   right: 25px !important;
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFD4A3 50%, #FFB6C1 100%) !important; /* 粉紅到暖橙色 */
+  background: radial-gradient(circle at 35% 35%, #FFF8DC 0%, #F0E68C 30%, #E6D98A 60%, #D4C48A 100%) !important; /* 月亮漸層 */
   backdrop-filter: blur(10px);
   padding: 0;
   border-radius: 50%; /* 圓形 */
-  box-shadow: 0 10px 40px rgba(255, 182, 193, 0.5), 0 0 20px rgba(255, 212, 163, 0.3);
+  box-shadow: 0 15px 50px rgba(240, 230, 140, 0.6), 0 0 30px rgba(255, 248, 220, 0.8), inset -10px -10px 30px rgba(212, 196, 138, 0.4);
   z-index: 9999 !important;
-  width: 220px; /* 從 160px 增大到 220px */
-  height: 220px; /* 從 160px 增大到 220px */
+  width: 220px;
+  height: 220px;
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 5px solid #FFF0F5; /* 淡粉色邊框，也變粗 */
-  animation: clockFloat 3s ease-in-out infinite;
+  border: 6px solid #FFFACD; /* 淡黃色邊框 */
+  animation: clockFloat 3s ease-in-out infinite, moonGlow 4s ease-in-out infinite;
   visibility: visible !important;
   opacity: 1 !important;
+  overflow: visible; /* 允許裝飾超出邊界 */
 }
 
-/* 鬧鐘浮動動畫 */
+/* 月亮浮動動畫 */
 @keyframes clockFloat {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-8px) rotate(2deg); }
 }
 
-/* 鬧鐘頂部小把手 */
+/* 月亮發光動畫 */
+@keyframes moonGlow {
+  0%, 100% {
+    box-shadow: 0 15px 50px rgba(240, 230, 140, 0.6),
+                0 0 30px rgba(255, 248, 220, 0.8),
+                inset -10px -10px 30px rgba(212, 196, 138, 0.4);
+  }
+  50% {
+    box-shadow: 0 15px 50px rgba(240, 230, 140, 0.8),
+                0 0 40px rgba(255, 248, 220, 1),
+                inset -10px -10px 30px rgba(212, 196, 138, 0.5);
+  }
+}
+
+/* 頂部星星裝飾 */
 .info-panel::before {
-  content: '';
+  content: '⭐';
   position: absolute;
-  top: -20px; /* 調整位置 */
+  top: -25px;
   left: 50%;
   transform: translateX(-50%);
-  width: 12px; /* 變大 */
-  height: 20px; /* 變大 */
-  background: linear-gradient(135deg, #FFB6C1, #FFD4A3);
-  border-radius: 6px 6px 0 0;
-  box-shadow: 0 2px 8px rgba(255, 182, 193, 0.4);
+  font-size: 28px;
+  filter: drop-shadow(0 0 8px rgba(255, 248, 220, 0.8));
+  animation: starTwinkle 2s ease-in-out infinite;
   z-index: 1;
 }
 
-/* 鬧鐘兩側的鈴鐺 */
+/* 兩側小星星裝飾 */
 .info-panel::after {
-  content: '';
+  content: '✨';
   position: absolute;
-  top: -12px; /* 調整位置 */
-  left: -16px; /* 調整位置 */
-  width: 28px; /* 變大 */
-  height: 28px; /* 變大 */
-  background: linear-gradient(135deg, #FFB6C1, #FFD4A3);
-  border-radius: 50%;
-  box-shadow: 230px 0 0 0 #FFD4A3; /* 調整右側鈴鐺位置 */
+  top: -8px;
+  left: -20px;
+  font-size: 20px;
+  filter: drop-shadow(0 0 5px rgba(255, 248, 220, 0.6));
+  animation: starTwinkle 2.5s ease-in-out infinite;
   z-index: 1;
+  text-shadow: 220px 0 0 currentColor; /* 右側星星 */
+}
+
+/* 星星閃爍動畫 */
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+
+/* ===== 月球坑洞裝飾 ===== */
+.moon-crater {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(212, 196, 138, 0.3), rgba(160, 140, 100, 0.5));
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.crater-1 {
+  width: 25px;
+  height: 25px;
+  top: 40px;
+  left: 35px;
+}
+
+.crater-2 {
+  width: 18px;
+  height: 18px;
+  top: 80px;
+  right: 45px;
+}
+
+.crater-3 {
+  width: 15px;
+  height: 15px;
+  bottom: 50px;
+  left: 50px;
+}
+
+.crater-4 {
+  width: 20px;
+  height: 20px;
+  top: 120px;
+  left: 70px;
 }
 
 /* ===== 時鐘顯示 ===== */
 .clock-display {
-  font-size: 28px; /* 從 20px 增大到 28px */
+  font-size: 28px;
   font-weight: 700;
-  color: #8B4513; /* 深棕色 */
+  color: #6B5D4F; /* 溫暖的深褐色 */
   text-align: center;
-  margin-bottom: 12px; /* 增加間距 */
+  margin-bottom: 12px;
   font-family: 'Courier New', monospace;
   letter-spacing: 2px;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+  text-shadow: 1px 1px 3px rgba(255, 248, 220, 0.8), 0 0 5px rgba(240, 230, 140, 0.3);
   position: relative;
   z-index: 2;
 }
@@ -294,19 +355,19 @@ body {
 }
 
 .counter-label {
-  font-size: 16px; /* 從 12px 增大到 16px */
-  color: #D2691E; /* 巧克力棕色 */
+  font-size: 16px;
+  color: #8B7355; /* 溫暖的咖啡色 */
   margin-bottom: 5px;
   font-weight: 600;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+  text-shadow: 1px 1px 2px rgba(255, 248, 220, 0.6);
 }
 
 .counter-value {
-  font-size: 38px; /* 從 28px 增大到 38px */
+  font-size: 38px;
   font-weight: 700;
-  color: #FF1493; /* 深粉紅色 */
+  color: #DAA520; /* 金黃色 */
   font-family: 'Courier New', monospace;
-  text-shadow: 2px 2px 4px rgba(255, 20, 147, 0.3), 0 0 10px rgba(255, 255, 255, 0.5);
+  text-shadow: 2px 2px 4px rgba(218, 165, 32, 0.4), 0 0 10px rgba(255, 248, 220, 0.8);
 }
 
 /* ===== 歡迎文字區域 ===== */
@@ -434,7 +495,7 @@ body {
     font-size: 14px;
   }
 
-  /* 圓形鬧鐘響應式 */
+  /* 月亮鬧鐘響應式 */
   .info-panel {
     width: 180px;
     height: 180px;
@@ -443,17 +504,43 @@ body {
   }
 
   .info-panel::before {
-    top: -16px;
-    width: 10px;
-    height: 16px;
+    top: -20px;
+    font-size: 22px;
   }
 
   .info-panel::after {
-    top: -10px;
-    left: -14px;
-    width: 24px;
-    height: 24px;
-    box-shadow: 190px 0 0 0 #FFD4A3;
+    top: -6px;
+    left: -18px;
+    font-size: 16px;
+    text-shadow: 180px 0 0 currentColor;
+  }
+
+  .crater-1 {
+    width: 20px;
+    height: 20px;
+    top: 30px;
+    left: 28px;
+  }
+
+  .crater-2 {
+    width: 14px;
+    height: 14px;
+    top: 65px;
+    right: 35px;
+  }
+
+  .crater-3 {
+    width: 12px;
+    height: 12px;
+    bottom: 40px;
+    left: 40px;
+  }
+
+  .crater-4 {
+    width: 16px;
+    height: 16px;
+    top: 100px;
+    left: 55px;
   }
 
   .clock-display {
