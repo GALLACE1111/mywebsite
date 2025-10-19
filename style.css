@@ -544,14 +544,16 @@ body.mobile-mode .btn {
 
 /* 手機版：月亮鬧鐘移到左上角（縮小並可拖動） */
 body.mobile-mode .info-panel {
-  top: 15px !important;
-  left: 15px !important;
+  top: 15px;
+  left: 15px;
   right: auto !important;
   width: 100px !important;
   height: 100px !important;
   cursor: grab;
   touch-action: none; /* 防止觸控滾動 */
   user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -webkit-touch-callout: none; /* iOS Safari */
 }
 
 body.mobile-mode .info-panel.dragging {

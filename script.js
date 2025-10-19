@@ -662,12 +662,16 @@ function initMoonDrag() {
 
 function handleMoonTouchStart(e) {
   e.preventDefault();
+  e.stopPropagation();
   const touch = e.touches[0];
+  console.log('觸控開始:', touch.clientX, touch.clientY);
   startMoonDrag(touch.clientX, touch.clientY);
 }
 
 function handleMoonMouseDown(e) {
   e.preventDefault();
+  e.stopPropagation();
+  console.log('滑鼠點擊開始:', e.clientX, e.clientY);
   startMoonDrag(e.clientX, e.clientY);
 }
 
@@ -692,6 +696,7 @@ function startMoonDrag(clientX, clientY) {
 function handleMoonTouchMove(e) {
   if (!moonPhysics.isDragging) return;
   e.preventDefault();
+  e.stopPropagation();
   const touch = e.touches[0];
   moveMoon(touch.clientX, touch.clientY);
 }
@@ -712,9 +717,9 @@ function moveMoon(clientX, clientY) {
   moonPhysics.x = newX;
   moonPhysics.y = newY;
 
-  // 直接更新位置
-  moonPhysics.element.style.left = moonPhysics.x + 'px';
-  moonPhysics.element.style.top = moonPhysics.y + 'px';
+  // 直接更新位置（使用 setProperty 確保覆蓋）
+  moonPhysics.element.style.setProperty('left', moonPhysics.x + 'px', 'important');
+  moonPhysics.element.style.setProperty('top', moonPhysics.y + 'px', 'important');
 }
 
 function handleMoonTouchEnd(e) {
@@ -780,9 +785,9 @@ function animateMoonPhysics() {
     moonPhysics.velocityY = -moonPhysics.velocityY * moonPhysics.bounce;
   }
 
-  // 更新位置
-  moonPhysics.element.style.left = moonPhysics.x + 'px';
-  moonPhysics.element.style.top = moonPhysics.y + 'px';
+  // 更新位置（使用 setProperty 確保覆蓋）
+  moonPhysics.element.style.setProperty('left', moonPhysics.x + 'px', 'important');
+  moonPhysics.element.style.setProperty('top', moonPhysics.y + 'px', 'important');
 
   // 檢查是否停止
   const speed = Math.sqrt(
