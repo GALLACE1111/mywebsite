@@ -577,8 +577,6 @@ function initMoonDrag() {
   // 先清除舊的事件監聽器
   cleanupMoonDrag();
 
-  if (!isMobileMode) return;
-
   const moon = document.querySelector('.info-panel');
   if (!moon) {
     console.log('月亮元素未找到');
@@ -586,7 +584,19 @@ function initMoonDrag() {
   }
 
   moonPhysics.element = moon;
-  moonPhysics.radius = 50; // 100px / 2
+
+  // 根據模式設定半徑和初始位置
+  if (isMobileMode) {
+    // 手機版：100x100，左上角
+    moonPhysics.radius = 50;
+    moonPhysics.x = 15;
+    moonPhysics.y = 15;
+  } else {
+    // 網頁版：220x220，右上角
+    moonPhysics.radius = 110;
+    moonPhysics.x = window.innerWidth - 245; // 245 = 220 + 25
+    moonPhysics.y = 25;
+  }
 
   // 創建綁定的處理函數（避免重複綁定）
   moonPhysics.boundHandlers = {
@@ -603,13 +613,13 @@ function initMoonDrag() {
   document.addEventListener('touchmove', moonPhysics.boundHandlers.touchMove, { passive: false });
   document.addEventListener('touchend', moonPhysics.boundHandlers.touchEnd);
 
-  // 滑鼠事件（桌面測試用）
+  // 滑鼠事件
   moon.addEventListener('mousedown', moonPhysics.boundHandlers.mouseDown);
   document.addEventListener('mousemove', moonPhysics.boundHandlers.mouseMove);
   document.addEventListener('mouseup', moonPhysics.boundHandlers.mouseEnd);
 
   moonPhysics.initialized = true;
-  console.log('月亮拖動系統已初始化');
+  console.log('月亮拖動系統已初始化 - 模式:', isMobileMode ? '手機版' : '網頁版');
 }
 
 function handleMoonTouchStart(e) {
@@ -628,7 +638,7 @@ function handleMoonMouseDown(e) {
 }
 
 function startMoonDrag(clientX, clientY) {
-  if (!isMobileMode || !moonPhysics.element) return;
+  if (!moonPhysics.element) return;
 
   moonPhysics.isDragging = true;
   moonPhysics.isAnimating = false;

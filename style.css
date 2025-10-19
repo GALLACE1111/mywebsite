@@ -233,6 +233,11 @@ body {
   visibility: visible !important;
   opacity: 1 !important;
   overflow: visible; /* 允許裝飾超出邊界 */
+  cursor: grab; /* 可拖動游標 */
+  touch-action: none; /* 防止觸控滾動 */
+  user-select: none; /* 防止選擇文字 */
+  -webkit-user-select: none; /* Safari */
+  -webkit-touch-callout: none; /* iOS Safari */
 }
 
 /* 月亮浮動動畫 */
@@ -291,6 +296,12 @@ body {
     opacity: 1;
     transform: translateX(-50%) scale(1.1);
   }
+}
+
+/* 拖動時的樣式 */
+.info-panel.dragging {
+  cursor: grabbing;
+  box-shadow: 0 20px 60px rgba(240, 230, 140, 0.8), 0 0 40px rgba(255, 248, 220, 1) !important;
 }
 
 /* ===== 月球坑洞裝飾 ===== */

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>測試頁面</title>
+  <style>
+    .test-box {
+      display: none;
+      padding: 20px;
+      background: pink;
+      margin: 20px;
+    }
+    .test-box.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>測試按鈕功能</h1>
+
+  <button onclick="testToggle()">點我測試</button>
+
+  <div class="test-box" id="testBox">
+    <h2>成功！</h2>
+    <p>如果你看到這個，代表 JavaScript 正常運作！</p>
+  </div>
+
+  <script>
+    function testToggle() {
+      console.log('按鈕被點擊了！');
+      const box = document.getElementById('testBox');
+      box.classList.toggle('active');
+      alert('函數執行了！');
+    }
+
+    console.log('JavaScript 已載入！');
+  </script>
+</body>
+</html>
