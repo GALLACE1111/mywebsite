@@ -3,6 +3,97 @@ function sayHello() {
   alert("恭喜獲得一顆愛心！💕");
 }
 
+// ===== 裝置偵測與模式切換系統 =====
+let isMobileMode = false;
+
+// 偵測是否為手機裝置
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || window.innerWidth <= 768;
+}
+
+// 初始化視圖模式
+function initViewMode() {
+  // 檢查 localStorage 是否有保存的設定
+  const savedMode = localStorage.getItem('viewMode');
+
+  if (savedMode) {
+    // 使用保存的設定
+    isMobileMode = (savedMode === 'mobile');
+  } else {
+    // 自動偵測裝置
+    isMobileMode = isMobileDevice();
+  }
+
+  // 應用模式
+  applyViewMode();
+  updateToggleButton();
+}
+
+// 應用視圖模式
+function applyViewMode() {
+  if (isMobileMode) {
+    document.body.classList.add('mobile-mode');
+  } else {
+    document.body.classList.remove('mobile-mode');
+  }
+
+  // 更新角色大小
+  updateCharacterSize();
+
+  // 重新初始化雪花（根據模式調整數量）
+  if (typeof initSnowflakes === 'function') {
+    initSnowflakes();
+  }
+}
+
+// 更新角色大小（根據模式）
+function updateCharacterSize() {
+  if (isMobileMode) {
+    // 手機版：角色更大，佔螢幕寬度的 1/2
+    character.width = Math.min(window.innerWidth / 2, 400);
+    character.height = character.width;
+  } else {
+    // 桌面版：角色佔螢幕寬度的 1/3
+    character.width = getCharacterSize();
+    character.height = character.width;
+  }
+  character.x = character.width / 2 + 50;
+}
+
+// 切換視圖模式
+function toggleViewMode() {
+  isMobileMode = !isMobileMode;
+
+  // 保存到 localStorage
+  localStorage.setItem('viewMode', isMobileMode ? 'mobile' : 'desktop');
+
+  // 應用新模式
+  applyViewMode();
+  updateToggleButton();
+}
+
+// 更新切換按鈕的圖標和文字
+function updateToggleButton() {
+  const toggleButton = document.getElementById('viewModeToggle');
+  const icon = toggleButton.querySelector('.toggle-icon');
+  const text = toggleButton.querySelector('.toggle-text');
+
+  if (isMobileMode) {
+    icon.textContent = '🖥️';
+    text.textContent = '桌面版';
+  } else {
+    icon.textContent = '📱';
+    text.textContent = '手機版';
+  }
+}
+
+// 綁定切換按鈕事件
+document.getElementById('viewModeToggle').addEventListener('click', toggleViewMode);
+
+// 頁面載入時初始化
+initViewMode();
+
 // ===== Canvas 初始化 =====
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
@@ -61,10 +152,8 @@ function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  // 視窗改變時更新角色大小
-  character.width = getCharacterSize();
-  character.height = getCharacterSize();
-  character.x = character.width / 2 + 50;
+  // 視窗改變時更新角色大小（根據當前模式）
+  updateCharacterSize();
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -257,8 +346,16 @@ class Snowflake {
   }
 }
 
-// 初始化雪花
-function initSnowflakes(count = 100) {
+// 初始化雪花（手機版減少數量以提升性能）
+function initSnowflakes(count) {
+  // 清空現有雪花
+  snowflakes.length = 0;
+
+  // 根據模式決定數量
+  if (!count) {
+    count = isMobileMode ? 50 : 100; // 手機版50個，桌面版100個
+  }
+
   for (let i = 0; i < count; i++) {
     snowflakes.push(new Snowflake());
   }
