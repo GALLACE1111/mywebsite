@@ -49,6 +49,9 @@ function applyViewMode() {
 
 // 更新角色大小（根據模式）
 function updateCharacterSize() {
+  // 確保 character 物件已定義
+  if (typeof character === 'undefined') return;
+
   if (isMobileMode) {
     // 手機版：角色更大，佔螢幕寬度的 1/2
     character.width = Math.min(window.innerWidth / 2, 400);
@@ -76,6 +79,8 @@ function toggleViewMode() {
 // 更新切換按鈕的圖標和文字
 function updateToggleButton() {
   const toggleButton = document.getElementById('viewModeToggle');
+  if (!toggleButton) return; // 如果元素還不存在，直接返回
+
   const icon = toggleButton.querySelector('.toggle-icon');
   const text = toggleButton.querySelector('.toggle-text');
 
@@ -87,12 +92,6 @@ function updateToggleButton() {
     text.textContent = '手機版';
   }
 }
-
-// 綁定切換按鈕事件
-document.getElementById('viewModeToggle').addEventListener('click', toggleViewMode);
-
-// 頁面載入時初始化
-initViewMode();
 
 // ===== Canvas 初始化 =====
 const canvas = document.getElementById('mainCanvas');
@@ -481,8 +480,17 @@ function drawCharacter() {
 
 // ===== 發射星星函數 =====
 function shootStars() {
-  const targetX = window.innerWidth - 120;
-  const targetY = 120;
+  // 根據模式決定目標位置
+  let targetX, targetY;
+  if (isMobileMode) {
+    // 手機版：月亮在左上角
+    targetX = 70;
+    targetY = 70;
+  } else {
+    // 桌面版：月亮在右上角
+    targetX = window.innerWidth - 120;
+    targetY = 120;
+  }
 
   // 發射 4 顆星星
   for (let i = 0; i < 4; i++) {
@@ -559,3 +567,16 @@ function animate() {
 
 // 啟動動畫
 animate();
+
+// ===== 初始化視圖模式系統 =====
+// 在所有物件定義完成後才初始化
+document.addEventListener('DOMContentLoaded', function() {
+  // 綁定切換按鈕事件
+  const toggleButton = document.getElementById('viewModeToggle');
+  if (toggleButton) {
+    toggleButton.addEventListener('click', toggleViewMode);
+  }
+
+  // 初始化視圖模式
+  initViewMode();
+});
