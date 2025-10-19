@@ -588,9 +588,12 @@ body.mobile-mode .moon-crater {
   display: none; /* 簡化效果：隱藏月球坑洞 */
 }
 
-/* 手機版：星星發射按鈕（縮小避免遮擋） */
+/* 手機版：星星發射按鈕（移到右下角） */
 body.mobile-mode .hint-text {
   bottom: 15px;
+  right: 15px;
+  left: auto;
+  transform: none;
   padding: 12px 24px;
   font-size: 16px;
   border-radius: 25px;
