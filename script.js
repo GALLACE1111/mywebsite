@@ -917,15 +917,116 @@ function defeatBoss() {
   // 重新啟用月亮拖動功能
   initMoonDrag();
 
-  // 顯示勝利對話框
+  // 先顯示恭喜訊息，再顯示選擇畫面
   setTimeout(() => {
-    showVictoryDialog();
+    showCongratulationsDialog();
   }, 500);
 
   console.log('Boss 被擊敗！進入放鬆模式');
 }
 
-// 勝利對話框
+// 恭喜訊息對話框（第一步）
+function showCongratulationsDialog() {
+  const dialog = document.createElement('div');
+  dialog.className = 'battle-dialog congratulations-dialog';
+  dialog.innerHTML = `
+    <div class="battle-dialog-content victory-content">
+      <div class="victory-icon">🎉</div>
+      <h2 class="battle-title">恭喜！成功擊敗 Boss！</h2>
+      <div class="victory-icons">
+        <span class="icon-item">🌈</span>
+        <span class="icon-item">✨</span>
+        <span class="icon-item">🎊</span>
+        <span class="icon-item">💖</span>
+        <span class="icon-item">🌸</span>
+      </div>
+      <p class="victory-message">血月已經消退，和平重新降臨～</p>
+      <div class="battle-buttons">
+        <button class="battle-btn battle-continue">
+          <span class="btn-icon">✨</span>
+          <span>確定</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(dialog);
+
+  setTimeout(() => {
+    dialog.classList.add('show');
+  }, 10);
+
+  // 綁定確定按鈕事件
+  const continueBtn = dialog.querySelector('.battle-continue');
+
+  continueBtn.addEventListener('click', () => {
+    closeBattleDialog(dialog);
+    // 關閉後顯示選擇畫面
+    setTimeout(() => {
+      showChoiceDialog();
+    }, 300);
+  });
+
+  // 點擊背景也可以關閉
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) {
+      closeBattleDialog(dialog);
+      setTimeout(() => {
+        showChoiceDialog();
+      }, 300);
+    }
+  });
+}
+
+// 選擇對話框（第二步：休息或重新挑戰）
+function showChoiceDialog() {
+  const dialog = document.createElement('div');
+  dialog.className = 'battle-dialog choice-dialog';
+  dialog.innerHTML = `
+    <div class="battle-dialog-content">
+      <div class="battle-icon">🌙</div>
+      <h2 class="battle-title">接下來要做什麼呢？</h2>
+      <p class="battle-message">您可以選擇繼續放鬆，或是重新挑戰血月 Boss～</p>
+      <div class="battle-buttons">
+        <button class="battle-btn battle-rechallenge">
+          <span class="btn-icon">⚔️</span>
+          <span>重新挑戰</span>
+        </button>
+        <button class="battle-btn battle-relax">
+          <span class="btn-icon">🛋️</span>
+          <span>繼續放鬆</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(dialog);
+
+  setTimeout(() => {
+    dialog.classList.add('show');
+  }, 10);
+
+  // 綁定按鈕事件
+  const rechallengeBtn = dialog.querySelector('.battle-rechallenge');
+  const relaxBtn = dialog.querySelector('.battle-relax');
+
+  rechallengeBtn.addEventListener('click', () => {
+    closeBattleDialog(dialog);
+    startBossBattle(); // 重新開始 Boss 戰
+  });
+
+  relaxBtn.addEventListener('click', () => {
+    closeBattleDialog(dialog);
+  });
+
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) {
+      closeBattleDialog(dialog);
+    }
+  });
+}
+
+// 勝利對話框（舊版，已不使用）
 function showVictoryDialog() {
   const dialog = document.createElement('div');
   dialog.className = 'battle-dialog victory-dialog';
