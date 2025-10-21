@@ -81,9 +81,9 @@ let bossBattleStarted = false; // 是否已經開始過 Boss 戰（確認對話�
 let currentBGMStage = 0; // 當前 BGM 階段 (0=未開始, 1=第一階段, 2=第二階段, 3=勝利)
 let isBerserkMode = false; // 是否進入狂暴模式（<50% 血量）
 let lastDialogueTime = 0; // 上次顯示對話的時間
-let lastDialogueMessage = ''; // 上次顯示的對話內容
+let currentDialogueIndex = 0; // 當前對話索引（順序顯示）
 
-// Boss 對話池（隨機出現）
+// Boss 對話池（按順序顯示）
 const bossDialogues = [
   '我只是個鬧鐘',
   '你確定要繼續攻擊我嗎？',
@@ -684,12 +684,17 @@ function updateBossHealthBar() {
   // Boss 對話系統（隨機觸發）
   checkBossDialogue();
 
-  // 血量低於 50% 時切換第二階段音樂並進入狂暴模式
-  if (hpPercent <= 50 && currentBGMStage === 1) {
+  // 血量低於 70% 時切換第二階段音樂（血月模式）
+  if (hpPercent <= 70 && currentBGMStage === 1) {
     currentBGMStage = 2;
     switchBGM('music/fast-chiptune-instrumental-2-minute-boss-fight-254040.mp3', true);
+    console.log('進入血月模式！第二階段音樂啟動！');
+  }
+
+  // 血量低於 50% 時進入狂暴模式（移動速度加快）
+  if (hpPercent <= 50 && !isBerserkMode) {
     activateBerserkMode();
-    console.log('進入第二階段！狂暴模式啟動！');
+    console.log('狂暴模式啟動！移動速度加快！');
   }
 
   // Boss 被擊敗
@@ -698,7 +703,7 @@ function updateBossHealthBar() {
   }
 }
 
-// Boss 對話系統（隨機出現）
+// Boss 對話系統（按順序顯示）
 function checkBossDialogue() {
   const now = Date.now();
 
@@ -707,21 +712,14 @@ function checkBossDialogue() {
     return;
   }
 
-  // 30% 機率顯示對話
-  if (Math.random() < 0.3) {
-    // 從對話池中隨機選擇一句（避免與上次相同）
-    let message = '';
-    let attempts = 0;
+  // 按順序顯示對話
+  const message = bossDialogues[currentDialogueIndex];
+  showBossMessage(message);
 
-    do {
-      message = bossDialogues[Math.floor(Math.random() * bossDialogues.length)];
-      attempts++;
-    } while (message === lastDialogueMessage && attempts < 10);
+  lastDialogueTime = now;
 
-    lastDialogueMessage = message;
-    lastDialogueTime = now;
-    showBossMessage(message);
-  }
+  // 移動到下一句對話，循環顯示
+  currentDialogueIndex = (currentDialogueIndex + 1) % bossDialogues.length;
 }
 
 // 顯示 Boss 訊息（跟隨月亮移動）
@@ -893,7 +891,7 @@ function defeatBoss() {
   stopBossMovement();
 
   // 切換勝利音樂
-  switchBGM('music/lofi-rain-198277.mp3', true);
+  switchBGM('music/sleepy-rain-116521.mp3', true);
 
   // 隱藏血條
   document.getElementById('boss-health-bar').style.display = 'none';
@@ -1273,7 +1271,7 @@ function fixMoonPosition() {
 // ===== 背景音樂載入與控制 =====
 function initBackgroundMusic() {
   bgMusic = new Audio();
-  bgMusic.src = 'music/lofi-rain-198277.mp3'; // 預設放鬆音樂
+  bgMusic.src = 'music/sleepy-rain-116521.mp3'; // 預設放鬆音樂
   bgMusic.loop = true;
   bgMusic.volume = musicVolume;
 
