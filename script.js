@@ -29,31 +29,9 @@ function applyViewMode() {
     document.body.classList.remove('mobile-mode');
   }
 
-  // 更新角色大小
-  updateCharacterSize();
-
   // 重新初始化雪花（根據模式調整數量）
   if (typeof initSnowflakes === 'function') {
     initSnowflakes();
-  }
-}
-
-// 更新角色大小（根據模式）
-function updateCharacterSize() {
-  // 確保 character 物件已定義
-  if (typeof character === 'undefined') return;
-
-  if (isMobileMode) {
-    // 手機版：角色縮小，避免和按鈕重疊
-    character.width = Math.min(window.innerWidth / 3.5, 250);
-    character.height = character.width;
-    // 手機版：角色放在左下角最邊邊
-    character.x = character.width / 2 + 10;
-  } else {
-    // 桌面版：角色佔螢幕寬度的 1/3
-    character.width = getCharacterSize();
-    character.height = character.width;
-    character.x = character.width / 2 + 50;
   }
 }
 
@@ -65,8 +43,6 @@ const ctx = canvas.getContext('2d');
 let touchCount = 0;
 const snowflakes = [];
 const particles = [];
-let characterImage = null;
-let characterLoaded = false;
 
 // ===== 背景音樂系統 =====
 let bgMusic = null;
@@ -150,27 +126,10 @@ function getCurrentPeriodName() {
   return periodNames[index];
 }
 
-// 角色位置（左下角，腳平貼底部）
-// 計算角色寬度為視窗寬度的 1/3
-const getCharacterSize = () => {
-  const baseWidth = window.innerWidth / 3;
-  return Math.min(baseWidth, 500); // 最大不超過 500px
-};
-
-const character = {
-  x: getCharacterSize() / 2 + 50, // 給點邊距
-  y: window.innerHeight - 80,
-  width: getCharacterSize(),
-  height: getCharacterSize()
-};
-
 // 設定 Canvas 尺寸為視窗大小
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-
-  // 視窗改變時更新角色大小（根據當前模式）
-  updateCharacterSize();
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -223,26 +182,8 @@ function loadBackgroundImages() {
 }
 loadBackgroundImages();
 
-// ===== 載入角色圖片 =====
-function loadCharacter() {
-  characterImage = new Image();
-  // 請確認您的圖片路徑，可能是以下之一：
-  // 'images/character.png'
-  // 'images/character.jpg'
-  // 'images/character.svg'
-  characterImage.src = 'images/character.png'; // 根據您的圖片格式調整
-
-  characterImage.onload = () => {
-    characterLoaded = true;
-    console.log('角色圖片載入成功！');
-  };
-
-  characterImage.onerror = () => {
-    console.log('角色圖片載入失敗，將使用簡單圖形代替');
-    console.log('請確認圖片是否在: images/character.png');
-  };
-}
-loadCharacter();
+// ===== 角色圖片已改為 HTML <img> 標籤 =====
+// 不再需要透過 Canvas 載入和繪製
 
 // ===== 時鐘功能 =====
 function updateClock() {
@@ -549,45 +490,19 @@ class Particle {
 }
 
 // ===== 繪製角色 =====
-function drawCharacter() {
-  // 更新角色 Y 位置（響應視窗大小，腳平貼底部）
-  character.y = canvas.height - character.height / 2;
-
-  if (characterLoaded && characterImage) {
-    ctx.drawImage(
-      characterImage,
-      character.x - character.width / 2,
-      character.y - character.height / 2,
-      character.width,
-      character.height
-    );
-  } else {
-    // 如果圖片未載入，繪製簡單的替代圖形（根據角色大小）
-    const radius = character.width / 3;
-    ctx.fillStyle = '#3498db';
-    ctx.beginPath();
-    ctx.arc(character.x, character.y, radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 繪製眼睛（根據角色大小）
-    const eyeDistance = radius / 2;
-    const eyeSize = radius / 6;
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.arc(character.x - eyeDistance, character.y - radius / 6, eyeSize, 0, Math.PI * 2);
-    ctx.arc(character.x + eyeDistance, character.y - radius / 6, eyeSize, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = 'black';
-    ctx.beginPath();
-    ctx.arc(character.x - eyeDistance, character.y - radius / 6, eyeSize / 2.5, 0, Math.PI * 2);
-    ctx.arc(character.x + eyeDistance, character.y - radius / 6, eyeSize / 2.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
+// 角色已改為 HTML <img> 標籤，不再需要在 Canvas 上繪製
 
 // ===== 發射星星函數 =====
 function shootStars() {
+  // 獲取角色圖片的位置
+  const characterElement = document.getElementById('characterImg');
+  if (!characterElement) return;
+
+  const charRect = characterElement.getBoundingClientRect();
+  // 從角色的施法右手位置發射
+  const charX = charRect.left + charRect.width * 0.75;  // 右側 75% 處（手臂位置）
+  const charY = charRect.top + charRect.height * 0.35;  // 上方 35% 處（手的高度）
+
   // 根據模式決定目標位置
   let targetX, targetY;
   if (isMobileMode) {
@@ -609,26 +524,20 @@ function shootStars() {
   // 發射 8 顆星星
   for (let i = 0; i < 8; i++) {
     setTimeout(() => {
-      particles.push(new Particle(character.x, character.y, targetX, targetY));
+      particles.push(new Particle(charX, charY, targetX, targetY));
     }, i * 150);
   }
 }
 
 // ===== 點擊事件處理 =====
-// 由於 Canvas 設定為 pointer-events: none，我們需要在 body 上監聽點擊
-document.body.addEventListener('click', (e) => {
-  const clickX = e.clientX;
-  const clickY = e.clientY;
-
-  // 檢查是否點擊角色附近
-  const distance = Math.sqrt(
-    Math.pow(clickX - character.x, 2) + Math.pow(clickY - character.y, 2)
-  );
-
-  if (distance < character.width / 2 + 50) { // 根據角色大小調整點擊範圍
+// 點擊角色發射星星
+const characterElement = document.getElementById('characterImg');
+if (characterElement) {
+  characterElement.addEventListener('click', (e) => {
+    e.stopPropagation();
     shootStars();
-  }
-});
+  });
+}
 
 // ===== 星星發射按鈕點擊事件 =====
 document.querySelector('.hint-text').addEventListener('click', (e) => {
@@ -1182,9 +1091,6 @@ function animate() {
     snowflake.draw();
   });
 
-  // 繪製角色
-  drawCharacter();
-
   // 更新和繪製粒子
   for (let i = particles.length - 1; i >= 0; i--) {
     particles[i].update();
@@ -1452,8 +1358,29 @@ function initBackgroundMusic() {
     console.log('背景音樂載入失敗');
   });
 
-  // 自動播放放鬆音樂
-  playMusic();
+  // 嘗試自動播放放鬆音樂
+  attemptAutoplay();
+}
+
+// 嘗試自動播放（帶備援機制）
+function attemptAutoplay() {
+  if (!bgMusic) return;
+
+  bgMusic.play().then(() => {
+    isMusicPlaying = true;
+    console.log('音樂自動播放成功');
+    updateMusicButton();
+  }).catch(err => {
+    console.log('自動播放被瀏覽器阻擋，等待用戶互動:', err);
+    // 添加一次性點擊監聽器，用戶互動後自動播放
+    const autoplayOnInteraction = () => {
+      playMusic();
+      document.body.removeEventListener('click', autoplayOnInteraction);
+      document.body.removeEventListener('touchstart', autoplayOnInteraction);
+    };
+    document.body.addEventListener('click', autoplayOnInteraction, { once: true });
+    document.body.addEventListener('touchstart', autoplayOnInteraction, { once: true });
+  });
 }
 
 // 切換 BGM

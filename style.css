@@ -34,6 +34,24 @@ body {
   pointer-events: none;
 }
 
+/* ===== 動畫角色 ===== */
+.character-animation {
+  position: fixed;
+  bottom: 0;
+  left: 50px;
+  width: 33vw;
+  max-width: 500px;
+  height: auto;
+  z-index: 5;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.character-animation:hover {
+  transform: scale(1.05);
+}
+
 /* ===== 容器 ===== */
 .container {
   position: relative;
@@ -1229,5 +1247,15 @@ body.mobile-mode .boss-message {
     font-size: 18px;
     padding: 16px 32px;
     bottom: 30px;
+  }
+}
+
+
+/* ===== 手機版角色樣式 ===== */
+@media (max-width: 768px) {
+  .character-animation {
+    width: 35vw;
+    max-width: 250px;
+    left: 10px;
   }
 }
