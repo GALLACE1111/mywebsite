@@ -211,6 +211,50 @@ body {
   box-shadow: 0 8px 20px rgba(255, 107, 157, 0.4);
 }
 
+/* ===== 左上角時段顯示器 ===== */
+.time-period-display {
+  position: fixed;
+  top: 25px;
+  left: 25px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 15px 25px;
+  border-radius: 15px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.time-period-display:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 手機版：時段顯示器 */
+body.mobile-mode .time-period-display {
+  top: 15px;
+  left: 15px;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+@media (max-width: 600px) {
+  .time-period-display {
+    top: 15px;
+    left: 15px;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+}
+
 /* ===== 右上角可愛月亮鬧鐘 ===== */
 .info-panel {
   position: fixed !important;

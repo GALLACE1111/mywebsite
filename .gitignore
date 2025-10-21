@@ -11,3 +11,27 @@ node_modules/
 # 臨時檔案
 *.log
 *.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Python 腳本（開發用）
+create_*.py
+gif_processor.py
+gif_quick_start.py
+
+# GIF 生成檔案（開發用，保留 elf_active.gif）
+elf_casting.gif
+elf_walking.gif
+elf_jumping.gif
+elf_idle.gif
+elf_combined.gif
+background_animation.gif
+background_preview.gif
+gif_frames/
+output_frames/
+
+# 教學文件
+GIF_教學.md

@@ -110,27 +110,44 @@ let bossMovement = {
 
 // 背景圖片
 const backgroundImages = {
+  morning: null,
+  afternoon: null,
   night: null,
   lateNight: null
 };
 let backgroundImagesLoaded = {
+  morning: false,
+  afternoon: false,
   night: false,
   lateNight: false
 };
 
 // ===== 背景循環系統 =====
-// 每60秒切換一次，循環2種背景圖片
-const BACKGROUND_CYCLE_DURATION = 2 * 60 * 1000; // 2分鐘（毫秒）
-const BACKGROUNDS_COUNT = 2; // 2種背景
-const EACH_BACKGROUND_DURATION = BACKGROUND_CYCLE_DURATION / BACKGROUNDS_COUNT; // 每種背景60秒
+// 4個時段：早晨(30s) → 下午(30s) → 晚上(30s) → 深夜(60s)
+const BACKGROUND_DURATIONS = [30000, 30000, 30000, 60000]; // 毫秒
+const BACKGROUND_CYCLE_DURATION = BACKGROUND_DURATIONS.reduce((a, b) => a + b, 0); // 總共 150 秒
 const backgroundStartTime = Date.now(); // 背景循環開始時間
 
-// 獲取當前應該顯示第幾個背景（0-1）
+// 獲取當前應該顯示第幾個背景（0-3）和當前時段名稱
 function getCurrentBackgroundIndex() {
   const elapsed = Date.now() - backgroundStartTime;
-  const cyclePosition = elapsed % BACKGROUND_CYCLE_DURATION; // 在2分鐘循環中的位置
-  const index = Math.floor(cyclePosition / EACH_BACKGROUND_DURATION); // 0, 1
-  return index;
+  const cyclePosition = elapsed % BACKGROUND_CYCLE_DURATION; // 在循環中的位置
+
+  let accumulatedTime = 0;
+  for (let i = 0; i < BACKGROUND_DURATIONS.length; i++) {
+    accumulatedTime += BACKGROUND_DURATIONS[i];
+    if (cyclePosition < accumulatedTime) {
+      return i; // 0=早晨, 1=下午, 2=晚上, 3=深夜
+    }
+  }
+  return 0; // 預設返回早晨
+}
+
+// 獲取當前時段名稱
+function getCurrentPeriodName() {
+  const index = getCurrentBackgroundIndex();
+  const periodNames = ['早晨', '下午', '晚上', '深夜'];
+  return periodNames[index];
 }
 
 // 角色位置（左下角，腳平貼底部）
@@ -160,15 +177,37 @@ window.addEventListener('resize', resizeCanvas);
 
 // ===== 載入背景圖片 =====
 function loadBackgroundImages() {
+  // 載入早晨背景
+  backgroundImages.morning = new Image();
+  backgroundImages.morning.src = 'images/morning.png';
+  backgroundImages.morning.onload = () => {
+    backgroundImagesLoaded.morning = true;
+    console.log('早晨背景載入成功！');
+  };
+  backgroundImages.morning.onerror = () => {
+    console.log('早晨背景載入失敗: images/morning.png');
+  };
+
+  // 載入下午背景
+  backgroundImages.afternoon = new Image();
+  backgroundImages.afternoon.src = 'images/1219.png';
+  backgroundImages.afternoon.onload = () => {
+    backgroundImagesLoaded.afternoon = true;
+    console.log('下午背景載入成功！');
+  };
+  backgroundImages.afternoon.onerror = () => {
+    console.log('下午背景載入失敗: images/1219.png');
+  };
+
   // 載入夜晚背景
   backgroundImages.night = new Image();
   backgroundImages.night.src = 'images/1922.png';
   backgroundImages.night.onload = () => {
     backgroundImagesLoaded.night = true;
-    console.log('夜晚背景載入成功！');
+    console.log('晚上背景載入成功！');
   };
   backgroundImages.night.onerror = () => {
-    console.log('夜晚背景載入失敗: images/1922.png');
+    console.log('晚上背景載入失敗: images/1922.png');
   };
 
   // 載入深夜背景
@@ -216,19 +255,36 @@ function updateClock() {
 setInterval(updateClock, 60000); // 60秒 = 1分鐘
 updateClock();
 
+// ===== 時段顯示器更新功能 =====
+function updateTimePeriodDisplay() {
+  const periodName = getCurrentPeriodName();
+  const displayElement = document.getElementById('timePeriodDisplay');
+  if (displayElement) {
+    displayElement.textContent = `當前時段：${periodName}`;
+  }
+}
+// 每秒更新時段顯示（確保即時切換）
+setInterval(updateTimePeriodDisplay, 1000);
+updateTimePeriodDisplay();
+
 // ===== 獲取當前背景圖片 =====
-// 每60秒切換一次，循環2種背景
-// 順序：深夜 > 晚上
+// 順序：早晨(30s) → 下午(30s) → 晚上(30s) → 深夜(60s)
 function getCurrentBackgroundImage() {
   const index = getCurrentBackgroundIndex();
 
   switch(index) {
     case 0:
-      // 第1階段（0-60秒）：深夜
-      return backgroundImagesLoaded.lateNight ? backgroundImages.lateNight : null;
+      // 早晨
+      return backgroundImagesLoaded.morning ? backgroundImages.morning : null;
     case 1:
-      // 第2階段（60-120秒）：晚上
+      // 下午
+      return backgroundImagesLoaded.afternoon ? backgroundImages.afternoon : null;
+    case 2:
+      // 晚上
       return backgroundImagesLoaded.night ? backgroundImages.night : null;
+    case 3:
+      // 深夜
+      return backgroundImagesLoaded.lateNight ? backgroundImages.lateNight : null;
     default:
       return null;
   }
@@ -236,23 +292,35 @@ function getCurrentBackgroundImage() {
 
 // ===== 天空背景顏色系統（備用） =====
 // 當背景圖片載入失敗時使用
-// 順序：深夜 > 晚上
+// 順序：早晨 > 下午 > 晚上 > 深夜
 function getSkyColor() {
   const index = getCurrentBackgroundIndex();
   let hue, saturation, lightness;
 
   switch(index) {
     case 0:
+      // 早晨 - 淺藍天空
+      hue = 200;
+      saturation = 70;
+      lightness = 70;
+      break;
+    case 1:
+      // 下午 - 明亮天空
+      hue = 210;
+      saturation = 60;
+      lightness = 65;
+      break;
+    case 2:
+      // 晚上 - 深紫色
+      hue = 280;
+      saturation = 60;
+      lightness = 30;
+      break;
+    case 3:
       // 深夜 - 深紫藍色
       hue = 260;
       saturation = 55;
       lightness = 18;
-      break;
-    case 1:
-      // 夜晚 - 深紫色
-      hue = 280;
-      saturation = 60;
-      lightness = 30;
       break;
     default:
       hue = 200;
@@ -891,7 +959,7 @@ function defeatBoss() {
   stopBossMovement();
 
   // 切換勝利音樂
-  switchBGM('music/sleepy-rain-116521.mp3', true);
+  switchBGM('music/rain-piano.mp3', true);
 
   // 隱藏血條
   document.getElementById('boss-health-bar').style.display = 'none';
@@ -1372,7 +1440,7 @@ function fixMoonPosition() {
 // ===== 背景音樂載入與控制 =====
 function initBackgroundMusic() {
   bgMusic = new Audio();
-  bgMusic.src = 'music/sleepy-rain-116521.mp3'; // 預設放鬆音樂
+  bgMusic.src = 'music/rain-piano.mp3'; // 預設放鬆音樂
   bgMusic.loop = true;
   bgMusic.volume = musicVolume;
 
