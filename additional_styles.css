@@ -1,0 +1,185 @@
+/* ===== 放鬆驚喜 ===== */
+.relaxation-surprise {
+  position: fixed;
+  font-size: 48px;
+  animation: surpriseFall 5s ease-out forwards;
+  z-index: 9996;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes surpriseFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+}
+
+.surprise-message {
+  position: fixed;
+  background: rgba(255, 182, 193, 0.95); /* 粉色背景 */
+  padding: 8px 24px;
+  border-radius: 6px; /* 從20px改為6px，橫幅矩形 */
+  font-size: 14px; /* 從16px改為14px */
+  font-weight: 700;
+  color: #c41e3a; /* 深紅色文字，在粉色背景上更清晰 */
+  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4); /* 粉色陰影 */
+  border: 2px solid #ff69b4; /* 粉色邊框 */
+  z-index: 9996;
+  pointer-events: none;
+  animation: messageFadeOut 3s ease-out forwards;
+  min-width: 120px; /* 確保橫幅有最小寬度 */
+  text-align: center; /* 文字居中 */
+}
+
+@keyframes messageFadeOut {
+  0%, 80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ===== 月球傳送門 ===== */
+.portal-active {
+  animation: portalPulse 1s ease-in-out infinite !important;
+}
+
+@keyframes portalPulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(255, 248, 220, 0.8), 0 0 60px rgba(240, 230, 140, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(255, 248, 220, 1), 0 0 100px rgba(240, 230, 140, 0.8);
+    transform: scale(1.05);
+  }
+}
+
+.moon-portal-dialog .portal-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.portal-icons .icon-item {
+  font-size: 32px;
+  animation: iconBounce 1s ease-in-out infinite;
+}
+
+.portal-icons .icon-item:nth-child(1) { animation-delay: 0s; }
+.portal-icons .icon-item:nth-child(2) { animation-delay: 0.2s; }
+.portal-icons .icon-item:nth-child(3) { animation-delay: 0.4s; }
+.portal-icons .icon-item:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.2); }
+}
+
+/* ===== 常駐排行榜 ===== */
+.permanent-leaderboard {
+  display: block; /* 顯示常駐排行榜 */
+  position: fixed;
+  top: 90px; /* 時段顯示下方 */
+  left: 25px;
+  background: rgba(50, 50, 60, 0.85); /* 更灰暗的顏色 */
+  backdrop-filter: blur(10px);
+  padding: 18px 24px; /* 增大 padding */
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  min-width: 220px; /* 增大寬度 */
+  max-width: 260px; /* 增大寬度 */
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.5s ease;
+}
+
+/* 戰鬥時排行榜移到當前時段旁邊（左上角） */
+body.boss-battle .permanent-leaderboard {
+  top: 25px; /* 與時段顯示器同一行 */
+  left: 280px; /* 時段顯示器右側 */
+  transform: none; /* 取消 scale */
+  max-width: 320px; /* 更寬以容納更多玩家 */
+  max-height: 650px; /* 增大最大高度 */
+  overflow-y: auto; /* 長列可滾動 */
+  padding: 22px; /* 增大 padding */
+  box-shadow: 0 15px 40px rgba(245, 87, 108, 0.5);
+  border: 4px solid rgba(245, 87, 108, 0.6);
+  background: rgba(40, 40, 50, 0.95); /* 戰鬥時更深色 */
+}
+
+.permanent-lb-title {
+  font-size: 20px; /* 增大標題字體 */
+  font-weight: 700;
+  color: #FFD700;
+  text-align: center;
+  margin-bottom: 14px; /* 增大間距 */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding-bottom: 10px; /* 增大間距 */
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.permanent-lb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 增大間距 */
+}
+
+.permanent-lb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 增大間距 */
+  padding: 8px 12px; /* 增大 padding */
+  background: rgba(70, 70, 80, 0.6);
+  border-radius: 10px; /* 增大圓角 */
+  font-size: 15px; /* 增大字體 */
+  transition: all 0.3s ease;
+}
+
+.permanent-lb-item:hover {
+  transform: translateX(3px);
+  background: rgba(90, 90, 100, 0.8);
+}
+
+.permanent-lb-rank {
+  font-weight: 700;
+  min-width: 32px; /* 增大寬度 */
+  text-align: center;
+  font-size: 18px; /* 增大獎盃圖標 */
+}
+
+.permanent-lb-rank.gold { color: #FFD700; }
+.permanent-lb-rank.silver { color: #C0C0C0; }
+.permanent-lb-rank.bronze { color: #CD7F32; }
+
+.permanent-lb-name {
+  flex: 1;
+  font-weight: 600;
+  color: #FFFFFF;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px; /* 增大字體 */
+}
+
+.permanent-lb-hearts {
+  font-weight: 700;
+  color: #FF6B9D;
+  font-size: 14px; /* 增大字體 */
+}
+
+/* 戰鬥時排行榜滾動條樣式 */
+body.boss-battle .permanent-leaderboard::-webkit-scrollbar {
+  width: 6px;
+}
+
+body.boss-battle .permanent-leaderboard::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+body.boss-battle .permanent-leaderboard::-webkit-scrollbar-thumb {
+  background: rgba(245, 87, 108, 0.6);
+  border-radius: 3px;
+}
+
+body.boss-battle .permanent-leaderboard::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 87, 108, 0.8);
+}
