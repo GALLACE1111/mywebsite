@@ -59,7 +59,7 @@ input, textarea {
   pointer-events: auto;
   cursor: pointer;
   transition: transform 0.2s ease;
-  background-image: url('images/character_running.gif?v=6');
+  background-image: url('images/character_running.gif?v=7');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
@@ -2075,6 +2075,24 @@ body.mobile-mode .alarm-timer {
   letter-spacing: 2px;
 }
 
+/* 月球確認對話框樣式 */
+.dialog-icon {
+  font-size: 70px;
+  margin-bottom: 20px;
+  animation: battleIconPulse 1s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+}
+
+.dialog-message {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  margin: 15px 0;
+  line-height: 1.6;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+}
+
 .battle-icons {
   display: flex;
   justify-content: center;
@@ -2198,6 +2216,19 @@ body.mobile-mode .battle-icon {
     font-size: 24px;
     margin-bottom: 20px;
   }
+
+  /* ⚠️ TODO: 待處理 - 手機版月球對話框樣式（先完成全部網頁版再處理手機版）
+  .dialog-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+  }
+
+  .dialog-message {
+    font-size: 18px;
+    margin: 12px 0;
+    line-height: 1.5;
+  }
+  */
 
   .battle-icons {
     gap: 10px;

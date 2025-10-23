@@ -45,83 +45,141 @@ function enterMoonWorld() {
   triggerButtonFeedback(button);
 
   if (!isInMoonWorld) {
-    // 進入月球
-    isInMoonWorld = true;
-    window.isInMoonWorld = true; // 確保全局可訪問
-    console.log('🌙 已進入月球世界，可愛訊息應停止');
-
-    // 載入 GALAXY 背景圖片
-    galaxyBackground = new Image();
-    galaxyBackground.src = 'images/background-galaxy01.png';
-    galaxyBackground.onload = () => {
-      console.log('GALAXY 背景載入成功！');
-    };
-
-    // 隱藏卡片
-    document.querySelector('.container').style.display = 'none';
-
-    // 隱藏角色
-    const character = document.querySelector('.character-animation');
-    if (character) character.style.display = 'none';
-
-    // 隱藏所有按鈕（保留時段顯示和音量控制）
-    const elementsToHide = [
-      'feedback-toggle', 'leaderboard-toggle', 'wish-toggle',
-      'alarm-toggle', 'player-name-toggle'
-    ];
-    elementsToHide.forEach(id => {
-      const element = document.getElementById(id);
-      if (element) element.style.display = 'none';
-    });
-
-    // 隱藏社交連結面板
-    const socialLinksPanel = document.querySelector('.social-links-panel');
-    if (socialLinksPanel) socialLinksPanel.style.display = 'none';
-
-    // 隱藏常駐排行榜
-    const permanentLeaderboard = document.querySelector('.permanent-leaderboard');
-    if (permanentLeaderboard) permanentLeaderboard.style.display = 'none';
-
-    // 隱藏星星發射器
-    const hintText = document.querySelector('.hint-text');
-    if (hintText) hintText.style.display = 'none';
-
-    // 保留時段顯示
-    const timePeriodDisplay = document.getElementById('timePeriodDisplay');
-    if (timePeriodDisplay) {
-      timePeriodDisplay.style.display = 'block';
-      timePeriodDisplay.style.zIndex = '10001';
-    }
-
-    // 保留音量控制器
-    const volumeControl = document.querySelector('.volume-control-panel');
-    if (volumeControl) {
-      volumeControl.style.display = 'block';
-      volumeControl.style.zIndex = '10001';
-    }
-
-    // 月球時鐘保持顯示
-    const moonClock = document.querySelector('.info-panel');
-    if (moonClock) {
-      moonClock.style.display = 'flex';
-      moonClock.style.zIndex = '10001'; // 確保在最上層
-    }
-
-    // 顯示返回魔王城按鈕
-    const returnBtn = document.getElementById('return-to-main');
-    if (returnBtn) {
-      returnBtn.style.display = 'block';
-      returnBtn.style.zIndex = '10001';
-    }
-
-    // 播放放鬆音樂（自動循環）
-    switchBGM('music/rain-piano.mp3', true);
-
-    console.log("✨ 歡迎來到月球世界！");
+    // 顯示確認對話框
+    showMoonConfirmDialog();
   } else {
     // 已經在月球中
     console.log("你已經在月球世界了！💫");
   }
+}
+
+// 顯示進入月球確認對話框
+function showMoonConfirmDialog() {
+  const dialog = document.createElement('div');
+  dialog.className = 'battle-dialog moon-confirm-dialog';
+  dialog.innerHTML = `
+    <div class="battle-dialog-content">
+      <div class="dialog-icon">🌙</div>
+      <h2 class="battle-title">確認進入月球世界？</h2>
+      <p class="dialog-message">進入月球世界後，將會切換到放鬆模式</p>
+      <p class="dialog-message">您可以隨時返回魔王城 🏰</p>
+      <div class="battle-buttons">
+        <button class="battle-btn battle-cancel">
+          <span class="btn-icon">❌</span>
+          <span>取消</span>
+        </button>
+        <button class="battle-btn battle-confirm">
+          <span class="btn-icon">✨</span>
+          <span>確定進入</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(dialog);
+
+  setTimeout(() => {
+    dialog.classList.add('show');
+  }, 10);
+
+  // 綁定取消按鈕
+  const cancelBtn = dialog.querySelector('.battle-cancel');
+  cancelBtn.addEventListener('click', () => {
+    triggerButtonFeedback(cancelBtn);
+    dialog.classList.remove('show');
+    setTimeout(() => {
+      dialog.remove();
+    }, 300);
+  });
+
+  // 綁定確定按鈕
+  const confirmBtn = dialog.querySelector('.battle-confirm');
+  confirmBtn.addEventListener('click', () => {
+    triggerButtonFeedback(confirmBtn);
+    dialog.classList.remove('show');
+    setTimeout(() => {
+      dialog.remove();
+      // 執行進入月球的邏輯
+      proceedToMoonWorld();
+    }, 300);
+  });
+}
+
+// 執行進入月球世界的實際邏輯
+function proceedToMoonWorld() {
+  // 進入月球
+  isInMoonWorld = true;
+  window.isInMoonWorld = true; // 確保全局可訪問
+  console.log('🌙 已進入月球世界，可愛訊息應停止');
+
+  // 載入 GALAXY 背景圖片
+  galaxyBackground = new Image();
+  galaxyBackground.src = 'images/background-galaxy01.png';
+  galaxyBackground.onload = () => {
+    console.log('GALAXY 背景載入成功！');
+  };
+
+  // 隱藏卡片
+  document.querySelector('.container').style.display = 'none';
+
+  // 隱藏角色
+  const character = document.querySelector('.character-animation');
+  if (character) character.style.display = 'none';
+
+  // 隱藏所有按鈕（保留時段顯示和音量控制）
+  const elementsToHide = [
+    'feedback-toggle', 'leaderboard-toggle', 'wish-toggle',
+    'alarm-toggle', 'player-name-toggle'
+  ];
+  elementsToHide.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) element.style.display = 'none';
+  });
+
+  // 隱藏社交連結面板
+  const socialLinksPanel = document.querySelector('.social-links-panel');
+  if (socialLinksPanel) socialLinksPanel.style.display = 'none';
+
+  // 隱藏常駐排行榜
+  const permanentLeaderboard = document.querySelector('.permanent-leaderboard');
+  if (permanentLeaderboard) permanentLeaderboard.style.display = 'none';
+
+  // 隱藏星星發射器
+  const hintText = document.querySelector('.hint-text');
+  if (hintText) hintText.style.display = 'none';
+
+  // 保留時段顯示
+  const timePeriodDisplay = document.getElementById('timePeriodDisplay');
+  if (timePeriodDisplay) {
+    timePeriodDisplay.style.display = 'block';
+    timePeriodDisplay.style.zIndex = '10001';
+  }
+
+  // 保留音量控制器
+  const volumeControl = document.querySelector('.volume-control-panel');
+  if (volumeControl) {
+    volumeControl.style.display = 'block';
+    volumeControl.style.zIndex = '10001';
+  }
+
+  // 月球時鐘保持顯示
+  const moonClock = document.querySelector('.info-panel');
+  if (moonClock) {
+    moonClock.style.display = 'flex';
+    moonClock.style.zIndex = '10001'; // 確保在最上層
+  }
+
+  // 顯示返回魔王城按鈕
+  const returnBtn = document.getElementById('return-to-main');
+  if (returnBtn) {
+    returnBtn.style.display = 'block';
+    returnBtn.style.zIndex = '10001';
+  }
+
+  // 播放放鬆音樂（自動循環）
+  switchBGM('music/rain-piano.mp3', true);
+
+  console.log("✨ 歡迎來到月球世界！");
 }
 
 function showMoonTools() {
@@ -186,7 +244,7 @@ const particles = [];
 // ===== 背景音樂系統 =====
 let bgMusic = null;
 let isMusicPlaying = false;
-let musicVolume = 0.5; // 預設音量50%
+let musicVolume = 0.7; // 預設音量70%
 
 // ===== 戰鬥音效系統 =====
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1060,6 +1118,13 @@ function startBossBattle() {
   // 添加戰鬥模式 class（用於手機版隱藏背景元素）
   document.body.classList.add('boss-battle');
 
+  // 隱藏卡片和進入月球按鈕（戰鬥中不需要顯示）
+  const container = document.querySelector('.container');
+  if (container) container.style.display = 'none';
+  const mainBtn = document.getElementById('main-btn');
+  if (mainBtn) mainBtn.style.display = 'none';
+  console.log('🎴 已隱藏卡片和進入月球按鈕');
+
   // 顯示血條
   document.getElementById('boss-health-bar').style.display = 'block';
   updateBossHealthBar();
@@ -1476,6 +1541,13 @@ function defeatBoss() {
 
   // 移除戰鬥模式 class
   document.body.classList.remove('boss-battle');
+
+  // 恢復卡片和進入月球按鈕的顯示
+  const container = document.querySelector('.container');
+  if (container) container.style.display = 'block';
+  const mainBtn = document.getElementById('main-btn');
+  if (mainBtn) mainBtn.style.display = 'block';
+  console.log('🎴 已恢復卡片和進入月球按鈕');
 
   // 切換勝利音樂
   switchBGM('music/rain-piano.mp3', true);
@@ -2150,23 +2222,45 @@ const USERNAME_KEY = 'currentUsername';
 
 // 取得當前用戶名稱
 function getCurrentUsername() {
-  return localStorage.getItem(USERNAME_KEY) || null;
+  try {
+    const username = localStorage.getItem(USERNAME_KEY) || null;
+    console.log('📝 當前用戶名稱:', username || '(尚未設定)');
+    return username;
+  } catch (error) {
+    console.error('❌ 讀取用戶名稱失敗:', error);
+    return null;
+  }
 }
 
 // 儲存用戶名稱
 function saveUsername(username) {
-  localStorage.setItem(USERNAME_KEY, username.trim());
+  try {
+    localStorage.setItem(USERNAME_KEY, username.trim());
+    console.log('✅ 用戶名稱已儲存:', username.trim());
+  } catch (error) {
+    console.error('❌ 儲存用戶名稱失敗:', error);
+  }
 }
 
 // 取得排行榜數據
 function getLeaderboardData() {
-  const data = localStorage.getItem(LEADERBOARD_KEY);
-  return data ? JSON.parse(data) : {};
+  try {
+    const data = localStorage.getItem(LEADERBOARD_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (error) {
+    console.error('❌ 讀取排行榜數據失敗:', error);
+    return {};
+  }
 }
 
 // 儲存排行榜數據
 function saveLeaderboardData(data) {
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
+  try {
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
+    console.log('✅ 排行榜數據已儲存:', data);
+  } catch (error) {
+    console.error('❌ 儲存排行榜數據失敗:', error);
+  }
 }
 
 // 更新用戶的愛心數量
@@ -2183,6 +2277,9 @@ function syncCurrentUserHearts() {
   const username = getCurrentUsername();
   if (username) {
     updateUserHearts(username, touchCount);
+    console.log(`💖 已同步 ${username} 的愛心數量: ${touchCount}`);
+  } else {
+    console.warn('⚠️ 未找到用戶名稱，無法同步愛心數量');
   }
 }
 
