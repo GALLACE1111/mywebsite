@@ -114,8 +114,8 @@ function enterMoonWorld() {
       returnBtn.style.zIndex = '10001';
     }
 
-    // 播放放鬆音樂
-    switchBGM('music/rain-piano.mp3', false);
+    // 播放放鬆音樂（自動循環）
+    switchBGM('music/rain-piano.mp3', true);
 
     console.log("✨ 歡迎來到月球世界！");
   } else {
