@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方法3：CSS Sprite 动画</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        /* ==================== 角色容器 ==================== */
+        .character-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        /* ==================== 角色动画基类 ==================== */
+        .character {
+            width: 256px;
+            height: 256px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background-size: auto 100%;
+            background-repeat: no-repeat;
+        }
+
+        /* ==================== 待机动画 ==================== */
+        .character.idle {
+            background-image: url('character_idle_sprite.png');
+            /* 8帧，横向排列，8列1行 */
+            background-size: 800% 100%;
+            animation: idle-anim 0.667s steps(8) infinite;
+        }
+
+        @keyframes idle-anim {
+            from { background-position: 0% 0; }
+            to { background-position: 100% 0; }
+        }
+
+        /* ==================== 走路动画 ==================== */
+        .character.walk {
+            background-image: url('character_walk_sprite.png');
+            /* 12帧，8列2行 */
+            background-size: 800% 200%;
+            animation: walk-anim 0.5s steps(12) infinite;
+        }
+
+        @keyframes walk-anim {
+            0% { background-position: 0% 0%; }
+            66.67% { background-position: 100% 0%; }
+            66.68% { background-position: 0% 100%; }
+            100% { background-position: 50% 100%; }
+        }
+
+        /* ==================== 奔跑动画 ==================== */
+        .character.run {
+            background-image: url('character_run_sprite.png');
+            /* 12帧，8列2行 */
+            background-size: 800% 200%;
+            animation: run-anim 0.5s steps(12) infinite;
+        }
+
+        @keyframes run-anim {
+            0% { background-position: 0% 0%; }
+            66.67% { background-position: 100% 0%; }
+            66.68% { background-position: 0% 100%; }
+            100% { background-position: 50% 100%; }
+        }
+
+        /* ==================== 跳跃动画 ==================== */
+        .character.jump {
+            background-image: url('character_jump_sprite.png');
+            /* 30帧，8列4行 */
+            background-size: 800% 400%;
+            animation: jump-anim 1.25s steps(30) infinite;
+        }
+
+        @keyframes jump-anim {
+            /* 第1行: 0-7帧 (0-26.67%) */
+            0% { background-position: 0% 0%; }
+            26.67% { background-position: 100% 0%; }
+
+            /* 第2行: 8-15帧 (26.67-53.33%) */
+            26.68% { background-position: 0% 33.33%; }
+            53.33% { background-position: 100% 33.33%; }
+
+            /* 第3行: 16-23帧 (53.33-80%) */
+            53.34% { background-position: 0% 66.67%; }
+            80% { background-position: 100% 66.67%; }
+
+            /* 第4行: 24-29帧 (80-100%) */
+            80.01% { background-position: 0% 100%; }
+            100% { background-position: 75% 100%; }
+        }
+
+        /* ==================== 控制面板 ==================== */
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-group h3 {
+            margin-top: 0;
+        }
+
+        button {
+            padding: 15px 30px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+        }
+
+        button.active {
+            background: #ff9800;
+            box-shadow: 0 0 20px rgba(255,152,0,0.6);
+        }
+
+        /* ==================== 代码示例 ==================== */
+        .code-example {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .code-example h3 {
+            margin-top: 0;
+            color: #ffd700;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .comment { color: #6a9955; }
+        .selector { color: #d7ba7d; }
+        .property { color: #9cdcfe; }
+        .value { color: #ce9178; }
+        .keyword { color: #c586c0; }
+
+        .size-options {
+            margin-top: 10px;
+        }
+
+        .size-options label {
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        .size-options input[type="radio"] {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 CSS Sprite 动画</h1>
+        <p class="subtitle">纯 CSS 实现，无需 JavaScript，性能最优</p>
+
+        <div class="character-wrapper">
+            <div id="character" class="character idle"></div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>📦 切换动画</h3>
+                <button onclick="setAnimation('idle')" class="active">待机 (Idle)</button>
+                <button onclick="setAnimation('walk')">走路 (Walk)</button>
+                <button onclick="setAnimation('run')">奔跑 (Run)</button>
+                <button onclick="setAnimation('jump')">跳跃 (Jump)</button>
+            </div>
+
+            <div class="control-group">
+                <h3>📏 角色大小</h3>
+                <div class="size-options">
+                    <label><input type="radio" name="size" value="128" onclick="setSize(128)"> 128px</label>
+                    <label><input type="radio" name="size" value="256" onclick="setSize(256)" checked> 256px</label>
+                    <label><input type="radio" name="size" value="512" onclick="setSize(512)"> 512px</label>
+                    <label><input type="radio" name="size" value="1024" onclick="setSize(1024)"> 1024px (原始)</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSS 代码示例 -->
+        <div class="code-example">
+            <h3>💻 CSS 代码示例</h3>
+
+            <h4>1. 基础设置</h4>
+            <pre><span class="comment">/* 角色容器 */</span>
+<span class="selector">.character</span> {
+    <span class="property">width</span>: <span class="value">256px</span>;
+    <span class="property">height</span>: <span class="value">256px</span>;
+    <span class="property">image-rendering</span>: <span class="value">pixelated</span>; <span class="comment">/* 保持像素艺术清晰 */</span>
+    <span class="property">background-repeat</span>: <span class="value">no-repeat</span>;
+}</pre>
+
+            <h4>2. 待机动画（8帧）</h4>
+            <pre><span class="selector">.character.idle</span> {
+    <span class="property">background-image</span>: <span class="value">url('character_idle_sprite.png')</span>;
+    <span class="property">background-size</span>: <span class="value">800% 100%</span>; <span class="comment">/* 8列 = 800% */</span>
+    <span class="property">animation</span>: <span class="value">idle-anim 0.667s steps(8) infinite</span>;
+}
+
+<span class="keyword">@keyframes</span> <span class="selector">idle-anim</span> {
+    <span class="keyword">from</span> { <span class="property">background-position</span>: <span class="value">0% 0</span>; }
+    <span class="keyword">to</span>   { <span class="property">background-position</span>: <span class="value">100% 0</span>; }
+}</pre>
+
+            <h4>3. 奔跑动画（12帧，8x2布局）</h4>
+            <pre><span class="selector">.character.run</span> {
+    <span class="property">background-image</span>: <span class="value">url('character_run_sprite.png')</span>;
+    <span class="property">background-size</span>: <span class="value">800% 200%</span>; <span class="comment">/* 8列2行 */</span>
+    <span class="property">animation</span>: <span class="value">run-anim 0.5s steps(12) infinite</span>;
+}
+
+<span class="keyword">@keyframes</span> <span class="selector">run-anim</span> {
+    <span class="comment">/* 第1行：帧0-7 (0-66.67%) */</span>
+    0%     { <span class="property">background-position</span>: <span class="value">0% 0%</span>; }
+    66.67% { <span class="property">background-position</span>: <span class="value">100% 0%</span>; }
+
+    <span class="comment">/* 第2行：帧8-11 (66.67-100%) */</span>
+    66.68% { <span class="property">background-position</span>: <span class="value">0% 100%</span>; }
+    100%   { <span class="property">background-position</span>: <span class="value">50% 100%</span>; }
+}</pre>
+
+            <h4>4. 在 HTML 中使用</h4>
+            <pre><span class="comment">&lt;!-- 只需改变 class 即可切换动画 --&gt;</span>
+<span class="keyword">&lt;div</span> <span class="property">class</span>=<span class="value">"character idle"</span><span class="keyword">&gt;&lt;/div&gt;</span>
+<span class="keyword">&lt;div</span> <span class="property">class</span>=<span class="value">"character run"</span><span class="keyword">&gt;&lt;/div&gt;</span>
+<span class="keyword">&lt;div</span> <span class="property">class</span>=<span class="value">"character jump"</span><span class="keyword">&gt;&lt;/div&gt;</span></pre>
+
+            <h4>5. JavaScript 切换动画</h4>
+            <pre><span class="comment">// 方法1: 改变 class</span>
+document.querySelector(<span class="value">'.character'</span>).className = <span class="value">'character run'</span>;
+
+<span class="comment">// 方法2: 使用 classList</span>
+<span class="keyword">const</span> char = document.querySelector(<span class="value">'.character'</span>);
+char.classList.remove(<span class="value">'idle'</span>, <span class="value">'walk'</span>, <span class="value">'run'</span>, <span class="value">'jump'</span>);
+char.classList.add(<span class="value">'run'</span>);
+
+<span class="comment">// 方法3: 游戏中使用</span>
+<span class="keyword">function</span> setCharacterAnimation(anim) {
+    <span class="keyword">const</span> validAnims = [<span class="value">'idle'</span>, <span class="value">'walk'</span>, <span class="value">'run'</span>, <span class="value">'jump'</span>];
+    <span class="keyword">const</span> character = document.querySelector(<span class="value">'.character'</span>);
+
+    validAnims.forEach(a => character.classList.remove(a));
+    character.classList.add(anim);
+}</pre>
+        </div>
+
+        <!-- 优势说明 -->
+        <div class="code-example">
+            <h3>✨ CSS Sprite 动画的优势</h3>
+            <ul>
+                <li><strong>性能最优：</strong>纯 CSS 实现，GPU 加速，无 JavaScript 开销</li>
+                <li><strong>文件小：</strong>使用 PNG 精灵图，比多个 WebP 文件更小</li>
+                <li><strong>兼容性好：</strong>支持所有现代浏览器</li>
+                <li><strong>易于维护：</strong>只需修改 CSS 类名即可切换动画</li>
+                <li><strong>适合游戏：</strong>可以同时显示多个角色，性能不受影响</li>
+            </ul>
+        </div>
+
+        <!-- 计算公式说明 -->
+        <div class="code-example">
+            <h3>🧮 Sprite Sheet 计算公式</h3>
+            <pre><span class="comment">// background-size 计算</span>
+background-size: (列数 × 100)% (行数 × 100)%
+
+<span class="comment">// 示例</span>
+8列1行: 800% 100%
+8列2行: 800% 200%
+8列4行: 800% 400%
+
+<span class="comment">// animation 时长计算</span>
+duration = (帧数 / FPS) 秒
+
+<span class="comment">// 示例</span>
+idle: 8帧 / 12 FPS = 0.667s
+run:  12帧 / 24 FPS = 0.5s
+jump: 30帧 / 24 FPS = 1.25s
+
+<span class="comment">// keyframes 计算（多行布局）</span>
+第N行结束位置 = (N × 每行帧数 / 总帧数) × 100%
+
+<span class="comment">// 示例: 12帧，8x2 布局</span>
+第1行结束: 8/12 × 100% = 66.67%
+第2行结束: 12/12 × 100% = 100%</pre>
+        </div>
+    </div>
+
+    <script>
+        function setAnimation(anim) {
+            const character = document.getElementById('character');
+            const validAnims = ['idle', 'walk', 'run', 'jump'];
+
+            // 移除所有动画类
+            validAnims.forEach(a => character.classList.remove(a));
+
+            // 添加新动画类
+            character.classList.add(anim);
+
+            // 更新按钮状态
+            document.querySelectorAll('.controls button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(anim)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            console.log('切换到动画:', anim);
+        }
+
+        function setSize(size) {
+            const character = document.getElementById('character');
+            character.style.width = size + 'px';
+            character.style.height = size + 'px';
+            console.log('设置大小:', size + 'px');
+        }
+    </script>
+</body>
+</html>

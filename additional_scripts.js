@@ -150,12 +150,14 @@ function enterMoonDimension() {
   const moonElement = document.querySelector('.info-panel');
   moonElement.classList.add('portal-active');
 
-  // 顯示傳送提示
-  showMoonPortalDialog();
-
+  // 直接進入月球世界（移除彈窗，改為直接進入）
   setTimeout(() => {
     moonElement.classList.remove('portal-active');
-  }, 3000);
+    // 直接調用進入月球的實際邏輯，跳過確認彈窗
+    if (typeof proceedToMoonWorld === 'function') {
+      proceedToMoonWorld();
+    }
+  }, 1000); // 縮短等待時間，讓進入更流暢
 }
 
 function showMoonPortalDialog() {
@@ -352,6 +354,13 @@ function initMoonPortal() {
       clearTimeout(moonClickTimer);
       moonClickCount = 0;
 
+      // 隱藏提示（用戶已知道功能）
+      const moonHint = document.getElementById('moonHint');
+      if (moonHint) {
+        moonHint.classList.add('hidden');
+        localStorage.setItem('moonHintSeen', 'true');
+      }
+
       // 檢查是否已在月球世界內部
       if (typeof isInMoonWorld !== 'undefined' && isInMoonWorld) {
         console.log('🌙 已在月球世界內部，顯示詩意對話框');
@@ -460,15 +469,79 @@ document.addEventListener('DOMContentLoaded', function() {
     updatePermanentLeaderboard();
     console.log('✅ 常駐排行榜首次更新完成');
 
-    // 設置定期更新（每5秒）
+    // 設置定期更新（每60秒 = 1分鐘）
     setInterval(() => {
       console.log('🔄 定期更新常駐排行榜...');
       updatePermanentLeaderboard();
-    }, 5000);
-    console.log('✅ 常駐排行榜定期更新已設置（每5秒）');
+    }, 60000);
+    console.log('✅ 常駐排行榜定期更新已設置（每60秒）');
   } catch (e) {
     console.error('❌ 常駐排行榜初始化失敗:', e);
     console.error('錯誤堆疊:', e.stack);
+  }
+
+  // 檢查用戶是否已看過時鐘提示
+  try {
+    const moonHintSeen = localStorage.getItem('moonHintSeen');
+    const moonHint = document.getElementById('moonHint');
+    if (moonHintSeen === 'true' && moonHint) {
+      moonHint.classList.add('hidden');
+      console.log('🌙 用戶已看過時鐘提示，隱藏提示');
+    }
+  } catch (e) {
+    console.error('❌ 檢查時鐘提示狀態失敗:', e);
+  }
+
+  // 初始化名稱設定提示系統
+  try {
+    console.log('👤 開始初始化名稱設定提示...');
+    const nameHint = document.getElementById('nameHint');
+    const playerNameBtn = document.getElementById('player-name-toggle');
+
+    // 檢查是否已設定名稱
+    const checkAndUpdateNameHint = () => {
+      if (typeof getCurrentUsername === 'function') {
+        const currentUsername = getCurrentUsername();
+        if (currentUsername && nameHint) {
+          nameHint.classList.add('hidden');
+          console.log('👤 用戶已設定名稱，隱藏提示');
+        } else if (!currentUsername && nameHint) {
+          nameHint.classList.remove('hidden');
+          console.log('👤 用戶未設定名稱，顯示提示');
+        }
+      }
+    };
+
+    // 點擊名稱提示時打開玩家名稱設定
+    if (nameHint) {
+      nameHint.addEventListener('click', () => {
+        console.log('👤 名稱提示被點擊');
+        if (playerNameBtn) {
+          playerNameBtn.click();
+        }
+      });
+    }
+
+    // 初始檢查
+    checkAndUpdateNameHint();
+
+    // 定期檢查（每5秒檢查一次，確保即時更新）
+    setInterval(checkAndUpdateNameHint, 5000);
+
+    // 初次訪問提示
+    const firstVisit = localStorage.getItem('firstVisit');
+    if (!firstVisit) {
+      setTimeout(() => {
+        if (typeof getCurrentUsername === 'function' && !getCurrentUsername()) {
+          alert('🎉 歡迎來到阿賢的小窩！\n\n記得點擊右上角的 👤 按鈕設定您的名稱，\n這樣就能參與排行榜囉！💖');
+          localStorage.setItem('firstVisit', 'true');
+        }
+      }, 2000); // 延遲2秒顯示，讓用戶先看到頁面
+    }
+
+    console.log('✅ 名稱設定提示系統已初始化');
+  } catch (e) {
+    console.error('❌ 名稱設定提示初始化失敗:', e);
   }
 
   console.log('✅ All additional features initialized!');

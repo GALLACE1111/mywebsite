@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>圖片動畫測試</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Microsoft YaHei', sans-serif;
+    }
+
+    .test-container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 800px;
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 30px;
+    }
+
+    .image-display {
+      background: #f5f5f5;
+      padding: 30px;
+      border-radius: 15px;
+      margin: 20px 0;
+      border: 3px dashed #667eea;
+    }
+
+    .image-display img {
+      max-width: 100%;
+      height: auto;
+      image-rendering: pixelated; /* 保持像素藝術清晰 */
+    }
+
+    .info {
+      background: #e8eaf6;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .info p {
+      margin: 10px 0;
+      color: #333;
+    }
+
+    .status {
+      font-size: 24px;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    .animated {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+
+    .static {
+      background: #ffccbc;
+      color: #d84315;
+    }
+
+    .upload-area {
+      border: 3px dashed #667eea;
+      padding: 40px;
+      border-radius: 15px;
+      margin: 20px 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+      background: #f5f5f5;
+      transform: scale(1.02);
+    }
+
+    .upload-area input {
+      display: none;
+    }
+
+    .upload-text {
+      font-size: 18px;
+      color: #667eea;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🎨 圖片動畫測試工具</h1>
+
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+      <div style="font-size: 60px;">📂</div>
+      <div class="upload-text">點擊這裡上傳圖片進行測試</div>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="image-display" id="imageDisplay" style="display: none;">
+      <img id="testImage" src="" alt="測試圖片">
+    </div>
+
+    <div class="status" id="status" style="display: none;">
+      <!-- 狀態會顯示在這裡 -->
+    </div>
+
+    <div class="info" id="info" style="display: none;">
+      <h3>📊 圖片資訊：</h3>
+      <p><strong>檔案名稱：</strong><span id="fileName">-</span></p>
+      <p><strong>檔案大小：</strong><span id="fileSize">-</span></p>
+      <p><strong>圖片格式：</strong><span id="fileType">-</span></p>
+      <p><strong>圖片尺寸：</strong><span id="imageDimensions">-</span></p>
+      <p><strong>動畫狀態：</strong><span id="animationStatus">-</span></p>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const testImage = document.getElementById('testImage');
+    const imageDisplay = document.getElementById('imageDisplay');
+    const statusDiv = document.getElementById('status');
+    const infoDiv = document.getElementById('info');
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // 顯示圖片
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        testImage.src = event.target.result;
+        imageDisplay.style.display = 'block';
+
+        // 檢測圖片格式
+        const fileType = file.type;
+        const fileName = file.name;
+        const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+
+        // 判斷是否為動畫格式
+        const isAnimated = fileType === 'image/gif' ||
+                          fileType === 'image/apng' ||
+                          fileType === 'image/webp';
+
+        // 更新資訊
+        document.getElementById('fileName').textContent = fileName;
+        document.getElementById('fileSize').textContent = fileSize;
+        document.getElementById('fileType').textContent = fileType;
+        document.getElementById('animationStatus').textContent =
+          isAnimated ? '✅ 可能包含動畫' : '❌ 靜態圖片';
+
+        // 當圖片載入後取得尺寸
+        testImage.onload = function() {
+          document.getElementById('imageDimensions').textContent =
+            `${testImage.naturalWidth} × ${testImage.naturalHeight} px`;
+        };
+
+        // 顯示狀態
+        statusDiv.style.display = 'block';
+        infoDiv.style.display = 'block';
+
+        if (isAnimated) {
+          statusDiv.className = 'status animated';
+          statusDiv.innerHTML = '✅ 這是動畫圖片格式！<br>如果沒有看到動畫，可能檔案只有單幀。';
+        } else {
+          statusDiv.className = 'status static';
+          statusDiv.innerHTML = '📷 這是靜態圖片格式';
+        }
+      };
+
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>

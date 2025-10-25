@@ -64,13 +64,13 @@ function showMoonConfirmDialog() {
       <p class="dialog-message">進入月球世界後，將會切換到放鬆模式</p>
       <p class="dialog-message">您可以隨時返回魔王城 🏰</p>
       <div class="battle-buttons">
-        <button class="battle-btn battle-cancel">
-          <span class="btn-icon">❌</span>
-          <span>取消</span>
+        <button class="battle-btn battle-cancel" style="background: linear-gradient(135deg, #f44336, #da190b);">
+          <span class="btn-icon">🌊</span>
+          <span>繼續漂泊</span>
         </button>
-        <button class="battle-btn battle-confirm">
-          <span class="btn-icon">✨</span>
-          <span>確定進入</span>
+        <button class="battle-btn battle-confirm" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
+          <span class="btn-icon">🌌</span>
+          <span>進入未知</span>
         </button>
       </div>
     </div>
@@ -2405,6 +2405,16 @@ function initLeaderboard() {
   leaderboardToggle.addEventListener('click', () => {
     console.log('🏆 排行榜按鈕被點擊');
     triggerButtonFeedback(leaderboardToggle);
+
+    // 檢查是否已設定名稱
+    const currentUsername = getCurrentUsername();
+    if (!currentUsername) {
+      // 沒有名稱，提示用戶先設定
+      alert('請先設定您的名稱喔！\n\n點擊右上角的 👤 按鈕即可設定名稱 😊');
+      console.log('⚠️ 用戶未設定名稱，無法進入排行榜');
+      return;
+    }
+
     leaderboardPanel.style.display = 'flex';
     renderLeaderboard();
   });

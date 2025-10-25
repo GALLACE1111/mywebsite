@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏集成示例 - 完整Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 50%, #7FBF7F 100%);
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: transparent;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .stats-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            pointer-events: auto;
+        }
+
+        .stats-panel h3 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+        }
+
+        .stat-row {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .controls-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+        }
+
+        .controls-panel h3 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+        }
+
+        .key-row {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        kbd {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .instructions h3 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .status-good { color: #4CAF50; }
+        .status-warning { color: #ff9800; }
+        .status-error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="ui-overlay">
+        <!-- 统计面板 -->
+        <div class="stats-panel">
+            <h3>📊 游戏状态</h3>
+            <div class="stat-row">
+                <span>当前动画：</span>
+                <span id="currentAnim" class="status-good">idle</span>
+            </div>
+            <div class="stat-row">
+                <span>位置：</span>
+                <span id="position">X:0, Y:0</span>
+            </div>
+            <div class="stat-row">
+                <span>速度：</span>
+                <span id="velocity">0</span>
+            </div>
+            <div class="stat-row">
+                <span>FPS：</span>
+                <span id="fps">60</span>
+            </div>
+            <div class="stat-row">
+                <span>跳跃状态：</span>
+                <span id="jumpStatus">地面</span>
+            </div>
+        </div>
+
+        <!-- 控制说明 -->
+        <div class="controls-panel">
+            <h3>🎮 操作说明</h3>
+            <div class="key-row"><kbd>←</kbd> <kbd>→</kbd> 移动</div>
+            <div class="key-row"><kbd>Shift</kbd> 奔跑</div>
+            <div class="key-row"><kbd>Space</kbd> 跳跃</div>
+            <div class="key-row"><kbd>R</kbd> 重置位置</div>
+            <div style="margin-top: 10px;">
+                <button onclick="game.reset()">重置</button>
+            </div>
+        </div>
+
+        <!-- 底部说明 -->
+        <div class="instructions">
+            <h3>🎯 游戏演示</h3>
+            <p>展示如何在实际游戏中集成角色动画系统</p>
+            <p>根据玩家操作自动切换动画状态</p>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 游戏主类
+         * 完整的游戏循环 + 角色动画集成示例
+         */
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+
+                // 设置画布大小
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+
+                // 动画系统
+                this.animationData = null;
+                this.sprites = {};
+
+                // 角色状态
+                this.character = {
+                    x: 100,
+                    y: 0,
+                    width: 128,
+                    height: 128,
+                    velocityX: 0,
+                    velocityY: 0,
+                    onGround: false,
+                    currentAnimation: 'idle',
+                    currentFrame: 0,
+                    lastFrameTime: 0,
+                    facingRight: true
+                };
+
+                // 游戏设置
+                this.gravity = 0.5;
+                this.jumpPower = -12;
+                this.walkSpeed = 3;
+                this.runSpeed = 6;
+                this.groundY = this.canvas.height - 150;
+
+                // 输入
+                this.keys = {};
+
+                // FPS 统计
+                this.frameCount = 0;
+                this.lastFpsUpdate = 0;
+                this.currentFps = 0;
+
+                this.init();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.groundY = this.canvas.height - 150;
+            }
+
+            async init() {
+                try {
+                    // 加载动画数据
+                    const response = await fetch('character_animations.json');
+                    this.animationData = await response.json();
+
+                    // 加载精灵图
+                    await this.loadSprites();
+
+                    // 设置输入
+                    this.setupInput();
+
+                    // 初始位置
+                    this.character.y = this.groundY - this.character.height;
+
+                    // 开始游戏循环
+                    this.gameLoop();
+
+                    console.log('游戏初始化完成');
+                } catch (error) {
+                    console.error('游戏初始化失败:', error);
+                }
+            }
+
+            async loadSprites() {
+                const promises = Object.entries(this.animationData.animations).map(
+                    async ([name, data]) => {
+                        const img = new Image();
+                        img.src = data.spriteSheet;
+                        await new Promise(resolve => img.onload = resolve);
+                        this.sprites[name] = img;
+                        console.log(`✓ 加载: ${data.spriteSheet}`);
+                    }
+                );
+                await Promise.all(promises);
+            }
+
+            setupInput() {
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key] = true;
+
+                    // 跳跃
+                    if (e.key === ' ' && this.character.onGround) {
+                        this.character.velocityY = this.jumpPower;
+                        this.character.onGround = false;
+                        this.setAnimation('jump');
+                    }
+
+                    // 重置
+                    if (e.key === 'r' || e.key === 'R') {
+                        this.reset();
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key] = false;
+                });
+            }
+
+            gameLoop(timestamp = 0) {
+                // 更新
+                this.update(timestamp);
+
+                // 渲染
+                this.render();
+
+                // FPS 统计
+                this.updateFPS(timestamp);
+
+                // 继续循环
+                requestAnimationFrame((t) => this.gameLoop(t));
+            }
+
+            update(timestamp) {
+                // 重力
+                this.character.velocityY += this.gravity;
+
+                // 水平移动
+                let targetVelocityX = 0;
+                const isRunning = this.keys['Shift'];
+                const speed = isRunning ? this.runSpeed : this.walkSpeed;
+
+                if (this.keys['ArrowLeft']) {
+                    targetVelocityX = -speed;
+                    this.character.facingRight = false;
+                } else if (this.keys['ArrowRight']) {
+                    targetVelocityX = speed;
+                    this.character.facingRight = true;
+                }
+
+                // 平滑移动
+                this.character.velocityX = targetVelocityX;
+
+                // 更新位置
+                this.character.x += this.character.velocityX;
+                this.character.y += this.character.velocityY;
+
+                // 地面碰撞
+                if (this.character.y >= this.groundY - this.character.height) {
+                    this.character.y = this.groundY - this.character.height;
+                    this.character.velocityY = 0;
+                    this.character.onGround = true;
+                }
+
+                // 边界限制
+                if (this.character.x < 0) this.character.x = 0;
+                if (this.character.x > this.canvas.width - this.character.width) {
+                    this.character.x = this.canvas.width - this.character.width;
+                }
+
+                // 自动切换动画
+                this.updateAnimation();
+
+                // 更新动画帧
+                this.updateAnimationFrame(timestamp);
+
+                // 更新 UI
+                this.updateUI();
+            }
+
+            updateAnimation() {
+                // 跳跃中不切换
+                if (!this.character.onGround && this.character.currentAnimation === 'jump') {
+                    return;
+                }
+
+                // 在地面上
+                if (this.character.onGround) {
+                    if (Math.abs(this.character.velocityX) > 0.1) {
+                        // 移动中
+                        const isRunning = this.keys['Shift'];
+                        const newAnim = isRunning ? 'run' : 'walk';
+                        this.setAnimation(newAnim);
+                    } else {
+                        // 静止
+                        this.setAnimation('idle');
+                    }
+                }
+            }
+
+            setAnimation(animName) {
+                if (this.character.currentAnimation !== animName) {
+                    this.character.currentAnimation = animName;
+                    this.character.currentFrame = 0;
+                    this.character.lastFrameTime = performance.now();
+                }
+            }
+
+            updateAnimationFrame(timestamp) {
+                const anim = this.animationData.animations[this.character.currentAnimation];
+                if (!anim) return;
+
+                const frameDuration = 1000 / anim.fps;
+
+                if (timestamp - this.character.lastFrameTime >= frameDuration) {
+                    this.character.currentFrame++;
+
+                    if (this.character.currentFrame >= anim.frameCount) {
+                        if (anim.loop) {
+                            this.character.currentFrame = 0;
+                        } else {
+                            this.character.currentFrame = anim.frameCount - 1;
+                            // 跳跃动画结束后切换到待机
+                            if (this.character.currentAnimation === 'jump' && this.character.onGround) {
+                                this.setAnimation('idle');
+                            }
+                        }
+                    }
+
+                    this.character.lastFrameTime = timestamp;
+                }
+            }
+
+            render() {
+                // 清空画布
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 绘制地面
+                this.drawGround();
+
+                // 绘制角色
+                this.drawCharacter();
+            }
+
+            drawGround() {
+                const groundHeight = 30;
+                this.ctx.fillStyle = '#8B7355';
+                this.ctx.fillRect(0, this.groundY, this.canvas.width, groundHeight);
+
+                // 草地
+                this.ctx.fillStyle = '#7FBF7F';
+                this.ctx.fillRect(0, this.groundY, this.canvas.width, 10);
+
+                // 地面线
+                this.ctx.strokeStyle = '#654321';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, this.groundY);
+                this.ctx.lineTo(this.canvas.width, this.groundY);
+                this.ctx.stroke();
+            }
+
+            drawCharacter() {
+                const anim = this.animationData.animations[this.character.currentAnimation];
+                const sprite = this.sprites[this.character.currentAnimation];
+
+                if (!anim || !sprite) return;
+
+                // 计算源位置
+                const col = this.character.currentFrame % anim.columns;
+                const row = Math.floor(this.character.currentFrame / anim.columns);
+
+                const sx = col * anim.frameWidth;
+                const sy = row * anim.frameHeight;
+
+                // 保存上下文
+                this.ctx.save();
+
+                // 翻转（如果面向左）
+                if (!this.character.facingRight) {
+                    this.ctx.translate(this.character.x + this.character.width, this.character.y);
+                    this.ctx.scale(-1, 1);
+                    this.ctx.drawImage(
+                        sprite,
+                        sx, sy, anim.frameWidth, anim.frameHeight,
+                        0, 0, this.character.width, this.character.height
+                    );
+                } else {
+                    this.ctx.drawImage(
+                        sprite,
+                        sx, sy, anim.frameWidth, anim.frameHeight,
+                        this.character.x, this.character.y,
+                        this.character.width, this.character.height
+                    );
+                }
+
+                // 恢复上下文
+                this.ctx.restore();
+            }
+
+            updateFPS(timestamp) {
+                this.frameCount++;
+                if (timestamp - this.lastFpsUpdate >= 1000) {
+                    this.currentFps = this.frameCount;
+                    this.frameCount = 0;
+                    this.lastFpsUpdate = timestamp;
+                }
+            }
+
+            updateUI() {
+                document.getElementById('currentAnim').textContent = this.character.currentAnimation;
+                document.getElementById('position').textContent =
+                    `X:${Math.round(this.character.x)}, Y:${Math.round(this.character.y)}`;
+                document.getElementById('velocity').textContent =
+                    Math.abs(this.character.velocityX).toFixed(1);
+                document.getElementById('fps').textContent = this.currentFps;
+                document.getElementById('jumpStatus').textContent =
+                    this.character.onGround ? '地面' : '空中';
+            }
+
+            reset() {
+                this.character.x = 100;
+                this.character.y = this.groundY - this.character.height;
+                this.character.velocityX = 0;
+                this.character.velocityY = 0;
+                this.character.onGround = true;
+                this.setAnimation('idle');
+                console.log('游戏已重置');
+            }
+        }
+
+        // 启动游戏
+        let game;
+        window.addEventListener('DOMContentLoaded', () => {
+            game = new Game();
+        });
+    </script>
+</body>
+</html>

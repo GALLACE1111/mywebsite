@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色动画播放器</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #canvas {
+            display: block;
+            margin: 0 auto;
+            background: #f0f0f0;
+            border-radius: 10px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        button.active {
+            background: #48bb78;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .info p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 角色动画播放器</h1>
+        <canvas id="canvas"></canvas>
+        <div class="controls">
+            <button onclick="playAnimation('idle')">待机</button>
+            <button onclick="playAnimation('walk')">走路</button>
+            <button onclick="playAnimation('run')">奔跑</button>
+            <button onclick="playAnimation('jump')">跳跃</button>
+        </div>
+        <div class="info">
+            <p><strong>当前动画:</strong> <span id="currentAnim">idle</span></p>
+            <p><strong>FPS:</strong> <span id="fps">0</span></p>
+            <p><strong>帧数:</strong> <span id="frameInfo">0/0</span></p>
+        </div>
+    </div>
+
+    <script>
+        class AnimationPlayer {
+            constructor(canvas, animationData) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.animationData = animationData;
+                this.sprites = {};
+                this.currentAnimation = null;
+                this.currentFrame = 0;
+                this.lastFrameTime = 0;
+                this.isPlaying = false;
+            }
+
+            async loadSprites() {
+                const promises = Object.entries(this.animationData.animations).map(
+                    async ([name, data]) => {
+                        const img = new Image();
+                        img.src = data.spriteSheet;
+                        await new Promise(resolve => img.onload = resolve);
+                        this.sprites[name] = img;
+                    }
+                );
+                await Promise.all(promises);
+            }
+
+            playAnimation(animName) {
+                if (!this.animationData.animations[animName]) {
+                    console.error(`Animation "${animName}" not found`);
+                    return;
+                }
+
+                this.currentAnimation = animName;
+                this.currentFrame = 0;
+                this.lastFrameTime = performance.now();
+                this.isPlaying = true;
+
+                document.getElementById('currentAnim').textContent = animName;
+                document.getElementById('fps').textContent =
+                    this.animationData.animations[animName].fps;
+
+                // 更新按钮状态
+                document.querySelectorAll('.controls button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                if (!this.animationLoop) {
+                    this.animationLoop = this.update.bind(this);
+                    requestAnimationFrame(this.animationLoop);
+                }
+            }
+
+            update(timestamp) {
+                if (!this.isPlaying || !this.currentAnimation) {
+                    requestAnimationFrame(this.animationLoop);
+                    return;
+                }
+
+                const anim = this.animationData.animations[this.currentAnimation];
+                const frameDuration = 1000 / anim.fps;
+
+                if (timestamp - this.lastFrameTime >= frameDuration) {
+                    this.currentFrame++;
+
+                    if (this.currentFrame >= anim.frameCount) {
+                        if (anim.loop) {
+                            this.currentFrame = 0;
+                        } else {
+                            this.currentFrame = anim.frameCount - 1;
+                            this.isPlaying = false;
+                        }
+                    }
+
+                    this.lastFrameTime = timestamp;
+                    this.render();
+
+                    document.getElementById('frameInfo').textContent =
+                        `${this.currentFrame + 1}/${anim.frameCount}`;
+                }
+
+                requestAnimationFrame(this.animationLoop);
+            }
+
+            render() {
+                const anim = this.animationData.animations[this.currentAnimation];
+                const sprite = this.sprites[this.currentAnimation];
+
+                if (!sprite) return;
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                const col = this.currentFrame % anim.columns;
+                const row = Math.floor(this.currentFrame / anim.columns);
+
+                const sx = col * anim.frameWidth;
+                const sy = row * anim.frameHeight;
+
+                this.ctx.drawImage(
+                    sprite,
+                    sx, sy, anim.frameWidth, anim.frameHeight,
+                    0, 0, this.canvas.width, this.canvas.height
+                );
+            }
+        }
+
+        let player;
+
+        async function init() {
+            const response = await fetch('character_animations.json');
+            const animationData = await response.json();
+
+            const canvas = document.getElementById('canvas');
+            canvas.width = animationData.meta.characterWidth;
+            canvas.height = animationData.meta.characterHeight;
+
+            player = new AnimationPlayer(canvas, animationData);
+            await player.loadSprites();
+
+            // 默认播放待机动画
+            playAnimation('idle');
+        }
+
+        function playAnimation(animName) {
+            if (player) {
+                player.playAnimation(animName);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

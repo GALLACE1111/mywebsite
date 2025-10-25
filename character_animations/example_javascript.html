@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方法2：JavaScript Canvas 动画控制</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        .controls {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .control-group {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .control-group h3 {
+            margin-top: 0;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+        }
+        button.active {
+            background: #ff9800;
+            box-shadow: 0 0 20px rgba(255,152,0,0.6);
+        }
+        .info-panel {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+        .key-hint {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        kbd {
+            background: #333;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 JavaScript Canvas 动画控制</h1>
+        <p class="subtitle">使用 Canvas API 和 JSON 配置文件控制角色动画</p>
+
+        <canvas id="gameCanvas" width="1024" height="1024"></canvas>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>📦 动画状态控制</h3>
+                <button onclick="player.playAnimation('idle')">待机 (Idle)</button>
+                <button onclick="player.playAnimation('walk')">走路 (Walk)</button>
+                <button onclick="player.playAnimation('run')">奔跑 (Run)</button>
+                <button onclick="player.playAnimation('jump')">跳跃 (Jump)</button>
+            </div>
+
+            <div class="control-group">
+                <h3>⚙️ 播放控制</h3>
+                <button onclick="player.pause()">暂停 ⏸</button>
+                <button onclick="player.resume()">继续 ▶</button>
+                <button onclick="player.stop()">停止 ⏹</button>
+                <button onclick="player.setSpeed(0.5)">0.5x 慢速</button>
+                <button onclick="player.setSpeed(1)">1x 正常</button>
+                <button onclick="player.setSpeed(2)">2x 快速</button>
+            </div>
+
+            <div class="key-hint">
+                <strong>键盘控制：</strong>
+                <kbd>1</kbd> 待机 |
+                <kbd>2</kbd> 走路 |
+                <kbd>3</kbd> 奔跑 |
+                <kbd>Space</kbd> 跳跃 |
+                <kbd>P</kbd> 暂停/继续
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-row">
+                <span><strong>当前动画：</strong></span>
+                <span id="currentAnim">-</span>
+            </div>
+            <div class="info-row">
+                <span><strong>当前帧：</strong></span>
+                <span id="currentFrame">0 / 0</span>
+            </div>
+            <div class="info-row">
+                <span><strong>FPS：</strong></span>
+                <span id="fps">0</span>
+            </div>
+            <div class="info-row">
+                <span><strong>播放速度：</strong></span>
+                <span id="speed">1x</span>
+            </div>
+            <div class="info-row">
+                <span><strong>状态：</strong></span>
+                <span id="status">加载中...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 角色动画播放器
+         * 功能：
+         * - 加载 JSON 配置和精灵图
+         * - 播放/暂停/停止动画
+         * - 切换不同动画状态
+         * - 调整播放速度
+         * - 键盘控制
+         */
+        class CharacterAnimationPlayer {
+            constructor(canvas, jsonPath) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.jsonPath = jsonPath;
+
+                // 动画数据
+                this.animationData = null;
+                this.sprites = {};
+                this.loadedCount = 0;
+
+                // 播放状态
+                this.currentAnimation = null;
+                this.currentFrame = 0;
+                this.lastFrameTime = 0;
+                this.isPlaying = false;
+                this.isPaused = false;
+                this.playbackSpeed = 1.0;
+
+                // 统计
+                this.frameCount = 0;
+                this.lastFpsTime = 0;
+                this.currentFps = 0;
+
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // 加载 JSON 配置
+                    console.log('正在加载动画配置...');
+                    const response = await fetch(this.jsonPath);
+                    this.animationData = await response.json();
+
+                    console.log('动画配置加载成功:', this.animationData);
+
+                    // 加载所有精灵图
+                    await this.loadAllSprites();
+
+                    // 开始动画循环
+                    this.startAnimationLoop();
+
+                    // 默认播放待机动画
+                    this.playAnimation('idle');
+
+                    this.updateStatus('就绪');
+                    console.log('动画系统初始化完成');
+                } catch (error) {
+                    console.error('初始化失败:', error);
+                    this.updateStatus('加载失败: ' + error.message);
+                }
+            }
+
+            async loadAllSprites() {
+                const animations = this.animationData.animations;
+                const total = Object.keys(animations).length;
+
+                console.log(`正在加载 ${total} 个精灵图...`);
+
+                const promises = Object.entries(animations).map(
+                    async ([name, data]) => {
+                        const img = new Image();
+                        img.src = data.spriteSheet;
+
+                        return new Promise((resolve, reject) => {
+                            img.onload = () => {
+                                this.sprites[name] = img;
+                                this.loadedCount++;
+                                console.log(`✓ ${data.spriteSheet} 已加载 (${this.loadedCount}/${total})`);
+                                this.updateStatus(`加载中... ${this.loadedCount}/${total}`);
+                                resolve();
+                            };
+                            img.onerror = () => reject(new Error(`无法加载 ${data.spriteSheet}`));
+                        });
+                    }
+                );
+
+                await Promise.all(promises);
+                console.log('所有精灵图加载完成！');
+            }
+
+            playAnimation(animName) {
+                if (!this.animationData.animations[animName]) {
+                    console.error(`动画 "${animName}" 不存在`);
+                    return;
+                }
+
+                console.log(`播放动画: ${animName}`);
+
+                this.currentAnimation = animName;
+                this.currentFrame = 0;
+                this.lastFrameTime = performance.now();
+                this.isPlaying = true;
+                this.isPaused = false;
+
+                // 更新UI
+                this.updateInfo();
+                this.highlightButton(animName);
+            }
+
+            pause() {
+                this.isPaused = true;
+                this.updateStatus('已暂停');
+                console.log('动画已暂停');
+            }
+
+            resume() {
+                if (this.isPaused) {
+                    this.isPaused = false;
+                    this.lastFrameTime = performance.now();
+                    this.updateStatus('播放中');
+                    console.log('动画已继续');
+                }
+            }
+
+            stop() {
+                this.isPlaying = false;
+                this.isPaused = false;
+                this.currentFrame = 0;
+                this.updateStatus('已停止');
+                this.render();
+                console.log('动画已停止');
+            }
+
+            setSpeed(speed) {
+                this.playbackSpeed = speed;
+                document.getElementById('speed').textContent = speed + 'x';
+                console.log(`播放速度设置为: ${speed}x`);
+            }
+
+            startAnimationLoop() {
+                const loop = (timestamp) => {
+                    this.update(timestamp);
+                    this.render();
+                    requestAnimationFrame(loop);
+                };
+                requestAnimationFrame(loop);
+            }
+
+            update(timestamp) {
+                if (!this.isPlaying || this.isPaused || !this.currentAnimation) {
+                    return;
+                }
+
+                const anim = this.animationData.animations[this.currentAnimation];
+                const frameDuration = (1000 / anim.fps) / this.playbackSpeed;
+
+                if (timestamp - this.lastFrameTime >= frameDuration) {
+                    this.currentFrame++;
+
+                    // 处理循环/结束
+                    if (this.currentFrame >= anim.frameCount) {
+                        if (anim.loop) {
+                            this.currentFrame = 0;
+                        } else {
+                            this.currentFrame = anim.frameCount - 1;
+                            this.isPlaying = false;
+                            this.updateStatus('动画已完成');
+                        }
+                    }
+
+                    this.lastFrameTime = timestamp;
+                    this.updateInfo();
+                }
+
+                // 计算FPS
+                this.frameCount++;
+                if (timestamp - this.lastFpsTime >= 1000) {
+                    this.currentFps = this.frameCount;
+                    this.frameCount = 0;
+                    this.lastFpsTime = timestamp;
+                }
+            }
+
+            render() {
+                if (!this.currentAnimation) return;
+
+                const anim = this.animationData.animations[this.currentAnimation];
+                const sprite = this.sprites[this.currentAnimation];
+
+                if (!sprite) return;
+
+                // 清空画布
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 计算源位置（精灵图中的位置）
+                const col = this.currentFrame % anim.columns;
+                const row = Math.floor(this.currentFrame / anim.columns);
+
+                const sx = col * anim.frameWidth;
+                const sy = row * anim.frameHeight;
+
+                // 绘制当前帧
+                this.ctx.drawImage(
+                    sprite,
+                    sx, sy, anim.frameWidth, anim.frameHeight,
+                    0, 0, this.canvas.width, this.canvas.height
+                );
+            }
+
+            updateInfo() {
+                if (!this.currentAnimation) return;
+
+                const anim = this.animationData.animations[this.currentAnimation];
+
+                document.getElementById('currentAnim').textContent =
+                    `${anim.displayName} (${this.currentAnimation})`;
+                document.getElementById('currentFrame').textContent =
+                    `${this.currentFrame + 1} / ${anim.frameCount}`;
+                document.getElementById('fps').textContent =
+                    `${anim.fps} (实际: ${this.currentFps})`;
+
+                if (this.isPlaying && !this.isPaused) {
+                    this.updateStatus('播放中');
+                }
+            }
+
+            updateStatus(status) {
+                document.getElementById('status').textContent = status;
+            }
+
+            highlightButton(animName) {
+                document.querySelectorAll('.controls button').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(animName)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // ==================== 初始化 ====================
+
+        let player;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('gameCanvas');
+            player = new CharacterAnimationPlayer(canvas, 'character_animations.json');
+
+            // 键盘控制
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case '1':
+                        player.playAnimation('idle');
+                        break;
+                    case '2':
+                        player.playAnimation('walk');
+                        break;
+                    case '3':
+                        player.playAnimation('run');
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        player.playAnimation('jump');
+                        break;
+                    case 'p':
+                    case 'P':
+                        if (player.isPaused) {
+                            player.resume();
+                        } else {
+                            player.pause();
+                        }
+                        break;
+                }
+            });
+        });
+
+        // ==================== 使用示例 ====================
+
+        // 在游戏中使用：
+        // player.playAnimation('run');  // 开始奔跑
+        // player.playAnimation('jump'); // 跳跃
+        // player.setSpeed(2);            // 2倍速播放
+        // player.pause();                // 暂停
+    </script>
+</body>
+</html>
