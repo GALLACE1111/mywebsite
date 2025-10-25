@@ -2194,6 +2194,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // 初始化排行榜系統
   initLeaderboard();
 
+  // 立即更新常駐排行榜
+  if (typeof updatePermanentLeaderboard === 'function') {
+    console.log('🏆 初始化完成後立即更新常駐排行榜');
+    updatePermanentLeaderboard();
+  }
+
   // 初始化意見回饋系統
   initFeedback();
 

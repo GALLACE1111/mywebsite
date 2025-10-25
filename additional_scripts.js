@@ -414,9 +414,6 @@ function updatePermanentLeaderboard() {
   });
 }
 
-// 每5秒更新一次常駐排行榜
-setInterval(updatePermanentLeaderboard, 5000);
-
 // ===== 初始化所有新功能 =====
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 Additional scripts DOMContentLoaded event fired');
@@ -454,19 +451,25 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // 初始化常駐排行榜
-  setTimeout(() => {
-    try {
-      console.log('🏆 開始更新常駐排行榜...');
-      const listContainer = document.getElementById('permanent-lb-list');
-      console.log('  - permanent-lb-list 元素:', listContainer ? '存在' : '不存在');
+  try {
+    console.log('🏆 開始初始化常駐排行榜系統...');
+    const listContainer = document.getElementById('permanent-lb-list');
+    console.log('  - permanent-lb-list 元素:', listContainer ? '存在' : '不存在');
 
+    // 立即更新一次
+    updatePermanentLeaderboard();
+    console.log('✅ 常駐排行榜首次更新完成');
+
+    // 設置定期更新（每5秒）
+    setInterval(() => {
+      console.log('🔄 定期更新常駐排行榜...');
       updatePermanentLeaderboard();
-      console.log('✅ 常駐排行榜已更新');
-    } catch (e) {
-      console.error('❌ 常駐排行榜更新失敗:', e);
-      console.error('錯誤堆疊:', e.stack);
-    }
-  }, 1000);
+    }, 5000);
+    console.log('✅ 常駐排行榜定期更新已設置（每5秒）');
+  } catch (e) {
+    console.error('❌ 常駐排行榜初始化失敗:', e);
+    console.error('錯誤堆疊:', e.stack);
+  }
 
   console.log('✅ All additional features initialized!');
 });
