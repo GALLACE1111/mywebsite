@@ -150,14 +150,14 @@ function enterMoonDimension() {
   const moonElement = document.querySelector('.info-panel');
   moonElement.classList.add('portal-active');
 
-  // 直接進入月球世界（移除彈窗，改為直接進入）
+  // 顯示確認彈窗（減少延遲）
   setTimeout(() => {
     moonElement.classList.remove('portal-active');
-    // 直接調用進入月球的實際邏輯，跳過確認彈窗
-    if (typeof proceedToMoonWorld === 'function') {
-      proceedToMoonWorld();
+    // 調用月球確認對話框
+    if (typeof showMoonConfirmDialog === 'function') {
+      showMoonConfirmDialog();
     }
-  }, 1000); // 縮短等待時間，讓進入更流暢
+  }, 300);
 }
 
 function showMoonPortalDialog() {
@@ -165,15 +165,8 @@ function showMoonPortalDialog() {
   dialog.className = 'battle-dialog moon-portal-dialog';
   dialog.innerHTML = `
     <div class="battle-dialog-content">
-      <div class="battle-icon">🌙</div>
       <h2 class="battle-title">發現月球傳送門</h2>
-      <div class="portal-icons">
-        <span class="icon-item">✨</span>
-        <span class="icon-item">🌟</span>
-        <span class="icon-item">⭐</span>
-        <span class="icon-item">💫</span>
-      </div>
-      <p class="victory-message">這是一個通往未知空想世界的傳送門...<br>是否要進入月球維度？</p>
+      <p class="victory-message">這是一個通往未知空想世界的傳送門<br>是否要進入月球維度？</p>
       <div class="battle-buttons">
         <button class="battle-btn battle-yes" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
           <span>進入月球</span>
@@ -231,23 +224,15 @@ function showMoonWorldInnerDialog() {
   dialog.className = 'battle-dialog moon-portal-dialog';
   dialog.innerHTML = `
     <div class="battle-dialog-content">
-      <div class="battle-icon">🌙</div>
       <h2 class="battle-title">月之彼岸</h2>
-      <div class="portal-icons">
-        <span class="icon-item">✨</span>
-        <span class="icon-item">🌟</span>
-        <span class="icon-item">⭐</span>
-        <span class="icon-item">💫</span>
-      </div>
       <p class="victory-message" style="line-height: 1.8; font-size: 16px;">
         踏上這片未知的月面，<br>
         記憶、幻象、光與影交織成新的秩序。<br>
         這裡沒有規則，只有意識在流動。<br><br>
-        ✨ 準備好啟程了嗎？你的故事，從此展開。
+        準備好啟程了嗎？你的故事，從此展開。
       </p>
       <div class="battle-buttons">
         <button class="battle-btn battle-continue" style="background: linear-gradient(135deg, #9c27b0, #7b1fa2);">
-          <span class="btn-icon">🌌</span>
           <span>繼續漂流</span>
         </button>
       </div>
@@ -377,52 +362,6 @@ function initMoonPortal() {
   console.log('✅ 月球傳送門事件監聽器已設置');
 }
 
-// ===== 常駐排行榜系統 =====
-function updatePermanentLeaderboard() {
-  if (typeof getTopRankings !== 'function') return;
-
-  const rankings = getTopRankings();
-  const listContainer = document.getElementById('permanent-lb-list');
-
-  if (!listContainer) return;
-
-  if (rankings.length === 0) {
-    listContainer.innerHTML = '<div style="text-align: center; color: #999; font-size: 12px;">暫無數據</div>';
-    return;
-  }
-
-  listContainer.innerHTML = '';
-
-  // 顯示前10名玩家
-  rankings.slice(0, 10).forEach((user, index) => {
-    const item = document.createElement('div');
-    item.className = 'permanent-lb-item';
-
-    let rankClass = '';
-    let rankSymbol = `#${index + 1}`;
-
-    // 前三名使用獎盃圖標
-    if (index === 0) {
-      rankClass = 'gold';
-      rankSymbol = '🏆'; // 金色獎盃
-    } else if (index === 1) {
-      rankClass = 'silver';
-      rankSymbol = '🥈'; // 銀色獎盃
-    } else if (index === 2) {
-      rankClass = 'bronze';
-      rankSymbol = '🥉'; // 銅色獎盃
-    }
-
-    item.innerHTML = `
-      <div class="permanent-lb-rank ${rankClass}">${rankSymbol}</div>
-      <div class="permanent-lb-name">${user.name}</div>
-      <div class="permanent-lb-hearts">${user.hearts}❤️</div>
-    `;
-
-    listContainer.appendChild(item);
-  });
-}
-
 // ===== 初始化所有新功能 =====
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 Additional scripts DOMContentLoaded event fired');
@@ -456,27 +395,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ 月球傳送門已初始化');
   } catch (e) {
     console.error('❌ 月球傳送門初始化失敗:', e);
-    console.error('錯誤堆疊:', e.stack);
-  }
-
-  // 初始化常駐排行榜
-  try {
-    console.log('🏆 開始初始化常駐排行榜系統...');
-    const listContainer = document.getElementById('permanent-lb-list');
-    console.log('  - permanent-lb-list 元素:', listContainer ? '存在' : '不存在');
-
-    // 立即更新一次
-    updatePermanentLeaderboard();
-    console.log('✅ 常駐排行榜首次更新完成');
-
-    // 設置定期更新（每60秒 = 1分鐘）
-    setInterval(() => {
-      console.log('🔄 定期更新常駐排行榜...');
-      updatePermanentLeaderboard();
-    }, 60000);
-    console.log('✅ 常駐排行榜定期更新已設置（每60秒）');
-  } catch (e) {
-    console.error('❌ 常駐排行榜初始化失敗:', e);
     console.error('錯誤堆疊:', e.stack);
   }
 
@@ -527,17 +445,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 定期檢查（每5秒檢查一次，確保即時更新）
     setInterval(checkAndUpdateNameHint, 5000);
-
-    // 初次訪問提示
-    const firstVisit = localStorage.getItem('firstVisit');
-    if (!firstVisit) {
-      setTimeout(() => {
-        if (typeof getCurrentUsername === 'function' && !getCurrentUsername()) {
-          alert('🎉 歡迎來到阿賢的小窩！\n\n記得點擊右上角的 👤 按鈕設定您的名稱，\n這樣就能參與排行榜囉！💖');
-          localStorage.setItem('firstVisit', 'true');
-        }
-      }, 2000); // 延遲2秒顯示，讓用戶先看到頁面
-    }
 
     console.log('✅ 名稱設定提示系統已初始化');
   } catch (e) {

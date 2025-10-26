@@ -37,14 +37,6 @@
     當前時段：載入中...
   </div>
 
-  <!-- 常駐排行榜顯示 -->
-  <div class="permanent-leaderboard" id="permanentLeaderboard">
-    <div class="permanent-lb-title">🏆 排行榜</div>
-    <div id="permanent-lb-list" class="permanent-lb-list">
-      <!-- 動態生成 -->
-    </div>
-  </div>
-
   <!-- 右上角月亮顯示區域 -->
   <div class="info-panel">
     <!-- 月球坑洞裝飾 -->
@@ -64,12 +56,6 @@
   <div class="moon-hint-container" id="moonHint">
     <div class="moon-hint-arrow">👆</div>
     <div class="moon-hint-text">雙擊進入月球</div>
-  </div>
-
-  <!-- 名稱設定提示 -->
-  <div class="name-hint-container" id="nameHint">
-    <div class="name-hint-icon">👤</div>
-    <div class="name-hint-text">記得設定名稱喔！</div>
   </div>
 
   <!-- 提示訊息 -->
@@ -158,11 +144,6 @@
   <!-- 鬧鐘按鈕 -->
   <button id="alarm-toggle" class="alarm-btn" title="專注鬧鐘">
     ⏰
-  </button>
-
-  <!-- 設定玩家名稱按鈕 -->
-  <button id="player-name-toggle" class="player-name-btn" title="設定玩家名稱" onclick="setPlayerName()">
-    👤
   </button>
 
   <!-- 許願面板 -->
@@ -264,31 +245,6 @@
         <h3 class="feedback-history-title">📋 你的回饋記錄</h3>
         <div id="feedback-history" class="feedback-history">
           <!-- Feedback history will be populated by JavaScript -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 愛心排行榜面板 -->
-  <div id="leaderboard-panel" class="leaderboard-panel" style="display: none;">
-    <div class="leaderboard-content">
-      <div class="leaderboard-header">
-        <h2>💖 愛心排行榜 💖</h2>
-        <button class="leaderboard-close" id="leaderboard-close">✕</button>
-      </div>
-      <div class="leaderboard-user-section">
-        <p class="leaderboard-greeting">歡迎！請輸入你的名字：</p>
-        <input type="text" id="username-input" class="username-input" placeholder="你的名字..." maxlength="20">
-        <button id="save-username-btn" class="save-username-btn">保存</button>
-        <p class="current-user-display" id="current-user-display" style="display: none;">
-          當前用戶：<span id="current-username"></span>
-          <button id="change-username-btn" class="change-username-btn">更改</button>
-        </p>
-      </div>
-      <div class="leaderboard-list">
-        <div class="leaderboard-title">🏅 TOP 10 貢獻者 🏅</div>
-        <div id="leaderboard-rankings" class="leaderboard-rankings">
-          <!-- Rankings will be populated by JavaScript -->
         </div>
       </div>
     </div>

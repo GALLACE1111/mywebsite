@@ -17,25 +17,6 @@ function triggerButtonFeedback(button) {
   }
 }
 
-// ===== 玩家名稱系統 =====
-function setPlayerName() {
-  const currentName = localStorage.getItem('playerName') || '匿名玩家';
-  const newName = prompt(`設定你的玩家名稱\n\n目前名稱：${currentName}`, currentName);
-
-  if (newName && newName.trim() !== '') {
-    localStorage.setItem('playerName', newName.trim());
-    console.log('✨ 名稱已更新為：', newName.trim());
-
-    // 更新排行榜顯示（如果有的話）
-    if (typeof updateLeaderboard === 'function') {
-      updateLeaderboard();
-    }
-    if (typeof updatePermanentLeaderboard === 'function') {
-      updatePermanentLeaderboard();
-    }
-  }
-}
-
 // ===== 進入月球世界 =====
 let isInMoonWorld = false;
 let galaxyBackground = null; // 儲存 GALAXY 背景圖片
@@ -59,17 +40,14 @@ function showMoonConfirmDialog() {
   dialog.className = 'battle-dialog moon-confirm-dialog';
   dialog.innerHTML = `
     <div class="battle-dialog-content">
-      <div class="dialog-icon">🌙</div>
       <h2 class="battle-title">確認進入月球世界？</h2>
       <p class="dialog-message">進入月球世界後，將會切換到放鬆模式</p>
-      <p class="dialog-message">您可以隨時返回魔王城 🏰</p>
+      <p class="dialog-message">您可以隨時返回魔王城</p>
       <div class="battle-buttons">
         <button class="battle-btn battle-cancel" style="background: linear-gradient(135deg, #f44336, #da190b);">
-          <span class="btn-icon">🌊</span>
           <span>繼續漂泊</span>
         </button>
         <button class="battle-btn battle-confirm" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
-          <span class="btn-icon">🌌</span>
           <span>進入未知</span>
         </button>
       </div>
@@ -1757,9 +1735,6 @@ function incrementCounter() {
   const counterElement = document.getElementById('counter');
   counterElement.textContent = touchCount;
 
-  // 同步到排行榜
-  syncCurrentUserHearts();
-
   // 添加脈衝動畫
   counterElement.classList.remove('pulse');
   setTimeout(() => {
@@ -2191,15 +2166,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // 初始化排行榜系統
-  initLeaderboard();
-
-  // 立即更新常駐排行榜
-  if (typeof updatePermanentLeaderboard === 'function') {
-    console.log('🏆 初始化完成後立即更新常駐排行榜');
-    updatePermanentLeaderboard();
-  }
-
   // 初始化意見回饋系統
   initFeedback();
 
@@ -2221,251 +2187,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
-// ===== 愛心排行榜系統 =====
-const LEADERBOARD_KEY = 'heartLeaderboard';
-const USERNAME_KEY = 'currentUsername';
-
-// 取得當前用戶名稱
-function getCurrentUsername() {
-  try {
-    const username = localStorage.getItem(USERNAME_KEY) || null;
-    console.log('📝 當前用戶名稱:', username || '(尚未設定)');
-    return username;
-  } catch (error) {
-    console.error('❌ 讀取用戶名稱失敗:', error);
-    return null;
-  }
-}
-
-// 儲存用戶名稱
-function saveUsername(username) {
-  try {
-    localStorage.setItem(USERNAME_KEY, username.trim());
-    console.log('✅ 用戶名稱已儲存:', username.trim());
-  } catch (error) {
-    console.error('❌ 儲存用戶名稱失敗:', error);
-  }
-}
-
-// 取得排行榜數據
-function getLeaderboardData() {
-  try {
-    const data = localStorage.getItem(LEADERBOARD_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch (error) {
-    console.error('❌ 讀取排行榜數據失敗:', error);
-    return {};
-  }
-}
-
-// 儲存排行榜數據
-function saveLeaderboardData(data) {
-  try {
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
-    console.log('✅ 排行榜數據已儲存:', data);
-  } catch (error) {
-    console.error('❌ 儲存排行榜數據失敗:', error);
-  }
-}
-
-// 更新用戶的愛心數量
-function updateUserHearts(username, hearts) {
-  if (!username) return;
-
-  const data = getLeaderboardData();
-  data[username] = hearts;
-  saveLeaderboardData(data);
-}
-
-// 同步當前用戶的愛心數量到排行榜
-function syncCurrentUserHearts() {
-  const username = getCurrentUsername();
-  if (username) {
-    updateUserHearts(username, touchCount);
-    console.log(`💖 已同步 ${username} 的愛心數量: ${touchCount}`);
-  } else {
-    console.warn('⚠️ 未找到用戶名稱，無法同步愛心數量');
-  }
-}
-
-// 取得排行榜排名（前10名）
-function getTopRankings() {
-  const data = getLeaderboardData();
-  const rankings = Object.entries(data)
-    .map(([name, hearts]) => ({ name, hearts }))
-    .sort((a, b) => b.hearts - a.hearts)
-    .slice(0, 10);
-  return rankings;
-}
-
-// 渲染排行榜
-function renderLeaderboard() {
-  const rankings = getTopRankings();
-  const rankingsContainer = document.getElementById('leaderboard-rankings');
-  const currentUsername = getCurrentUsername();
-
-  if (rankings.length === 0) {
-    rankingsContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">還沒有人上榜！成為第一個吧！💖</p>';
-    return;
-  }
-
-  rankingsContainer.innerHTML = '';
-
-  rankings.forEach((user, index) => {
-    const rankItem = document.createElement('div');
-    rankItem.className = 'rank-item';
-
-    if (user.name === currentUsername) {
-      rankItem.classList.add('current-user');
-    }
-
-    let rankNumberClass = '';
-    let rankSymbol = `#${index + 1}`;
-
-    if (index === 0) {
-      rankNumberClass = 'gold';
-      rankSymbol = '🥇';
-    } else if (index === 1) {
-      rankNumberClass = 'silver';
-      rankSymbol = '🥈';
-    } else if (index === 2) {
-      rankNumberClass = 'bronze';
-      rankSymbol = '🥉';
-    }
-
-    rankItem.innerHTML = `
-      <div class="rank-number ${rankNumberClass}">${rankSymbol}</div>
-      <div class="rank-info">
-        <div class="rank-name">${user.name}</div>
-      </div>
-      <div class="rank-hearts">💖 ${user.hearts}</div>
-    `;
-
-    rankingsContainer.appendChild(rankItem);
-  });
-}
-
-// 顯示用戶名稱輸入區域
-function showUsernameInput() {
-  document.querySelector('.leaderboard-greeting').style.display = 'block';
-  document.getElementById('username-input').style.display = 'inline-block';
-  document.getElementById('save-username-btn').style.display = 'inline-block';
-  document.getElementById('current-user-display').style.display = 'none';
-}
-
-// 顯示當前用戶資訊
-function showCurrentUser(username) {
-  document.querySelector('.leaderboard-greeting').style.display = 'none';
-  document.getElementById('username-input').style.display = 'none';
-  document.getElementById('save-username-btn').style.display = 'none';
-  document.getElementById('current-user-display').style.display = 'block';
-  document.getElementById('current-username').textContent = username;
-}
-
-// 初始化排行榜系統
-function initLeaderboard() {
-  console.log('🏆 開始初始化排行榜系統...');
-
-  const leaderboardToggle = document.getElementById('leaderboard-toggle');
-  const leaderboardPanel = document.getElementById('leaderboard-panel');
-  const leaderboardClose = document.getElementById('leaderboard-close');
-  const saveUsernameBtn = document.getElementById('save-username-btn');
-  const changeUsernameBtn = document.getElementById('change-username-btn');
-  const usernameInput = document.getElementById('username-input');
-
-  console.log('  - leaderboard-toggle:', leaderboardToggle ? '存在' : '不存在');
-  console.log('  - leaderboard-panel:', leaderboardPanel ? '存在' : '不存在');
-
-  if (!leaderboardToggle || !leaderboardPanel) {
-    console.error('❌ 排行榜必要元素不存在，停止初始化');
-    return;
-  }
-
-  // 載入時檢查是否已有用戶名稱
-  const currentUsername = getCurrentUsername();
-  if (currentUsername) {
-    showCurrentUser(currentUsername);
-    // 載入該用戶的愛心數量
-    const leaderboardData = getLeaderboardData();
-    if (leaderboardData[currentUsername]) {
-      touchCount = leaderboardData[currentUsername];
-      const counterElement = document.getElementById('counter');
-      if (counterElement) {
-        counterElement.textContent = touchCount;
-      }
-    }
-    // 同步當前愛心數量
-    updateUserHearts(currentUsername, touchCount);
-  } else {
-    showUsernameInput();
-  }
-
-  // 打開排行榜
-  leaderboardToggle.addEventListener('click', () => {
-    console.log('🏆 排行榜按鈕被點擊');
-    triggerButtonFeedback(leaderboardToggle);
-
-    // 檢查是否已設定名稱
-    const currentUsername = getCurrentUsername();
-    if (!currentUsername) {
-      // 沒有名稱，提示用戶先設定
-      alert('請先設定您的名稱喔！\n\n點擊右上角的 👤 按鈕即可設定名稱 😊');
-      console.log('⚠️ 用戶未設定名稱，無法進入排行榜');
-      return;
-    }
-
-    leaderboardPanel.style.display = 'flex';
-    renderLeaderboard();
-  });
-
-  // 關閉排行榜
-  leaderboardClose.addEventListener('click', () => {
-    triggerButtonFeedback(leaderboardClose);
-    leaderboardPanel.style.display = 'none';
-  });
-
-  // 點擊背景關閉
-  leaderboardPanel.addEventListener('click', (e) => {
-    if (e.target === leaderboardPanel) {
-      leaderboardPanel.style.display = 'none';
-    }
-  });
-
-  // 儲存用戶名稱
-  saveUsernameBtn.addEventListener('click', () => {
-    const username = usernameInput.value.trim();
-    if (username.length === 0) {
-      console.log('名字不能為空');
-      return;
-    }
-    if (username.length > 20) {
-      console.log('名字太長了，最多20個字元');
-      return;
-    }
-
-    triggerButtonFeedback(saveUsernameBtn);
-    saveUsername(username);
-    showCurrentUser(username);
-    updateUserHearts(username, touchCount);
-    renderLeaderboard();
-  });
-
-  // 更改用戶名稱
-  changeUsernameBtn.addEventListener('click', () => {
-    triggerButtonFeedback(changeUsernameBtn);
-    showUsernameInput();
-    usernameInput.value = '';
-    usernameInput.focus();
-  });
-
-  // 按 Enter 儲存
-  usernameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      saveUsernameBtn.click();
-    }
-  });
-}
 
 // ===== 意見回饋系統 =====
 const FEEDBACK_KEY = 'userFeedback';
