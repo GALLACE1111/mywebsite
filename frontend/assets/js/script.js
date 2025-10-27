@@ -772,7 +772,23 @@ function getSkyColor() {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
+// Debug: 背景輪替狀態追蹤（每10秒輸出一次）
+let lastBgDebugTime = 0;
+
 function drawSky() {
+  // Debug輸出（每10秒）
+  const now = Date.now();
+  if (now - lastBgDebugTime > 10000) {
+    console.log('🎨 背景狀態:', {
+      currentIndex: getCurrentBackgroundIndex(),
+      periodName: getCurrentPeriodName(),
+      isInMoonWorld: isInMoonWorld,
+      bgRotationLocked: bgRotationLocked,
+      imagesLoaded: backgroundImagesLoaded
+    });
+    lastBgDebugTime = now;
+  }
+
   // 如果在月球世界，繪製 GALAXY 背景
   if (isInMoonWorld && galaxyBackground && galaxyBackground.complete) {
     ctx.drawImage(galaxyBackground, 0, 0, canvas.width, canvas.height);
@@ -782,7 +798,7 @@ function drawSky() {
   // 獲取當前背景圖片
   const bgImage = getCurrentBackgroundImage();
 
-  if (bgImage) {
+  if (bgImage && bgImage.complete) {
     // 繪製背景圖片（覆蓋整個 Canvas）
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   } else {
