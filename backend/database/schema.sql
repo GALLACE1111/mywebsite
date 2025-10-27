@@ -1,5 +1,5 @@
 -- ===================================
--- 分數排行榜資料庫結構
+-- 愛心分數排行榜資料庫結構
 -- ===================================
 
 -- 建立資料庫（如果需要）
@@ -22,14 +22,14 @@ CREATE TABLE IF NOT EXISTS users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================
--- 分數記錄表
+-- 愛心分數記錄表
 -- ===================================
-CREATE TABLE IF NOT EXISTS scores (
+CREATE TABLE IF NOT EXISTS love_scores (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
-    score INT UNSIGNED NOT NULL DEFAULT 0,
-    game_type VARCHAR(50) DEFAULT 'default' COMMENT '遊戲類型（可擴展多種遊戲）',
-    metadata JSON DEFAULT NULL COMMENT '額外資料（如關卡、時間等）',
+    love_count INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '愛心數量',
+    action_type VARCHAR(50) DEFAULT 'click' COMMENT '行為類型（點擊、戰鬥勝利等）',
+    metadata JSON DEFAULT NULL COMMENT '額外資料（位置、時間等）',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     -- 外鍵
@@ -37,27 +37,24 @@ CREATE TABLE IF NOT EXISTS scores (
 
     -- 索引優化
     INDEX idx_user_id (user_id),
-    INDEX idx_score (score DESC),
+    INDEX idx_love_count (love_count DESC),
     INDEX idx_created_at (created_at DESC),
-    INDEX idx_game_type (game_type),
-    INDEX idx_composite (game_type, score DESC, created_at DESC),
-    INDEX idx_user_game (user_id, game_type, created_at DESC)
+    INDEX idx_action_type (action_type),
+    INDEX idx_composite (action_type, love_count DESC, created_at DESC),
+    INDEX idx_user_action (user_id, action_type, created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================
--- 用戶最高分數快取表（優化查詢）
+-- 用戶總愛心數快取表（優化查詢）
 -- ===================================
-CREATE TABLE IF NOT EXISTS user_best_scores (
-    user_id INT UNSIGNED NOT NULL,
-    game_type VARCHAR(50) NOT NULL DEFAULT 'default',
-    best_score INT UNSIGNED NOT NULL DEFAULT 0,
-    achieved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+CREATE TABLE IF NOT EXISTS user_total_loves (
+    user_id INT UNSIGNED NOT NULL PRIMARY KEY,
+    total_loves INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '總愛心數',
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (user_id, game_type),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 
-    INDEX idx_best_score (game_type, best_score DESC)
+    INDEX idx_total_loves (total_loves DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================
@@ -78,52 +75,49 @@ INSERT INTO users (username, email, password_hash, avatar_url) VALUES
 ('Jack', 'jack@example.com', '$2y$10$examplehash10', 'https://i.pravatar.cc/150?img=10')
 ON DUPLICATE KEY UPDATE username=username;
 
--- 插入測試分數（最近 7 天的隨機分數）
-INSERT INTO scores (user_id, score, game_type, created_at) VALUES
--- Alice 的分數
-(1, 9500, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY)),
-(1, 8800, 'default', DATE_SUB(NOW(), INTERVAL 1 DAY)),
-(1, 9200, 'default', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+-- 插入測試愛心記錄（最近 7 天）
+INSERT INTO love_scores (user_id, love_count, action_type, created_at) VALUES
+-- Alice 的愛心記錄
+(1, 150, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY)),
+(1, 120, 'click', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(1, 80, 'boss_victory', DATE_SUB(NOW(), INTERVAL 2 DAY)),
 
--- Bob 的分數
-(2, 9300, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY)),
-(2, 8500, 'default', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+-- Bob 的愛心記錄
+(2, 200, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY)),
+(2, 95, 'click', DATE_SUB(NOW(), INTERVAL 1 DAY)),
 
--- Charlie 的分數
-(3, 8900, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY)),
-(3, 9100, 'default', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+-- Charlie 的愛心記錄
+(3, 175, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY)),
+(3, 100, 'boss_victory', DATE_SUB(NOW(), INTERVAL 3 DAY)),
 
--- Diana 的分數
-(4, 8700, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY)),
+-- Diana 的愛心記錄
+(4, 130, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY)),
 
--- Eve 的分數
-(5, 9800, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY)),
-(5, 9600, 'default', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+-- Eve 的愛心記錄
+(5, 250, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY)),
+(5, 140, 'click', DATE_SUB(NOW(), INTERVAL 2 DAY)),
 
--- Frank 的分數
-(6, 8400, 'default', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+-- Frank 的愛心記錄
+(6, 90, 'click', DATE_SUB(NOW(), INTERVAL 1 DAY)),
 
--- Grace 的分數
-(7, 9000, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY)),
+-- Grace 的愛心記錄
+(7, 180, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY)),
 
--- Henry 的分數
-(8, 8200, 'default', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+-- Henry 的愛心記錄
+(8, 110, 'click', DATE_SUB(NOW(), INTERVAL 1 DAY)),
 
--- Ivy 的分數
-(9, 9400, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY)),
+-- Ivy 的愛心記錄
+(9, 220, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY)),
 
--- Jack 的分數
-(10, 8600, 'default', DATE_SUB(NOW(), INTERVAL 0 DAY));
+-- Jack 的愛心記錄
+(10, 160, 'click', DATE_SUB(NOW(), INTERVAL 0 DAY));
 
--- 更新最佳分數表
-INSERT INTO user_best_scores (user_id, game_type, best_score, achieved_at)
+-- 更新總愛心數表
+INSERT INTO user_total_loves (user_id, total_loves)
 SELECT
     user_id,
-    game_type,
-    MAX(score) as best_score,
-    MAX(created_at) as achieved_at
-FROM scores
-GROUP BY user_id, game_type
+    SUM(love_count) as total_loves
+FROM love_scores
+GROUP BY user_id
 ON DUPLICATE KEY UPDATE
-    best_score = VALUES(best_score),
-    achieved_at = VALUES(achieved_at);
+    total_loves = VALUES(total_loves);

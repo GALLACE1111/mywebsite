@@ -157,7 +157,7 @@ function enterMoonDimension() {
     if (typeof showMoonConfirmDialog === 'function') {
       showMoonConfirmDialog();
     }
-  }, 300);
+  }, 150); // 優化：從300ms減少到150ms，提升反應速度
 }
 
 function showMoonPortalDialog() {
@@ -333,7 +333,7 @@ function initMoonPortal() {
       moonClickTimer = setTimeout(() => {
         moonClickCount = 0;
         console.log('⏰ 點擊計時器重置');
-      }, 300);
+      }, 200); // 優化：從300ms減少到200ms，提升反應速度
     } else if (moonClickCount === 2) {
       console.log('👆👆 雙擊偵測！');
       clearTimeout(moonClickTimer);

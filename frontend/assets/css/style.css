@@ -59,7 +59,7 @@ input, textarea {
   pointer-events: auto;
   cursor: pointer;
   transition: transform 0.2s ease;
-  background-image: url('images/character_running.gif?v=7');
+  background-image: url('../images/character_running.gif?v=7');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;

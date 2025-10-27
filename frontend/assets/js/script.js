@@ -40,9 +40,9 @@ function showMoonConfirmDialog() {
   dialog.className = 'battle-dialog moon-confirm-dialog';
   dialog.innerHTML = `
     <div class="battle-dialog-content">
-      <h2 class="battle-title">確認進入月球世界？</h2>
-      <p class="dialog-message">進入月球世界後，將會切換到放鬆模式</p>
-      <p class="dialog-message">您可以隨時返回魔王城</p>
+      <h2 class="battle-title">✨ 發現月光秘境 ✨</h2>
+      <p class="dialog-message">雙擊月亮開啟了通往寧靜空間的傳送門</p>
+      <p class="dialog-message">在這裡可以放鬆心情，隨時可返回魔王城</p>
       <div class="battle-buttons">
         <button class="battle-btn battle-cancel" style="background: linear-gradient(135deg, #f44336, #da190b);">
           <span>繼續漂泊</span>
@@ -428,7 +428,7 @@ const SoundEffects = {
   // 戰鬥開始音效 - 播放開場低吼聲
   playBattleStartSound() {
     console.log('🎵 播放戰鬥開始音效：開場低吼聲');
-    const audio = new Audio('Sound Effects/開場低吼聲.wav');
+    const audio = new Audio('assets/sounds/開場低吼聲.wav');
     audio.volume = 0.7;
     audio.play().catch(err => console.error('播放開場低吼聲失敗:', err));
   },
@@ -436,7 +436,7 @@ const SoundEffects = {
   // 狂暴模式音效文件 - 播放BOSS瘋狂模式開啟聲
   playBerserkModeSound() {
     console.log('🎵 播放狂暴模式音效：BOSS瘋狂模式開啟聲');
-    const audio = new Audio('Sound Effects/BOSS瘋狂模式開啟聲.mp3');
+    const audio = new Audio('assets/sounds/BOSS瘋狂模式開啟聲.mp3');
     audio.volume = 0.8;
     audio.play().catch(err => console.error('播放狂暴模式音效失敗:', err));
   },
@@ -444,7 +444,7 @@ const SoundEffects = {
   // BOSS死亡音效 - 播放BOSS死掉音效
   playBossDeathSound() {
     console.log('🎵 播放BOSS死亡音效：BOSS死掉音效');
-    const audio = new Audio('Sound Effects/BOSS死掉音效.wav');
+    const audio = new Audio('assets/sounds/BOSS死掉音效.wav');
     audio.volume = 0.8;
     audio.play().catch(err => console.error('播放BOSS死亡音效失敗:', err));
   }
@@ -1744,6 +1744,11 @@ function incrementCounter() {
     counterElement.classList.remove('pulse');
   }, 310);
 
+  // 更新排行榜（每10個愛心更新一次）
+  if (touchCount % 10 === 0) {
+    updateLeaderboardScore();
+  }
+
   // Boss 戰中扣血
   if (isBossBattle && bossHP > 0) {
     bossHP--;
@@ -2682,4 +2687,56 @@ function addButtonFeedbackToAll() {
       }, { capture: true });
     }
   });
+}
+
+// ===== 排行榜整合函數 =====
+/**
+ * 更新排行榜分數
+ */
+function updateLeaderboardScore() {
+  // 檢查是否有排行榜管理器
+  if (typeof leaderboardManager === 'undefined') {
+    console.warn('排行榜管理器未載入');
+    return;
+  }
+
+  // 獲取當前用戶名
+  let username = leaderboardManager.getCurrentUser();
+
+  // 如果沒有設定用戶名，提示用戶設定
+  if (!username) {
+    console.log('💡 尚未設定用戶名，愛心將不會被記錄到排行榜');
+    // 可以在這裡顯示提示，引導用戶設定名稱
+    return;
+  }
+
+  // 提交10個愛心分數（因為每10個愛心更新一次）
+  const success = leaderboardManager.submitLove(username, 10);
+
+  if (success) {
+    console.log(`✅ 已為 ${username} 增加 10 個愛心到排行榜`);
+
+    // 發送自定義事件，通知排行榜 UI 更新
+    window.dispatchEvent(new CustomEvent('love-score-updated', {
+      detail: { username, loves: 10 }
+    }));
+  }
+}
+
+/**
+ * 設定用戶名並初始化排行榜
+ */
+function setLeaderboardUsername(username) {
+  if (!username || typeof leaderboardManager === 'undefined') return;
+
+  leaderboardManager.setCurrentUser(username);
+  console.log(`✅ 已設定排行榜用戶名：${username}`);
+
+  // 如果目前有愛心數，同步到排行榜
+  if (touchCount > 0) {
+    leaderboardManager.submitLove(username, touchCount);
+    window.dispatchEvent(new CustomEvent('love-score-updated', {
+      detail: { username, loves: touchCount }
+    }));
+  }
 }

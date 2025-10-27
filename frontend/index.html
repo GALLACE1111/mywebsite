@@ -6,6 +6,7 @@
   <title>阿賢的小窩</title>
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/additional_styles.css">
+  <link rel="stylesheet" href="assets/css/leaderboard.css">
 </head>
 <body>
   <!-- Canvas 動畫背景層 -->
@@ -250,6 +251,33 @@
     </div>
   </div>
 
+  <!-- 愛心排行榜面板 -->
+  <div id="leaderboard-panel" class="leaderboard-panel" style="display: none;">
+    <div class="leaderboard-content">
+      <div class="leaderboard-header">
+        <h2>🏆 愛心排行榜 🏆</h2>
+        <button class="leaderboard-close" id="leaderboard-close">✕</button>
+      </div>
+      <div class="leaderboard-description">
+        <p>展示最有愛心的前 10 名玩家 💖</p>
+      </div>
+      <div id="leaderboard-list" class="leaderboard-list">
+        <!-- 排行榜內容將由 JavaScript 動態生成 -->
+        <div class="loading">載入中...</div>
+      </div>
+      <div class="leaderboard-user-rank" id="user-rank-display" style="display: none;">
+        <h3>你的排名</h3>
+        <div class="user-rank-info">
+          <span class="rank-number">#-</span>
+          <span class="rank-username">-</span>
+          <span class="rank-loves">0 💖</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/leaderboard.js"></script>
+  <script src="assets/js/leaderboard-ui.js"></script>
   <script src="assets/js/script.js"></script>
   <script src="assets/js/additional_scripts.js"></script>
 </body>
