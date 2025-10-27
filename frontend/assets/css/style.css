@@ -1008,6 +1008,42 @@ body.mobile-mode .social-link:hover {
   transform: translateY(-5px) scale(1.1);
 }
 
+/* ===== 愛心排行榜按鈕 ===== */
+.leaderboard-btn {
+  position: fixed;
+  top: 200px;
+  right: 25px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: leaderboardPulse 2s infinite;
+}
+
+@keyframes leaderboardPulse {
+  0%, 100% {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 6px 30px rgba(102, 126, 234, 0.8), 0 0 20px rgba(102, 126, 234, 0.5);
+  }
+}
+
+.leaderboard-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
 /* ===== 意見回饋系統 ===== */
 .feedback-btn {
   position: fixed;
@@ -1252,7 +1288,15 @@ body.mobile-mode .social-link:hover {
   font-size: 15px;
 }
 
-/* 手機版：回饋系統 */
+/* 手機版：排行榜和回饋系統 */
+body.mobile-mode .leaderboard-btn {
+  top: 150px;
+  right: 15px;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+}
+
 body.mobile-mode .feedback-btn {
   top: 210px;
   right: 15px;
@@ -1284,7 +1328,6 @@ body.mobile-mode .feedback-submit-btn {
   position: fixed;
   bottom: 180px;
   right: 25px;
-  display: none !important; /* 隱藏許願池 */
   width: 60px;
   height: 60px;
   border-radius: 50%;
