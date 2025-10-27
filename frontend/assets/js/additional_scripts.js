@@ -160,19 +160,56 @@ function enterMoonDimension() {
   }, 150); // 優化：從300ms減少到150ms，提升反應速度
 }
 
+// 月球傳送門彈窗文案庫（藍色未知風格）
+const moonPortalVariants = [
+  {
+    title: '🌀 空間扭曲',
+    message: '維度的邊界變得模糊<br>是否要穿越這道裂隙？',
+    yesText: '穿越裂隙',
+    noText: '暫且觀察'
+  },
+  {
+    title: '💠 異次元共鳴',
+    message: '感受到來自彼端的脈動<br>是否要回應這份呼喚？',
+    yesText: '回應共鳴',
+    noText: '保持沉默'
+  },
+  {
+    title: '🌊 靈魂浪潮',
+    message: '意識的海洋在此處交會<br>是否要隨波漂流？',
+    yesText: '隨波而行',
+    noText: '站穩腳跟'
+  },
+  {
+    title: '✨ 星光迷霧',
+    message: '前方籠罩著神秘的光芒<br>是否要踏入這片迷霧？',
+    yesText: '踏入迷霧',
+    noText: '等待散去'
+  },
+  {
+    title: '🔮 預知之眼',
+    message: '看見了另一個可能性<br>是否要讓它成為現實？',
+    yesText: '改變命運',
+    noText: '維持原狀'
+  }
+];
+
 function showMoonPortalDialog() {
+  // 隨機選擇文案
+  const variant = moonPortalVariants[Math.floor(Math.random() * moonPortalVariants.length)];
+
   const dialog = document.createElement('div');
-  dialog.className = 'battle-dialog moon-portal-dialog';
+  dialog.className = 'battle-dialog moon-portal-dialog mystery-theme';
   dialog.innerHTML = `
     <div class="battle-dialog-content">
-      <h2 class="battle-title">發現月球傳送門</h2>
-      <p class="victory-message">這是一個通往未知空想世界的傳送門<br>是否要進入月球維度？</p>
+      <h2 class="battle-title">${variant.title}</h2>
+      <p class="victory-message">${variant.message}</p>
       <div class="battle-buttons">
-        <button class="battle-btn battle-yes" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
-          <span>進入月球</span>
+        <button class="battle-btn battle-yes" style="background: linear-gradient(135deg, #2196f3, #1976d2);">
+          <span>${variant.yesText}</span>
         </button>
-        <button class="battle-btn battle-no" style="background: linear-gradient(135deg, #f44336, #da190b);">
-          <span>繼續探索</span>
+        <button class="battle-btn battle-no" style="background: linear-gradient(135deg, #607d8b, #455a64);">
+          <span>${variant.noText}</span>
         </button>
       </div>
     </div>
@@ -218,22 +255,56 @@ function showMoonPortalDialog() {
   });
 }
 
+// 月球世界內部對話框文案庫（深度詩意、藍色未知風格）
+const moonInnerDialogVariants = [
+  {
+    title: '🌌 深層意識',
+    message: '你已深入靈魂的核心<br>這裡的每一絲光芒都是記憶的碎片<br>時間不再前進，只是迴圈<br><br>願意更深入嗎？',
+    buttonText: '深入探索'
+  },
+  {
+    title: '💫 無限迴廊',
+    message: '星辰在腳下旋轉<br>過去與未來在此刻重疊<br>你看見了多少個自己？<br><br>繼續前行吧',
+    buttonText: '跨越自我'
+  },
+  {
+    title: '🔷 晶化之境',
+    message: '思緒在這裡凝結成形<br>每個念頭都化作實體<br>虛幻與真實的界線消失了<br><br>接受這份力量',
+    buttonText: '化為晶體'
+  },
+  {
+    title: '🌊 靈魂之海',
+    message: '意識如潮水般起伏<br>你聽見了無數聲音的低語<br>它們都是你，也都不是<br><br>讓自己融入吧',
+    buttonText: '融入浪潮'
+  },
+  {
+    title: '✨ 星塵迷霧',
+    message: '萬物都在此處失去輪廓<br>光與暗不再對立<br>你成為了迷霧的一部分<br><br>繼續漂浮',
+    buttonText: '化為星塵'
+  },
+  {
+    title: '🪐 寂靜永恆',
+    message: '時間在這裡停止呼吸<br>永恆的瞬間無限延伸<br>你已超越了存在本身<br><br>靜候虛無',
+    buttonText: '擁抱永恆'
+  }
+];
+
 // 月球世界內部的對話框（詩意版本）
 function showMoonWorldInnerDialog() {
+  // 隨機選擇文案
+  const variant = moonInnerDialogVariants[Math.floor(Math.random() * moonInnerDialogVariants.length)];
+
   const dialog = document.createElement('div');
-  dialog.className = 'battle-dialog moon-portal-dialog';
+  dialog.className = 'battle-dialog moon-portal-dialog mystery-theme';
   dialog.innerHTML = `
     <div class="battle-dialog-content">
-      <h2 class="battle-title">月之彼岸</h2>
+      <h2 class="battle-title">${variant.title}</h2>
       <p class="victory-message" style="line-height: 1.8; font-size: 16px;">
-        踏上這片未知的月面，<br>
-        記憶、幻象、光與影交織成新的秩序。<br>
-        這裡沒有規則，只有意識在流動。<br><br>
-        準備好啟程了嗎？你的故事，從此展開。
+        ${variant.message}
       </p>
       <div class="battle-buttons">
-        <button class="battle-btn battle-continue" style="background: linear-gradient(135deg, #9c27b0, #7b1fa2);">
-          <span>繼續漂流</span>
+        <button class="battle-btn battle-continue" style="background: linear-gradient(135deg, #2196f3, #1565c0);">
+          <span>${variant.buttonText}</span>
         </button>
       </div>
     </div>

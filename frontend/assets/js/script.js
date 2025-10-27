@@ -34,21 +34,84 @@ function enterMoonWorld() {
   }
 }
 
+// 月球彈窗文案庫（多樣化、有特色、藍色未知風格）
+const moonDialogVariants = [
+  {
+    title: '🌀 虛空裂痕',
+    message1: '時空在此處扭曲',
+    message2: '前方是寂靜的深淵',
+    cancelText: '駐足觀望',
+    confirmText: '踏入虛無'
+  },
+  {
+    title: '💫 星際迴廊',
+    message1: '銀河的盡頭在呼喚',
+    message2: '無盡的星海在等待',
+    cancelText: '留在此岸',
+    confirmText: '跨越星河'
+  },
+  {
+    title: '🔮 次元門扉',
+    message1: '另一個世界的碎片浮現',
+    message2: '真實與幻象的交界處',
+    cancelText: '保持清醒',
+    confirmText: '擁抱幻夢'
+  },
+  {
+    title: '🌊 意識之海',
+    message1: '思緒化作漣漪擴散',
+    message2: '潛入更深的自我',
+    cancelText: '浮於表面',
+    confirmText: '深入潛行'
+  },
+  {
+    title: '✨ 靈魂共鳴',
+    message1: '聽見來自遠方的低語',
+    message2: '靈魂在此處產生迴響',
+    cancelText: '閉上耳朵',
+    confirmText: '傾聽呼喚'
+  },
+  {
+    title: '🌌 宇宙裂隙',
+    message1: '現實的邊界正在消融',
+    message2: '未知的維度向你敞開',
+    cancelText: '守護現實',
+    confirmText: '擁抱未知'
+  },
+  {
+    title: '🪐 靜謐星域',
+    message1: '時間在這裡失去意義',
+    message2: '永恆與瞬間交織',
+    cancelText: '回到時間',
+    confirmText: '超越時間'
+  },
+  {
+    title: '🔷 晶體共振',
+    message1: '能量在空氣中震動',
+    message2: '頻率逐漸同調',
+    cancelText: '斷開連結',
+    confirmText: '融入頻率'
+  }
+];
+
 // 顯示進入月球確認對話框
 function showMoonConfirmDialog() {
+  // 隨機選擇一個文案
+  const variant = moonDialogVariants[Math.floor(Math.random() * moonDialogVariants.length)];
+
   const dialog = document.createElement('div');
-  dialog.className = 'battle-dialog moon-confirm-dialog';
+  dialog.className = 'battle-dialog moon-confirm-dialog mystery-theme';
   dialog.innerHTML = `
     <div class="battle-dialog-content">
-      <h2 class="battle-title">✨ 發現月光秘境 ✨</h2>
-      <p class="dialog-message">雙擊月亮開啟了通往寧靜空間的傳送門</p>
-      <p class="dialog-message">在這裡可以放鬆心情，隨時可返回魔王城</p>
+      <h2 class="battle-title">${variant.title}</h2>
+      <p class="dialog-message">${variant.message1}</p>
+      <p class="dialog-message">${variant.message2}</p>
       <div class="battle-buttons">
-        <button class="battle-btn battle-cancel" style="background: linear-gradient(135deg, #f44336, #da190b);">
-          <span>繼續漂泊</span>
+        <button class="battle-btn battle-cancel" style="background: linear-gradient(135deg, #607d8b, #455a64);">
+          <span>${variant.cancelText}</span>
         </button>
-        <button class="battle-btn battle-confirm" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
-          <span>進入未知</span>
+        <button class="battle-btn battle-confirm" style="background: linear-gradient(135deg, #2196f3, #1976d2);">
+          <span>${variant.confirmText}</span>
         </button>
       </div>
     </div>
