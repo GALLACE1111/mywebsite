@@ -1,16 +1,62 @@
+# ===================================
+# 專案根目錄 .gitignore
+# ===================================
+
+# ===== 後端相關 =====
+
+# Node.js
+backend/nodejs/node_modules/
+backend/nodejs/.env
+backend/nodejs/.env.local
+backend/nodejs/package-lock.json
+backend/nodejs/logs/
+
+# PHP
+backend/php/vendor/
+backend/database/config.php
+
+# 資料庫備份
+*.sql.gz
+*.sql.bak
+backup/
+
+# ===== 前端相關 =====
+
+# 依賴套件
+frontend/node_modules/
+frontend/bower_components/
+
+# 建置輸出
+frontend/dist/
+frontend/build/
+
+# 環境變數
+frontend/.env
+frontend/.env.local
+
+# ===== 通用忽略 =====
+
 # 作業系統檔案
 .DS_Store
 Thumbs.db
+Desktop.ini
+ehthumbs.db
 
 # 編輯器
-.vscode/settings.json
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Node modules (如果未來需要)
+# Node modules (通用)
 node_modules/
 
-# 臨時檔案
+# 臨時檔案與日誌
 *.log
 *.tmp
+*.temp
+logs/
 
 # Python
 __pycache__/
@@ -35,3 +81,39 @@ output_frames/
 
 # 教學文件
 GIF_教學.md
+
+# 壓縮檔案
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# 敏感資訊
+secrets/
+credentials/
+*.key
+*.pem
+
+# 備份檔案
+*.bak
+*.backup
+
+# 測試覆蓋率
+coverage/
+.nyc_output/
+
+# 快取
+.cache/
+.parcel-cache/
+
+# ===== 保留特定檔案 =====
+# 使用 ! 來保留特定檔案
+
+# 保留範例配置
+!backend/database/config.example.php
+!backend/nodejs/.env.example
+
+# 保留重要文件
+!README.md
+!LICENSE
+!.gitignore

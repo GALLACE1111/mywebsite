@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>阿賢的小窩</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/additional_styles.css">
+</head>
+<body>
+  <!-- Canvas 動畫背景層 -->
+  <canvas id="mainCanvas"></canvas>
+
+  <!-- 動畫角色（Spritesheet 動畫） -->
+  <div class="character-animation" id="characterImg"></div>
+
+  <!-- 原有的卡片內容 -->
+  <div class="container">
+    <div class="card">
+      <div class="emoji-decoration">🐱✨</div>
+      <h1 class="title">阿賢的小窩</h1>
+
+      <!-- 歡迎文字區域 -->
+      <div class="welcome-text">
+        <p class="welcome-line1">歡迎來到我的可愛星球 💕</p>
+        <p class="welcome-line2">這是一個充滿愛與溫暖的小天地</p>
+      </div>
+
+      <button class="btn" id="main-btn" onclick="enterMoonWorld()">
+        <span>進入月球</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 左上角時段顯示器 -->
+  <div class="time-period-display" id="timePeriodDisplay">
+    當前時段：載入中...
+  </div>
+
+  <!-- 右上角月亮顯示區域 -->
+  <div class="info-panel">
+    <!-- 月球坑洞裝飾 -->
+    <div class="moon-crater crater-1"></div>
+    <div class="moon-crater crater-2"></div>
+    <div class="moon-crater crater-3"></div>
+    <div class="moon-crater crater-4"></div>
+
+    <div class="clock-display" id="clock">00:00</div>
+    <div class="counter-display">
+      <span class="counter-label">我收到的愛</span>
+      <span class="counter-value" id="counter">0</span>
+    </div>
+  </div>
+
+  <!-- 時鐘雙擊提示 -->
+  <div class="moon-hint-container" id="moonHint">
+    <div class="moon-hint-arrow">👆</div>
+    <div class="moon-hint-text">雙擊進入月球</div>
+  </div>
+
+  <!-- 提示訊息 -->
+  <div class="hint-text">星星發射器 ✨</div>
+
+  <!-- 音樂控制按鈕 (已隱藏 - 自動播放) -->
+  <button id="music-toggle" class="music-btn" style="display: none;">🔇 播放音樂</button>
+
+  <!-- 音量控制器 -->
+  <div class="volume-control-panel">
+    <label for="volume-slider" class="volume-label">🔊</label>
+    <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="70" step="1">
+    <span id="volume-percentage" class="volume-percentage">70%</span>
+  </div>
+
+  <!-- 返回魔王城按鈕 (月球世界專用) -->
+  <button id="return-to-main" class="return-btn" style="display: none;">
+    🏰 返回魔王城
+  </button>
+
+  <!-- 社交媒體連結面板 (暫時保留，待之後更新) -->
+  <div class="social-links-panel">
+    <button class="social-link github-link" title="GitHub (即將開放)" disabled>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+    </button>
+    <button class="social-link instagram-link" title="Instagram (即將開放)" disabled>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+      </svg>
+    </button>
+    <button class="social-link discord-link" title="Discord (即將開放)" disabled>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Boss 血條 -->
+  <div id="boss-health-bar" class="boss-health-container" style="display: none;">
+    <div class="boss-health-title">🌙 血月 Boss</div>
+    <div class="boss-health-bar-bg">
+      <div id="boss-health-fill" class="boss-health-bar-fill"></div>
+      <div class="boss-health-text">
+        <span id="boss-hp-current">1500</span> / <span id="boss-hp-max">1500</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 應援團容器 -->
+  <div id="support-team" class="support-team-container" style="display: none;">
+    <div class="support-character support-char-1">
+      <div class="char-message">加油！主人！</div>
+      <img src="assets/images/Support Group1.png" alt="應援角色1" class="char-image">
+    </div>
+    <div class="support-character support-char-2">
+      <div class="char-message">你可以的呢！</div>
+      <img src="assets/images/Support Group2.png" alt="應援角色2" class="char-image">
+    </div>
+    <div class="support-character support-char-3">
+      <div class="char-message">Fighting！先輩！</div>
+      <img src="assets/images/Support Group3.png" alt="應援角色3" class="char-image">
+    </div>
+    <div class="support-character support-char-4">
+      <div class="char-message">頑張って！</div>
+      <img src="assets/images/Support Group4.png" alt="應援角色4" class="char-image">
+    </div>
+  </div>
+
+  <!-- 愛心排行榜按鈕 -->
+  <button id="leaderboard-toggle" class="leaderboard-btn" title="愛心排行榜">
+    🏆
+  </button>
+
+  <!-- 意見回饋按鈕 -->
+  <button id="feedback-toggle" class="feedback-btn" title="設定">
+    ⚙️
+  </button>
+
+  <!-- 許願按鈕 -->
+  <button id="wish-toggle" class="wish-btn" title="許願池">
+    🌠
+  </button>
+
+  <!-- 鬧鐘按鈕 -->
+  <button id="alarm-toggle" class="alarm-btn" title="專注鬧鐘">
+    ⏰
+  </button>
+
+  <!-- 許願面板 -->
+  <div id="wish-panel" class="wish-panel" style="display: none;">
+    <div class="wish-content">
+      <div class="wish-header">
+        <h2>🌠 許願池 🌠</h2>
+        <button class="wish-close" id="wish-close">✕</button>
+      </div>
+      <div class="wish-description">
+        <p>在這裡寫下你的願望，讓星空見證你的夢想 ✨</p>
+      </div>
+      <div class="wish-form">
+        <textarea id="wish-input" class="wish-textarea" placeholder="寫下你的願望...&#10;&#10;例如：&#10;- 希望學業進步&#10;- 希望家人健康&#10;- 希望夢想成真" maxlength="200"></textarea>
+        <div class="wish-char-count">
+          <span id="wish-char-count">0</span> / 200 字
+        </div>
+        <button id="wish-submit-btn" class="wish-submit-btn">投入許願池 🌟</button>
+      </div>
+      <div class="wish-list-section">
+        <h3 class="wish-list-title">💫 我的願望清單</h3>
+        <div id="wish-list" class="wish-list">
+          <!-- Wishes will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 鬧鐘面板 -->
+  <div id="alarm-panel" class="alarm-panel" style="display: none;">
+    <div class="alarm-content">
+      <div class="alarm-header">
+        <h2>⏰ 專注鬧鐘 ⏰</h2>
+        <button class="alarm-close" id="alarm-close">✕</button>
+      </div>
+      <div class="alarm-description">
+        <p>設定專注時間，讓鬧鐘在時間到時提醒你休息 📚</p>
+      </div>
+      <div class="alarm-form">
+        <div class="alarm-input-group">
+          <label class="alarm-label">專注時間：</label>
+          <select id="alarm-duration" class="alarm-select">
+            <option value="5">5 分鐘</option>
+            <option value="10">10 分鐘</option>
+            <option value="15">15 分鐘</option>
+            <option value="20">20 分鐘</option>
+            <option value="25" selected>25 分鐘（番茄鐘）</option>
+            <option value="30">30 分鐘</option>
+            <option value="45">45 分鐘</option>
+            <option value="60">60 分鐘</option>
+          </select>
+        </div>
+        <div class="alarm-input-group">
+          <label class="alarm-label">任務名稱：</label>
+          <input type="text" id="alarm-task" class="alarm-task-input" placeholder="例如：閱讀、寫作業、複習..." maxlength="30">
+        </div>
+        <button id="alarm-start-btn" class="alarm-start-btn">開始專注 🎯</button>
+        <button id="alarm-stop-btn" class="alarm-stop-btn" style="display: none;">停止鬧鐘 ⏹️</button>
+      </div>
+      <div class="alarm-display" id="alarm-display" style="display: none;">
+        <div class="alarm-timer" id="alarm-timer">25:00</div>
+        <div class="alarm-task-display" id="alarm-task-display">任務：閱讀</div>
+        <div class="alarm-progress-bar">
+          <div class="alarm-progress-fill" id="alarm-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 意見回饋面板 -->
+  <div id="feedback-panel" class="feedback-panel" style="display: none;">
+    <div class="feedback-content">
+      <div class="feedback-header">
+        <h2>📝 意見回饋 📝</h2>
+        <button class="feedback-close" id="feedback-close">✕</button>
+      </div>
+      <div class="feedback-form">
+        <div class="feedback-category-section">
+          <label class="feedback-label">回饋類型：</label>
+          <select id="feedback-category" class="feedback-category">
+            <option value="bug">🐛 Bug 回報</option>
+            <option value="feature">💡 功能建議</option>
+            <option value="combat">⚔️ 戰鬥相關</option>
+            <option value="other">📌 其他意見</option>
+          </select>
+        </div>
+        <div class="feedback-input-section">
+          <label class="feedback-label">你的意見：</label>
+          <textarea id="feedback-message" class="feedback-textarea" placeholder="請分享你的想法、建議或遇到的問題...&#10;&#10;例如：&#10;- 發現了什麼 Bug&#10;- 希望新增的功能&#10;- 戰鬥平衡性建議&#10;- 任何讓網站更好的想法" maxlength="500"></textarea>
+          <div class="feedback-char-count">
+            <span id="feedback-char-count">0</span> / 500 字
+          </div>
+        </div>
+        <div class="feedback-submit-section">
+          <button id="feedback-submit-btn" class="feedback-submit-btn">送出回饋 ✨</button>
+        </div>
+      </div>
+      <div class="feedback-history-section">
+        <h3 class="feedback-history-title">📋 你的回饋記錄</h3>
+        <div id="feedback-history" class="feedback-history">
+          <!-- Feedback history will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/script.js"></script>
+  <script src="assets/js/additional_scripts.js"></script>
+</body>
+</html>
+

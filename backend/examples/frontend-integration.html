@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排行榜範例 - 前端整合</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .controls select,
+        .controls input,
+        .controls button {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #5568d3;
+        }
+
+        .user-info {
+            padding: 20px;
+            background: #fff3cd;
+            border-bottom: 1px solid #ffc107;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .leaderboard {
+            padding: 20px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .leaderboard-item.current-user {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .rank {
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 60px;
+            text-align: center;
+        }
+
+        .rank.gold { color: #FFD700; }
+        .rank.silver { color: #C0C0C0; }
+        .rank.bronze { color: #CD7F32; }
+
+        .user-info-item {
+            flex: 1;
+            padding: 0 15px;
+        }
+
+        .username {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-id {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+
+        .pagination {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .pagination button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .submit-score {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+        }
+
+        .submit-score h3 {
+            margin-bottom: 15px;
+        }
+
+        .submit-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .submit-form input {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .submit-form button {
+            padding: 10px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .submit-form button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 分數排行榜</h1>
+            <p>即時更新 · 全球競技</p>
+        </div>
+
+        <div class="controls">
+            <select id="period">
+                <option value="all">全時段</option>
+                <option value="daily">今日榜</option>
+                <option value="weekly">本週榜</option>
+                <option value="monthly">本月榜</option>
+            </select>
+
+            <input type="number" id="userId" placeholder="輸入用戶ID查詢排名" min="1">
+
+            <button onclick="loadLeaderboard()">🔄 重新整理</button>
+            <button onclick="loadUserRank()">🔍 查詢我的排名</button>
+        </div>
+
+        <div id="userInfo" class="user-info" style="display: none;"></div>
+
+        <div class="leaderboard">
+            <div id="leaderboard" class="loading">載入中...</div>
+        </div>
+
+        <div class="pagination">
+            <button id="prevBtn" onclick="previousPage()">⬅️ 上一頁</button>
+            <span id="pageInfo">第 1 頁</span>
+            <button id="nextBtn" onclick="nextPage()">下一頁 ➡️</button>
+        </div>
+
+        <div class="submit-score">
+            <h3>📝 提交分數</h3>
+            <form class="submit-form" onsubmit="submitScore(event)">
+                <input type="number" id="submitUserId" placeholder="用戶ID" min="1" required>
+                <input type="number" id="submitScore" placeholder="分數" min="0" max="999999" required>
+                <button type="submit">提交</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // API 配置
+        const API_CONFIG = {
+            nodeAPI: 'http://localhost:3000/api',
+            phpAPI: 'http://localhost:8000'
+        };
+
+        // 狀態管理
+        let currentPage = 1;
+        let totalPages = 1;
+        const limit = 10;
+
+        // 載入排行榜
+        async function loadLeaderboard() {
+            const period = document.getElementById('period').value;
+            const leaderboardDiv = document.getElementById('leaderboard');
+
+            leaderboardDiv.innerHTML = '<div class="loading">載入中...</div>';
+
+            try {
+                const response = await fetch(
+                    `${API_CONFIG.nodeAPI}/leaderboard?period=${period}&page=${currentPage}&limit=${limit}`
+                );
+
+                if (!response.ok) {
+                    throw new Error('無法載入排行榜');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayLeaderboard(data.data);
+                    totalPages = data.total_pages;
+                    updatePagination();
+                } else {
+                    throw new Error(data.error || '載入失敗');
+                }
+
+            } catch (error) {
+                leaderboardDiv.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+            }
+        }
+
+        // 顯示排行榜
+        function displayLeaderboard(data) {
+            const leaderboardDiv = document.getElementById('leaderboard');
+
+            if (data.length === 0) {
+                leaderboardDiv.innerHTML = '<div class="loading">暫無資料</div>';
+                return;
+            }
+
+            const html = data.map(item => {
+                let rankClass = '';
+                if (item.rank === 1) rankClass = 'gold';
+                else if (item.rank === 2) rankClass = 'silver';
+                else if (item.rank === 3) rankClass = 'bronze';
+
+                return `
+                    <div class="leaderboard-item">
+                        <div class="rank ${rankClass}">
+                            ${item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : `#${item.rank}`}
+                        </div>
+                        <div class="user-info-item">
+                            <div class="username">${item.username}</div>
+                            <div class="user-id">ID: ${item.user_id}</div>
+                        </div>
+                        <div class="score">${item.score.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            leaderboardDiv.innerHTML = html;
+        }
+
+        // 查詢用戶排名
+        async function loadUserRank() {
+            const userId = document.getElementById('userId').value;
+            const period = document.getElementById('period').value;
+            const userInfoDiv = document.getElementById('userInfo');
+
+            if (!userId) {
+                alert('請輸入用戶ID');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_CONFIG.nodeAPI}/leaderboard/my-rank/${userId}?period=${period}`
+                );
+
+                if (!response.ok) {
+                    throw new Error('無法查詢排名');
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.rank) {
+                    userInfoDiv.style.display = 'block';
+                    userInfoDiv.innerHTML = `
+                        <strong>${data.username}</strong> 的排名：
+                        第 <strong>${data.rank}</strong> 名 |
+                        分數：<strong>${data.score.toLocaleString()}</strong> |
+                        超越了 <strong>${data.percentile}</strong> 的玩家
+                    `;
+                } else {
+                    userInfoDiv.style.display = 'block';
+                    userInfoDiv.innerHTML = '❌ 該用戶尚未上榜';
+                }
+
+            } catch (error) {
+                alert('查詢失敗：' + error.message);
+            }
+        }
+
+        // 提交分數
+        async function submitScore(event) {
+            event.preventDefault();
+
+            const userId = document.getElementById('submitUserId').value;
+            const score = document.getElementById('submitScore').value;
+
+            try {
+                const response = await fetch(`${API_CONFIG.phpAPI}/submit-score.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: parseInt(userId),
+                        score: parseInt(score),
+                        game_type: 'default'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('提交失敗');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`✅ 提交成功！分數：${data.data.score}`);
+                    document.getElementById('submitUserId').value = '';
+                    document.getElementById('submitScore').value = '';
+                    loadLeaderboard();
+                } else {
+                    throw new Error(data.error || '提交失敗');
+                }
+
+            } catch (error) {
+                alert('❌ ' + error.message);
+            }
+        }
+
+        // 分頁控制
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadLeaderboard();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadLeaderboard();
+            }
+        }
+
+        function updatePagination() {
+            document.getElementById('pageInfo').textContent = `第 ${currentPage} 頁 / 共 ${totalPages} 頁`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        // 監聽時段變更
+        document.getElementById('period').addEventListener('change', () => {
+            currentPage = 1;
+            loadLeaderboard();
+        });
+
+        // 初始載入
+        loadLeaderboard();
+    </script>
+</body>
+</html>
