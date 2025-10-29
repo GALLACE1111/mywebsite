@@ -97,6 +97,7 @@ credentials/
 # 備份檔案
 *.bak
 *.backup
+.backup/
 
 # 測試覆蓋率
 coverage/
