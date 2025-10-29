@@ -309,6 +309,199 @@ body.mobile-mode .time-period-display {
   }
 }
 
+/* ===== 左側縱向排行榜 ===== */
+.side-leaderboard {
+  position: fixed;
+  top: 90px; /* 平時在時段顯示下方 */
+  left: 25px;
+  width: 280px;
+  max-height: calc(100vh - 120px);
+  background: rgba(40, 40, 50, 0.85);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: top 0.3s ease, max-height 0.3s ease; /* 平滑過渡 */
+}
+
+.side-leaderboard-header {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+  padding: 15px 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.side-leaderboard-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: white;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.side-leaderboard-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  max-height: 400px;
+}
+
+.side-leaderboard-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.side-leaderboard-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.side-leaderboard-list::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+.side-leaderboard-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}
+
+.side-leaderboard-loading {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 20px;
+  font-size: 14px;
+}
+
+.side-leaderboard-item {
+  background: rgba(255, 255, 255, 0.08);
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.side-leaderboard-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateX(5px);
+}
+
+.side-leaderboard-item.current-user {
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.3), rgba(196, 77, 255, 0.3));
+  border: 1px solid rgba(255, 107, 157, 0.5);
+  box-shadow: 0 0 15px rgba(255, 107, 157, 0.3);
+}
+
+.rank-badge {
+  font-size: 20px;
+  font-weight: bold;
+  min-width: 35px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.rank-trophy {
+  font-size: 24px;
+  min-width: 35px;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-loves {
+  font-size: 12px;
+  color: rgba(255, 107, 157, 0.9);
+  margin-top: 2px;
+}
+
+.side-leaderboard-user {
+  background: rgba(30, 30, 40, 0.9);
+  padding: 15px 20px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-rank-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.user-rank-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.user-rank-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.user-name-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-name-text {
+  flex: 1;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-name-edit-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.user-name-edit-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* 手機版：隱藏左側排行榜 */
+body.mobile-mode .side-leaderboard {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .side-leaderboard {
+    display: none;
+  }
+}
+
 /* ===== 右上角可愛月亮鬧鐘 ===== */
 .info-panel {
   position: fixed !important;
@@ -393,6 +586,26 @@ body.mobile-mode .time-period-display {
   50% {
     opacity: 1;
     transform: translateX(-50%) scale(1.1);
+  }
+}
+
+/* 星空粒子動畫 */
+@keyframes starsAnimation {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(1.05);
   }
 }
 
@@ -1008,11 +1221,11 @@ body.mobile-mode .social-link:hover {
   transform: translateY(-5px) scale(1.1);
 }
 
-/* ===== 愛心排行榜按鈕 ===== */
+/* ===== 愛心排行榜按鈕（重新定位到時段顯示器右邊） ===== */
 .leaderboard-btn {
   position: fixed;
-  top: 200px;
-  right: 25px;
+  top: 25px; /* 與時段顯示器對齊 */
+  left: 330px; /* 時段顯示器寬度 + 間距 */
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -1032,16 +1245,19 @@ body.mobile-mode .social-link:hover {
 
 @keyframes leaderboardPulse {
   0%, 100% {
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4), 0 0 15px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
   }
   50% {
-    box-shadow: 0 6px 30px rgba(102, 126, 234, 0.8), 0 0 20px rgba(102, 126, 234, 0.5);
+    box-shadow: 0 8px 35px rgba(102, 126, 234, 0.9), 0 0 25px rgba(102, 126, 234, 0.7);
+    transform: scale(1.05);
   }
 }
 
 .leaderboard-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  transform: scale(1.15);
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.8), 0 0 30px rgba(102, 126, 234, 0.6);
+  animation: none; /* 停止脈衝，避免與hover衝突 */
 }
 
 /* ===== 意見回饋系統 ===== */
@@ -1288,10 +1504,11 @@ body.mobile-mode .social-link:hover {
   font-size: 15px;
 }
 
-/* 手機版：排行榜和回饋系統 */
+/* 手機版：排行榜按鈕移到右上角（時段顯示器右邊） */
 body.mobile-mode .leaderboard-btn {
-  top: 150px;
-  right: 15px;
+  top: 15px;
+  left: auto;
+  right: 15px; /* 手機版改到右上角 */
   width: 50px;
   height: 50px;
   font-size: 24px;
@@ -1769,10 +1986,45 @@ body.mobile-mode .alarm-timer {
 
 /* 月球相關對話框置中往下 */
 .battle-dialog.moon-confirm-dialog,
-.battle-dialog.moon-portal-dialog {
+.battle-dialog.moon-portal-dialog,
+.battle-dialog.name-edit-dialog {
   align-items: center;
   padding-top: 10vh; /* 往下偏移一點點 */
   padding-bottom: 0;
+}
+
+/* 名稱編輯對話框專用樣式 */
+.name-edit-form {
+  margin: 20px 0;
+}
+
+.name-edit-input {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.name-edit-input:focus {
+  border-color: rgba(102, 126, 234, 0.8);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.name-edit-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.name-edit-hint {
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
 }
 
 .battle-dialog.show {
@@ -1970,6 +2222,87 @@ body.mobile-mode .alarm-timer {
 .battle-no:hover {
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 12px 30px rgba(127, 140, 141, 0.5);
+}
+
+/* 月球彈窗按鈕樣式 */
+.battle-cancel {
+  background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.battle-cancel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  box-shadow:
+    10px 10px 2px 1px rgba(255, 255, 255, 0.8),
+    25px 15px 1px 0px rgba(255, 255, 255, 0.6),
+    45px 30px 2px 1px rgba(255, 255, 255, 0.7),
+    60px 8px 1px 0px rgba(255, 255, 255, 0.5),
+    75px 25px 2px 1px rgba(255, 255, 255, 0.9),
+    90px 35px 1px 0px rgba(255, 255, 255, 0.6),
+    15px 45px 1px 1px rgba(255, 255, 255, 0.7),
+    35px 50px 2px 0px rgba(255, 255, 255, 0.5),
+    55px 55px 1px 1px rgba(255, 255, 255, 0.8),
+    70px 48px 1px 0px rgba(255, 255, 255, 0.6),
+    85px 60px 2px 1px rgba(255, 255, 255, 0.7),
+    20px 65px 1px 0px rgba(255, 255, 255, 0.5),
+    40px 72px 1px 1px rgba(255, 255, 255, 0.6),
+    65px 78px 2px 0px rgba(255, 255, 255, 0.8),
+    80px 85px 1px 1px rgba(255, 255, 255, 0.7);
+  animation: starsAnimation 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.battle-cancel:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(13, 13, 13, 0.8);
+}
+
+.battle-confirm {
+  background: linear-gradient(135deg, #0d47a1, #1565c0);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.battle-confirm::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  box-shadow:
+    12px 8px 2px 1px rgba(255, 255, 255, 0.8),
+    28px 18px 1px 0px rgba(255, 255, 255, 0.6),
+    42px 28px 2px 1px rgba(255, 255, 255, 0.7),
+    58px 12px 1px 0px rgba(255, 255, 255, 0.5),
+    72px 22px 2px 1px rgba(255, 255, 255, 0.9),
+    88px 38px 1px 0px rgba(255, 255, 255, 0.6),
+    18px 42px 1px 1px rgba(255, 255, 255, 0.7),
+    32px 52px 2px 0px rgba(255, 255, 255, 0.5),
+    52px 58px 1px 1px rgba(255, 255, 255, 0.8),
+    68px 45px 1px 0px rgba(255, 255, 255, 0.6),
+    82px 62px 2px 1px rgba(255, 255, 255, 0.7),
+    22px 68px 1px 0px rgba(255, 255, 255, 0.5),
+    38px 75px 1px 1px rgba(255, 255, 255, 0.6),
+    62px 80px 2px 0px rgba(255, 255, 255, 0.8),
+    78px 88px 1px 1px rgba(255, 255, 255, 0.7);
+  animation: starsAnimation 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.battle-confirm:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(13, 71, 161, 0.6);
 }
 
 .battle-btn:active {

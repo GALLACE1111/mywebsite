@@ -133,3 +133,8 @@ class LeaderboardManager {
 
 // 全局實例
 const leaderboardManager = new LeaderboardManager();
+
+// 確保掛載到全局 window 對象
+window.leaderboardManager = leaderboardManager;
+
+console.log('📊 LeaderboardManager 已初始化');

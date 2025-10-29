@@ -38,6 +38,26 @@
     當前時段：載入中...
   </div>
 
+  <!-- 左側排行榜顯示區域 -->
+  <div class="side-leaderboard" id="sideLeaderboard">
+    <div class="side-leaderboard-header">
+      <h3>🏆 愛心排行榜</h3>
+    </div>
+    <div class="side-leaderboard-list" id="sideLeaderboardList">
+      <div class="side-leaderboard-loading">載入中...</div>
+    </div>
+    <div class="side-leaderboard-user" id="sideLeaderboardUser">
+      <div class="user-rank-display">
+        <span class="user-rank-label">我的排名</span>
+        <span class="user-rank-value" id="userRankValue">-</span>
+      </div>
+      <div class="user-name-display" id="userNameDisplay">
+        <span class="user-name-text" id="userNameText">匿名玩家</span>
+        <button class="user-name-edit-btn" id="userNameEditBtn" title="點擊編輯名稱">✏️</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 右上角月亮顯示區域 -->
   <div class="info-panel">
     <!-- 月球坑洞裝飾 -->
@@ -279,6 +299,8 @@
 
   <script src="assets/js/leaderboard.js"></script>
   <script src="assets/js/leaderboard-ui.js"></script>
+  <script src="assets/js/side-leaderboard.js"></script>
+  <!-- <script src="assets/js/blood-particles.js"></script> -->
   <script src="assets/js/script.js"></script>
   <script src="assets/js/additional_scripts.js"></script>
 </body>

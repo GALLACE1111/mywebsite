@@ -8,28 +8,15 @@ const router = express.Router();
  * 獲取排行榜
  *
  * 查詢參數：
- * - period: daily/weekly/monthly/all (預設: all)
- * - game_type: 遊戲類型 (預設: default)
  * - page: 頁碼 (預設: 1)
  * - limit: 每頁數量 (預設: 50, 最大: 100)
  */
 router.get('/', async (req, res) => {
     try {
         const {
-            period = 'all',
-            game_type = 'default',
             page = 1,
             limit = 50
         } = req.query;
-
-        // 驗證參數
-        const validPeriods = ['daily', 'weekly', 'monthly', 'all'];
-        if (!validPeriods.includes(period)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid period. Must be: daily, weekly, monthly, or all'
-            });
-        }
 
         const pageNum = parseInt(page);
         const limitNum = Math.min(parseInt(limit), 100);
@@ -42,13 +29,7 @@ router.get('/', async (req, res) => {
         }
 
         // 獲取排行榜
-        const result = await leaderboardService.getLeaderboard(
-            period,
-            game_type,
-            pageNum,
-            limitNum
-        );
-
+        const result = await leaderboardService.getLeaderboard(pageNum, limitNum);
         res.json(result);
 
     } catch (error) {
@@ -66,19 +47,10 @@ router.get('/', async (req, res) => {
  *
  * 路徑參數：
  * - userId: 用戶ID
- *
- * 查詢參數：
- * - period: daily/weekly/monthly/all (預設: all)
- * - game_type: 遊戲類型 (預設: default)
  */
 router.get('/my-rank/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const {
-            period = 'all',
-            game_type = 'default'
-        } = req.query;
-
         const userIdNum = parseInt(userId);
 
         if (isNaN(userIdNum) || userIdNum < 1) {
@@ -89,12 +61,7 @@ router.get('/my-rank/:userId', async (req, res) => {
         }
 
         // 獲取用戶排名
-        const result = await leaderboardService.getUserRank(
-            userIdNum,
-            period,
-            game_type
-        );
-
+        const result = await leaderboardService.getUserRank(userIdNum);
         res.json(result);
 
     } catch (error) {
@@ -114,18 +81,12 @@ router.get('/my-rank/:userId', async (req, res) => {
  * - userId: 用戶ID
  *
  * 查詢參數：
- * - period: daily/weekly/monthly/all (預設: all)
- * - game_type: 遊戲類型 (預設: default)
  * - range: 前後範圍 (預設: 5)
  */
 router.get('/around/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const {
-            period = 'all',
-            game_type = 'default',
-            range = 5
-        } = req.query;
+        const { range = 5 } = req.query;
 
         const userIdNum = parseInt(userId);
         const rangeNum = Math.min(parseInt(range), 20);
@@ -138,13 +99,7 @@ router.get('/around/:userId', async (req, res) => {
         }
 
         // 獲取周圍排名
-        const result = await leaderboardService.getUserRankWithContext(
-            userIdNum,
-            period,
-            game_type,
-            rangeNum
-        );
-
+        const result = await leaderboardService.getUserRankWithContext(userIdNum, rangeNum);
         res.json(result);
 
     } catch (error) {
@@ -157,29 +112,49 @@ router.get('/around/:userId', async (req, res) => {
 });
 
 /**
- * POST /api/leaderboard/rebuild
- * 重建排行榜（管理員功能）
+ * POST /api/leaderboard/submit
+ * 提交分數
  *
  * 請求體：
- * - period: daily/weekly/monthly/all
- * - game_type: 遊戲類型 (預設: default)
+ * - user_id: 用戶ID (必填)
+ * - score: 分數 (必填)
+ * - game_type: 遊戲類型 (選填, 預設: default)
  */
-router.post('/rebuild', async (req, res) => {
+router.post('/submit', async (req, res) => {
     try {
-        const {
-            period = 'all',
-            game_type = 'default'
-        } = req.body;
+        const { user_id, score, game_type = 'default' } = req.body;
 
-        await leaderboardService.rebuildLeaderboard(period, game_type);
+        // 驗證參數
+        if (!user_id || !score) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: user_id and score'
+            });
+        }
 
-        res.json({
-            success: true,
-            message: `Leaderboard rebuilt successfully for ${period} period`
-        });
+        const userIdNum = parseInt(user_id);
+        const scoreNum = parseInt(score);
+
+        if (isNaN(userIdNum) || userIdNum < 1) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid user_id'
+            });
+        }
+
+        if (isNaN(scoreNum) || scoreNum < 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid score'
+            });
+        }
+
+        // 提交分數
+        const result = await leaderboardService.submitScore(userIdNum, scoreNum, game_type);
+        res.json(result);
 
     } catch (error) {
-        console.error('Error in POST /leaderboard/rebuild:', error);
+        console.error('Error in POST /leaderboard/submit:', error);
         res.status(500).json({
             success: false,
             error: 'Internal server error'

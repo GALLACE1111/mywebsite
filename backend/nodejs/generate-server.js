@@ -1,4 +1,6 @@
-import express from 'express';
+import fs from 'fs';
+
+const content = `import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { testMySQLConnection, closeConnections } from './config/database.js';
@@ -22,7 +24,7 @@ app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
         const duration = Date.now() - start;
-        console.log(`${req.method} ${req.path} - ${res.statusCode} (${duration}ms)`);
+        console.log(\`\${req.method} \${req.path} - \${res.statusCode} (\${duration}ms)\`);
     });
     next();
 });
@@ -69,10 +71,10 @@ app.use((err, req, res, next) => {
 });
 
 const server = app.listen(PORT, async () => {
-    console.log('\n🚀 Simplified Leaderboard API Server');
-    console.log(`📡 Listening on port ${PORT}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔗 Base URL: http://localhost:${PORT}`);
+    console.log('\\n🚀 Simplified Leaderboard API Server');
+    console.log(\`📡 Listening on port \${PORT}\`);
+    console.log(\`🌍 Environment: \${process.env.NODE_ENV || 'development'}\`);
+    console.log(\`🔗 Base URL: http://localhost:\${PORT}\`);
 
     const mysqlOk = await testMySQLConnection();
     if (!mysqlOk) {
@@ -80,16 +82,16 @@ const server = app.listen(PORT, async () => {
         console.warn('   Please check your .env file and MySQL server');
     }
 
-    console.log('\n📋 Available endpoints:');
-    console.log(`   GET  http://localhost:${PORT}/api/leaderboard`);
-    console.log(`   GET  http://localhost:${PORT}/api/leaderboard/my-rank/:userId`);
-    console.log(`   GET  http://localhost:${PORT}/api/leaderboard/around/:userId`);
-    console.log(`   POST http://localhost:${PORT}/api/leaderboard/submit`);
-    console.log('\n');
+    console.log('\\n📋 Available endpoints:');
+    console.log(\`   GET  http://localhost:\${PORT}/api/leaderboard\`);
+    console.log(\`   GET  http://localhost:\${PORT}/api/leaderboard/my-rank/:userId\`);
+    console.log(\`   GET  http://localhost:\${PORT}/api/leaderboard/around/:userId\`);
+    console.log(\`   POST http://localhost:\${PORT}/api/leaderboard/submit\`);
+    console.log('\\n');
 });
 
 process.on('SIGTERM', async () => {
-    console.log('\n🛑 SIGTERM received, shutting down gracefully...');
+    console.log('\\n🛑 SIGTERM received, shutting down gracefully...');
     server.close(async () => {
         await closeConnections();
         process.exit(0);
@@ -97,7 +99,7 @@ process.on('SIGTERM', async () => {
 });
 
 process.on('SIGINT', async () => {
-    console.log('\n🛑 SIGINT received, shutting down gracefully...');
+    console.log('\\n🛑 SIGINT received, shutting down gracefully...');
     server.close(async () => {
         await closeConnections();
         process.exit(0);
@@ -105,3 +107,7 @@ process.on('SIGINT', async () => {
 });
 
 export default app;
+`;
+
+fs.writeFileSync('server.js', content, 'utf8');
+console.log('✅ server.js created successfully!');

@@ -107,10 +107,10 @@ function showMoonConfirmDialog() {
       <p class="dialog-message">${variant.message1}</p>
       <p class="dialog-message">${variant.message2}</p>
       <div class="battle-buttons">
-        <button class="battle-btn battle-cancel" style="background: linear-gradient(135deg, #607d8b, #455a64);">
+        <button class="battle-btn battle-cancel">
           <span>${variant.cancelText}</span>
         </button>
-        <button class="battle-btn battle-confirm" style="background: linear-gradient(135deg, #2196f3, #1976d2);">
+        <button class="battle-btn battle-confirm">
           <span>${variant.confirmText}</span>
         </button>
       </div>
@@ -687,10 +687,16 @@ loadBackgroundImages();
 
 // ===== 時鐘功能 =====
 function updateClock() {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('clock').textContent = `${hours}:${minutes}`;
+  // Boss戰時顯示愛心數量，平時顯示時間
+  const clockElement = document.getElementById('clock');
+  if (isBossBattle) {
+    clockElement.textContent = `💖 ${touchCount}`;
+  } else {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    clockElement.textContent = `${hours}:${minutes}`;
+  }
 }
 // 每秒更新時鐘以確保即時同步，避免延遲
 setInterval(updateClock, 1000); // 1秒更新一次
@@ -1180,7 +1186,33 @@ function startBossBattle() {
   if (container) container.style.display = 'none';
   const mainBtn = document.getElementById('main-btn');
   if (mainBtn) mainBtn.style.display = 'none';
-  console.log('🎴 已隱藏卡片和進入月球按鈕');
+
+  // 隱藏其他UI元素（保留排行榜）
+  const timePeriod = document.getElementById('time-period');
+  if (timePeriod) timePeriod.style.display = 'none';
+  const leaderboardBtn = document.querySelector('.leaderboard-btn');
+  if (leaderboardBtn) leaderboardBtn.style.display = 'none';
+  const counterDisplay = document.querySelector('.counter-display');
+  if (counterDisplay) counterDisplay.style.display = 'none';
+
+  // 排行榜向上移動，覆蓋時段顯示位置
+  const sideLeaderboard = document.querySelector('.side-leaderboard');
+  if (sideLeaderboard) {
+    sideLeaderboard.style.top = '25px';
+    sideLeaderboard.style.maxHeight = 'calc(100vh - 60px)';
+  }
+
+  // 隱藏社交連結、意見回饋、許願、鬧鐘按鈕
+  const socialLinksPanel = document.querySelector('.social-links-panel');
+  if (socialLinksPanel) socialLinksPanel.style.display = 'none';
+  const feedbackBtn = document.getElementById('feedback-toggle');
+  if (feedbackBtn) feedbackBtn.style.display = 'none';
+  const wishBtn = document.getElementById('wish-toggle');
+  if (wishBtn) wishBtn.style.display = 'none';
+  const alarmBtn = document.getElementById('alarm-toggle');
+  if (alarmBtn) alarmBtn.style.display = 'none';
+
+  console.log('🎴 已隱藏其他UI元素（保留排行榜）');
 
   // 顯示血條
   document.getElementById('boss-health-bar').style.display = 'block';
@@ -1200,6 +1232,9 @@ function startBossBattle() {
 
   // 發射第一波星星
   shootStars();
+
+  // 立即更新時鐘顯示愛心數量
+  updateClock();
 
   console.log('Boss 戰開始！');
 }
@@ -1437,6 +1472,7 @@ function animateBossMovement() {
 
       moonElement.style.setProperty('left', newX + 'px', 'important');
       moonElement.style.setProperty('top', newY + 'px', 'important');
+
     }
     // 停格狀態時不移動
   } else {
@@ -1585,6 +1621,9 @@ function defeatBoss() {
   currentBGMStage = 0; // 重置音樂階段
   stopBossMovement();
 
+  // 立即更新時鐘恢復顯示時間
+  updateClock();
+
   // 解鎖並恢復戰鬥前的背景輪替
   bgRotationLocked = false;
   currentBgIndex = preBattleBgIndex;
@@ -1604,7 +1643,33 @@ function defeatBoss() {
   if (container) container.style.display = 'block';
   const mainBtn = document.getElementById('main-btn');
   if (mainBtn) mainBtn.style.display = 'block';
-  console.log('🎴 已恢復卡片和進入月球按鈕');
+
+  // 恢復其他UI元素
+  const timePeriod = document.getElementById('time-period');
+  if (timePeriod) timePeriod.style.display = 'block';
+  const leaderboardBtn = document.querySelector('.leaderboard-btn');
+  if (leaderboardBtn) leaderboardBtn.style.display = 'block';
+  const counterDisplay = document.querySelector('.counter-display');
+  if (counterDisplay) counterDisplay.style.display = 'block';
+
+  // 排行榜恢復到時段下方
+  const sideLeaderboard = document.querySelector('.side-leaderboard');
+  if (sideLeaderboard) {
+    sideLeaderboard.style.top = '90px';
+    sideLeaderboard.style.maxHeight = 'calc(100vh - 120px)';
+  }
+
+  // 恢復社交連結、意見回饋、許願、鬧鐘按鈕
+  const socialLinksPanel = document.querySelector('.social-links-panel');
+  if (socialLinksPanel) socialLinksPanel.style.display = 'flex';
+  const feedbackBtn = document.getElementById('feedback-toggle');
+  if (feedbackBtn) feedbackBtn.style.display = 'block';
+  const wishBtn = document.getElementById('wish-toggle');
+  if (wishBtn) wishBtn.style.display = 'block';
+  const alarmBtn = document.getElementById('alarm-toggle');
+  if (alarmBtn) alarmBtn.style.display = 'block';
+
+  console.log('🎴 已恢復所有UI元素');
 
   // 切換勝利音樂
   switchBGM('assets/music/rain-piano.mp3', true);
@@ -1823,6 +1888,11 @@ function incrementCounter() {
     counterElement.classList.remove('pulse');
   }, 310);
 
+  // Boss戰時立即更新時鐘顯示愛心數量
+  if (isBossBattle) {
+    updateClock();
+  }
+
   // 更新排行榜（每10個愛心更新一次）
   if (touchCount % 10 === 0) {
     updateLeaderboardScore();
@@ -1836,6 +1906,7 @@ function incrementCounter() {
     // 播放擊中音效
     SoundEffects.playHitSound();
 
+
     // 每400點血量播放一次惡魔大笑
     if (bossHP % 400 === 0) {
       setTimeout(() => SoundEffects.playBossHurtSound(), 100);
@@ -1844,7 +1915,18 @@ function incrementCounter() {
 }
 
 // ===== 主動畫循環 =====
+let animateFrameCount = 0;
 function animate() {
+  // 每 300 幀輸出一次調試信息（約5秒）
+  animateFrameCount++;
+  if (animateFrameCount % 300 === 0) {
+    console.log('🎬 動畫運行中 - 粒子數:', {
+      stars: particles.length,
+      blood: typeof window.bloodParticles !== 'undefined' ? window.bloodParticles.length : 0,
+      snowflakes: snowflakes.length
+    });
+  }
+
   // 繪製天空背景
   drawSky();
 
@@ -1854,7 +1936,7 @@ function animate() {
     snowflake.draw();
   });
 
-  // 更新和繪製粒子
+  // 更新和繪製粒子（星星）
   for (let i = particles.length - 1; i >= 0; i--) {
     particles[i].update();
     if (particles[i].active) {
@@ -1863,6 +1945,7 @@ function animate() {
       particles.splice(i, 1);
     }
   }
+
 
   requestAnimationFrame(animate);
 }
@@ -2799,6 +2882,11 @@ function updateLeaderboardScore() {
     window.dispatchEvent(new CustomEvent('love-score-updated', {
       detail: { username, loves: 10 }
     }));
+
+    // 🔄 即時更新左側排行榜
+    if (window.sideLeaderboard && typeof window.sideLeaderboard.updateCurrentPlayerScore === 'function') {
+      window.sideLeaderboard.updateCurrentPlayerScore(10);
+    }
   }
 }
 
