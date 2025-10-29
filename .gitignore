@@ -11,6 +11,13 @@ backend/nodejs/.env.local
 backend/nodejs/package-lock.json
 backend/nodejs/logs/
 
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+functions/node_modules/
+**/firebase-service-account.json
+
 # PHP
 backend/php/vendor/
 backend/database/config.php

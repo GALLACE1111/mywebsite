@@ -8,10 +8,15 @@
 
 class SideLeaderboard {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:3000/api'; // Node.js後端API
+        // 使用配置文件中的 API 地址
+        this.apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || 'http://localhost:3000/api';
         this.updateInterval = 5000; // 5秒更新一次
         this.userId = this.getUserId();
         this.intervalId = null;
+        this.isExpanded = false; // 展開狀態
+        this.displayLimit = 10; // 默認顯示10人
+        this.maxLimit = 100; // 最多100人
+        this.currentData = []; // 緩存當前數據
         this.init();
     }
 
@@ -44,6 +49,49 @@ class SideLeaderboard {
         const editBtn = document.getElementById('userNameEditBtn');
         if (editBtn) {
             editBtn.addEventListener('click', () => this.showNameEditDialog());
+        }
+
+        // 綁定展開/收起按鈕事件
+        const expandBtn = document.getElementById('leaderboardExpandBtn');
+        if (expandBtn) {
+            expandBtn.addEventListener('click', () => this.toggleExpand());
+        }
+    }
+
+    /**
+     * 切換展開/收起狀態
+     */
+    toggleExpand() {
+        this.isExpanded = !this.isExpanded;
+        this.displayLimit = this.isExpanded ? this.maxLimit : 10;
+
+        // 更新容器類
+        const container = document.getElementById('sideLeaderboard');
+        if (container) {
+            if (this.isExpanded) {
+                container.classList.add('expanded');
+            } else {
+                container.classList.remove('expanded');
+            }
+        }
+
+        // 更新按鈕文字
+        const expandBtn = document.getElementById('leaderboardExpandBtn');
+        if (expandBtn) {
+            expandBtn.innerHTML = this.isExpanded
+                ? '<span>▲ 收起排行榜</span>'
+                : '<span>▼ 查看完整排行榜</span>';
+        }
+
+        // 重新渲染
+        if (this.currentData.length > 0) {
+            this.renderLeaderboard(this.currentData);
+        }
+
+        // 平滑滾動到頂部
+        const listContainer = document.getElementById('sideLeaderboardList');
+        if (listContainer && !this.isExpanded) {
+            listContainer.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
@@ -184,7 +232,12 @@ class SideLeaderboard {
                 throw new Error('API請求失敗');
             }
 
-            const data = await response.json();
+            const result = await response.json();
+            const data = result.data || result; // 支持不同的響應格式
+
+            // 緩存數據
+            this.currentData = data;
+
             this.renderLeaderboard(data);
 
             // 獲取當前玩家排名
@@ -223,6 +276,9 @@ class SideLeaderboard {
             console.log('📊 排行榜為空，顯示初始數據');
         }
 
+        // 緩存數據
+        this.currentData = data;
+
         this.renderLeaderboard(data);
 
         // 獲取當前玩家排名
@@ -260,33 +316,57 @@ class SideLeaderboard {
 
         const playerName = localStorage.getItem('playerName') || '匿名玩家';
 
-        // 只顯示前10名
-        const top10 = data.slice(0, 10);
+        // 根據展開狀態決定顯示數量
+        const displayData = data.slice(0, this.displayLimit);
 
-        if (top10.length === 0) {
+        if (displayData.length === 0) {
             listContainer.innerHTML = '<div class="side-leaderboard-loading">暫無排行榜數據</div>';
             return;
         }
 
-        const trophies = ['🥇', '🥈', '🥉'];
+        // 獎盃圖標 - 使用更華麗的獎盃
+        const trophies = ['🏆', '🥈', '🥉'];
+        const trophyClasses = ['gold-trophy', 'silver-trophy', 'bronze-trophy'];
 
-        listContainer.innerHTML = top10.map((player, index) => {
+        listContainer.innerHTML = displayData.map((player, index) => {
             const rank = index + 1;
-            const isCurrentUser = player.username === playerName;
+            const isCurrentUser = player.username === playerName || player.user_id === this.userId;
+
+            // 前三名顯示獎盃,其他顯示排名
             const rankDisplay = rank <= 3
-                ? `<div class="rank-trophy">${trophies[index]}</div>`
+                ? `<div class="rank-trophy ${trophyClasses[index]}">${trophies[index]}</div>`
                 : `<div class="rank-badge">#${rank}</div>`;
 
+            // 獲取分數,兼容不同的數據格式
+            const score = player.totalLoves || player.score || player.total_loves || 0;
+
             return `
-                <div class="side-leaderboard-item ${isCurrentUser ? 'current-user' : ''}">
+                <div class="side-leaderboard-item ${isCurrentUser ? 'current-user' : ''} ${rank <= 3 ? 'top-three' : ''}">
                     ${rankDisplay}
                     <div class="player-info">
                         <div class="player-name">${this.escapeHtml(player.username)}</div>
-                        <div class="player-loves">💖 ${player.totalLoves}</div>
+                        <div class="player-loves">💖 ${score}</div>
                     </div>
                 </div>
             `;
         }).join('');
+
+        // 更新顯示計數
+        this.updateDisplayCount(displayData.length, data.length);
+    }
+
+    /**
+     * 更新顯示計數
+     */
+    updateDisplayCount(displayed, total) {
+        const expandBtn = document.getElementById('leaderboardExpandBtn');
+        if (expandBtn && total > 10) {
+            expandBtn.style.display = 'block';
+            const btnText = this.isExpanded
+                ? `▲ 收起排行榜 (顯示 ${displayed}/${total})`
+                : `▼ 查看完整排行榜 (${total}人)`;
+            expandBtn.innerHTML = `<span>${btnText}</span>`;
+        }
     }
 
     /**

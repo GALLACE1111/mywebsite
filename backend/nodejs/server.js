@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { testMySQLConnection, closeConnections } from './config/database.js';
+import { initializeFirebase, testFirebaseConnection, closeConnections } from './config/firebase.js';
 import leaderboardRoutes from './routes/leaderboard.routes.js';
 
 dotenv.config();
@@ -41,12 +41,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', async (req, res) => {
-    const mysqlOk = await testMySQLConnection();
+    const firebaseOk = await testFirebaseConnection();
     res.json({
-        status: mysqlOk ? 'ok' : 'degraded',
+        status: firebaseOk ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
         services: {
-            mysql: mysqlOk ? 'connected' : 'disconnected'
+            firebase: firebaseOk ? 'connected' : 'disconnected'
         }
     });
 });
@@ -74,10 +74,12 @@ const server = app.listen(PORT, async () => {
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 Base URL: http://localhost:${PORT}`);
 
-    const mysqlOk = await testMySQLConnection();
-    if (!mysqlOk) {
-        console.warn('⚠️ MySQL connection failed');
-        console.warn('   Please check your .env file and MySQL server');
+    const firebaseOk = initializeFirebase();
+    if (!firebaseOk) {
+        console.warn('⚠️ Firebase initialization failed');
+        console.warn('   Please check your .env file and Firebase credentials');
+    } else {
+        await testFirebaseConnection();
     }
 
     console.log('\n📋 Available endpoints:');

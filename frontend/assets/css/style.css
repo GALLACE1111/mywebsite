@@ -312,20 +312,20 @@ body.mobile-mode .time-period-display {
 /* ===== 左側縱向排行榜 ===== */
 .side-leaderboard {
   position: fixed;
-  top: 90px; /* 平時在時段顯示下方 */
+  top: 90px; /* 在時段顯示下方 */
   left: 25px;
   width: 280px;
-  max-height: calc(100vh - 120px);
-  background: rgba(40, 40, 50, 0.85);
+  max-height: calc(100vh - 120px); /* 確保不超出螢幕 */
+  background: rgba(40, 40, 50, 0.90); /* 稍微加深背景避免遮擋時難以閱讀 */
   backdrop-filter: blur(15px);
   border-radius: 20px;
   border: 2px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  z-index: 998;
+  z-index: 998; /* 確保在主內容上方,但在對話框下方 */
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: top 0.3s ease, max-height 0.3s ease; /* 平滑過渡 */
+  transition: all 0.3s ease; /* 平滑過渡 */
 }
 
 .side-leaderboard-header {
@@ -345,8 +345,16 @@ body.mobile-mode .time-period-display {
 .side-leaderboard-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 10px;
   max-height: 400px;
+  min-height: 200px; /* 確保有最小高度 */
+  transition: max-height 0.3s ease;
+}
+
+/* 展開狀態時增加最大高度 */
+.side-leaderboard.expanded .side-leaderboard-list {
+  max-height: calc(100vh - 320px);
 }
 
 .side-leaderboard-list::-webkit-scrollbar {
@@ -406,10 +414,60 @@ body.mobile-mode .time-period-display {
 }
 
 .rank-trophy {
-  font-size: 24px;
+  font-size: 28px;
   min-width: 35px;
   text-align: center;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: trophy-glow 2s ease-in-out infinite;
+}
+
+/* 獎盃特效 */
+.rank-trophy.gold-trophy {
+  font-size: 32px;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+}
+
+.rank-trophy.silver-trophy {
+  filter: drop-shadow(0 0 6px rgba(192, 192, 192, 0.8));
+}
+
+.rank-trophy.bronze-trophy {
+  filter: drop-shadow(0 0 6px rgba(205, 127, 50, 0.8));
+}
+
+@keyframes trophy-glow {
+  0%, 100% {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+  }
+}
+
+/* 前三名項目特殊樣式 */
+.side-leaderboard-item.top-three {
+  position: relative;
+  overflow: hidden;
+}
+
+.side-leaderboard-item.top-three::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
 }
 
 .player-info {
@@ -489,6 +547,38 @@ body.mobile-mode .time-period-display {
 .user-name-edit-btn:hover {
   opacity: 1;
   transform: scale(1.2);
+}
+
+/* 展開/收起按鈕 */
+.leaderboard-expand-btn {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  display: none; /* 默認隱藏,有數據時顯示 */
+}
+
+.leaderboard-expand-btn:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+}
+
+.leaderboard-expand-btn:active {
+  transform: scale(0.98);
+}
+
+.leaderboard-expand-btn span {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.leaderboard-expand-btn:hover span {
+  transform: translateY(2px);
 }
 
 /* 手機版：隱藏左側排行榜 */
