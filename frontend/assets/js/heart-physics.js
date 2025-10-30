@@ -311,17 +311,30 @@ class HeartPhysicsSystem {
      * 清除所有愛心
      */
     clearAll() {
+        console.log(`🗑️ clearAll 被調用，當前愛心數量: ${this.hearts.length}`);
+
         const { World } = Matter;
 
+        // 清除物理引擎中的愛心
         this.hearts.forEach(({ body, element }) => {
-            World.remove(this.world, body);
+            if (body) {
+                World.remove(this.world, body);
+            }
             if (element && element.parentNode) {
                 element.remove();
             }
         });
 
         this.hearts = [];
-        console.log('🗑️ 已清除所有愛心');
+
+        // 額外清理：移除所有可能殘留的DOM愛心元素
+        const remainingHearts = document.querySelectorAll('.physics-heart');
+        if (remainingHearts.length > 0) {
+            console.log(`⚠️ 發現 ${remainingHearts.length} 個殘留的DOM愛心元素，正在清除...`);
+            remainingHearts.forEach(heart => heart.remove());
+        }
+
+        console.log('✅ 已清除所有愛心');
     }
 
     /**

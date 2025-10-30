@@ -471,6 +471,7 @@ body.mobile-mode .time-period-display {
 }
 
 .player-info {
+  text-align: center;
   flex: 1;
   min-width: 0;
 }
@@ -2614,6 +2615,21 @@ body.mobile-mode .boss-message {
 body.boss-battle .support-team-container {
   bottom: 20px; /* 保持同高 */
   right: 210px; /* 往左移動，更靠近發射器 */
+}
+
+/* Boss戰時強制隱藏特定UI元素 */
+body.boss-battle .counter-display {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+body.boss-battle .moon-hint-container {
+  display: none !important;
+}
+
+body.boss-battle #moonHint {
+  display: none !important;
 }
 
 .support-character {

@@ -263,6 +263,17 @@ class FirstPlaceRewardSystem {
     }
 
     /**
+     * 停止愛心雨
+     */
+    stopHeartRain() {
+        if (this.heartRainInterval) {
+            clearInterval(this.heartRainInterval);
+            this.heartRainInterval = null;
+            console.log('🛑 已停止愛心雨');
+        }
+    }
+
+    /**
      * 顯示滿屏彈窗
      */
     showFullScreenDialog() {

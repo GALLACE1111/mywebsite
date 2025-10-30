@@ -152,6 +152,8 @@
 }
 
 .user-info {
+  text-align: center;
+  align-items: center;
   flex: 1;
   display: flex;
   flex-direction: column;

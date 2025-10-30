@@ -553,7 +553,8 @@ let bossMovement = {
   berserkInterval: 500, // 狂暴模式間隔
   isFrozen: false, // 停格狀態
   useBouncePhysics: false, // 是否使用彈射物理
-  bouncePhysicsLogged: false // 調試標記
+  bouncePhysicsLogged: false, // 調試標記
+  trail: [] // 紅色軌跡陣列
 };
 
 // 背景圖片
@@ -1168,6 +1169,12 @@ function startBossBattle() {
   bossHP = bossMaxHP;
   currentBGMStage = 1;
 
+  // 清除所有愛心粒子（確保戰鬥開始時畫面乾淨）
+  if (window.heartPhysics && window.heartPhysics.clearAll) {
+    window.heartPhysics.clearAll();
+    console.log('💖 戰鬥開始：已清除所有愛心粒子');
+  }
+
   // 保存戰鬥前的背景狀態
   preBattleBgIndex = currentBgIndex;
   preBattleBgStartTime = bgRotationStartTime;
@@ -1196,7 +1203,19 @@ function startBossBattle() {
   const timePeriodDisplay = document.getElementById('timePeriodDisplay');
   if (timePeriodDisplay) timePeriodDisplay.style.display = 'none';
   const counterDisplay = document.querySelector('.counter-display');
-  if (counterDisplay) counterDisplay.style.display = 'none';
+  if (counterDisplay) {
+    counterDisplay.style.display = 'none';
+    counterDisplay.style.visibility = 'hidden'; // 強制隱藏
+    counterDisplay.style.opacity = '0'; // 第三層保險
+    console.log('✅ 已隱藏「我收到的愛」計數器');
+  }
+
+  // 隱藏「雙擊進入月球」提示
+  const moonHint = document.getElementById('moonHint');
+  if (moonHint) {
+    moonHint.style.display = 'none';
+    console.log('✅ 已隱藏「雙擊進入月球」提示');
+  }
 
   // 排行榜向上移動，覆蓋時段顯示位置
   const sideLeaderboard = document.querySelector('.side-leaderboard');
@@ -1476,6 +1495,7 @@ function animateBossMovement() {
       moonElement.style.setProperty('left', newX + 'px', 'important');
       moonElement.style.setProperty('top', newY + 'px', 'important');
 
+// 生成紅色軌跡      if (typeof updateBossTrail === 'function') {        updateBossTrail(newX, newY);      }
     }
     // 停格狀態時不移動
   } else {
@@ -1491,6 +1511,7 @@ function animateBossMovement() {
 
       moonElement.style.setProperty('left', (currentX + moveX) + 'px', 'important');
       moonElement.style.setProperty('top', (currentY + moveY) + 'px', 'important');
+// 生成紅色軌跡      if (typeof updateBossTrail === 'function') {        updateBossTrail(currentX + moveX, currentY + moveY);      }
     }
   }
 
@@ -1499,6 +1520,7 @@ function animateBossMovement() {
 
   requestAnimationFrame(animateBossMovement);
 }
+// ===== Boss 移動軌跡系統 =====function createTrailParticle(x, y) {  const trail = document.createElement('div');  trail.className = 'boss-trail-particle';  trail.style.cssText = `    position: fixed;    left: ${x}px;    top: ${y}px;    width: 20px;    height: 20px;    background: radial-gradient(circle, rgba(220, 0, 0, 0.8) 0%, rgba(139, 0, 0, 0.4) 50%, transparent 100%);    border-radius: 50%;    pointer-events: none;    z-index: 9999;    animation: trailFade 0.5s ease-out forwards;  `;  document.body.appendChild(trail);  setTimeout(() => {    trail.remove();  }, 500);}// 添加軌跡動畫CSSif (!document.getElementById('boss-trail-animation')) {  const style = document.createElement('style');  style.id = 'boss-trail-animation';  style.textContent = `    @keyframes trailFade {      0% {        opacity: 1;        transform: scale(1);      }      100% {        opacity: 0;        transform: scale(0.5);      }    }  `;  document.head.appendChild(style);}
 
 // 血月視覺效果
 function updateBloodMoonEffect(moonElement) {
@@ -1653,7 +1675,19 @@ function defeatBoss() {
   const timePeriodDisplay = document.getElementById('timePeriodDisplay');
   if (timePeriodDisplay) timePeriodDisplay.style.display = 'block';
   const counterDisplay = document.querySelector('.counter-display');
-  if (counterDisplay) counterDisplay.style.display = 'block';
+  if (counterDisplay) {
+    counterDisplay.style.display = 'block';
+    counterDisplay.style.visibility = 'visible'; // 恢復可見
+    counterDisplay.style.opacity = '1'; // 恢復不透明
+    console.log('✅ 已恢復「我收到的愛」計數器');
+  }
+
+  // 恢復「雙擊進入月球」提示（如果用戶還沒看過）
+  const moonHint = document.getElementById('moonHint');
+  if (moonHint && !moonHint.classList.contains('hidden')) {
+    moonHint.style.display = 'flex';
+    console.log('✅ 已恢復「雙擊進入月球」提示');
+  }
 
   // 排行榜恢復到時段下方
   const sideLeaderboard = document.querySelector('.side-leaderboard');
@@ -1707,7 +1741,19 @@ function defeatBoss() {
   // 重新啟用月亮拖動功能
   initMoonDrag();
 
-  // 🏆 檢查是否為第一名，觸發獎勵
+  // 停止第一名獎勵的愛心雨（如果正在運行）
+  if (window.firstPlaceRewardSystem && window.firstPlaceRewardSystem.stopHeartRain) {
+    window.firstPlaceRewardSystem.stopHeartRain();
+    console.log('🛑 已停止第一名獎勵的愛心雨');
+  }
+
+  // 清除所有愛心粒子
+  if (window.heartPhysics && window.heartPhysics.clearAll) {
+    window.heartPhysics.clearAll();
+    console.log('💖 已清除所有愛心粒子');
+  }
+
+  // 🏆 檢查是否為第一名，觸發獎勵（由於Firebase配額問題，目前會失敗）
   if (window.firstPlaceRewardSystem) {
     window.firstPlaceRewardSystem.checkAndTrigger().catch(err => {
       console.error('❌ 檢查第一名獎勵時發生錯誤:', err);
