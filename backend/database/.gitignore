@@ -1,5 +1,0 @@
-# 忽略實際配置檔案（包含敏感資訊）
-config.php
-
-# 只保留範例檔案
-!config.example.php

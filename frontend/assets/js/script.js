@@ -153,6 +153,9 @@ function proceedToMoonWorld() {
   window.isInMoonWorld = true; // 確保全局可訪問
   console.log('🌙 已進入月球世界，可愛訊息應停止');
 
+  // 添加月球模式 class
+  document.body.classList.add('moon-mode');
+
   // 載入 GALAXY 背景圖片
   galaxyBackground = new Image();
   galaxyBackground.src = 'assets/images/background-galaxy01.png';
@@ -169,7 +172,7 @@ function proceedToMoonWorld() {
 
   // 隱藏所有按鈕（保留時段顯示和音量控制）
   const elementsToHide = [
-    'feedback-toggle', 'leaderboard-toggle', 'wish-toggle',
+    'feedback-toggle', 'wish-toggle',
     'alarm-toggle', 'player-name-toggle'
   ];
   elementsToHide.forEach(id => {
@@ -491,7 +494,7 @@ const SoundEffects = {
   // 戰鬥開始音效 - 播放開場低吼聲
   playBattleStartSound() {
     console.log('🎵 播放戰鬥開始音效：開場低吼聲');
-    const audio = new Audio('assets/sounds/開場低吼聲.wav');
+    const audio = new Audio('assets/sound-effects/boss-rage-mode-start.mp3');
     audio.volume = 0.7;
     audio.play().catch(err => console.error('播放開場低吼聲失敗:', err));
   },
@@ -499,7 +502,7 @@ const SoundEffects = {
   // 狂暴模式音效文件 - 播放BOSS瘋狂模式開啟聲
   playBerserkModeSound() {
     console.log('🎵 播放狂暴模式音效：BOSS瘋狂模式開啟聲');
-    const audio = new Audio('assets/sounds/BOSS瘋狂模式開啟聲.mp3');
+    const audio = new Audio('assets/sound-effects/boss-rage-mode.mp3');
     audio.volume = 0.8;
     audio.play().catch(err => console.error('播放狂暴模式音效失敗:', err));
   },
@@ -507,7 +510,7 @@ const SoundEffects = {
   // BOSS死亡音效 - 播放BOSS死掉音效
   playBossDeathSound() {
     console.log('🎵 播放BOSS死亡音效：BOSS死掉音效');
-    const audio = new Audio('assets/sounds/BOSS死掉音效.wav');
+    const audio = new Audio('assets/sound-effects/boss-death.mp3');
     audio.volume = 0.8;
     audio.play().catch(err => console.error('播放BOSS死亡音效失敗:', err));
   }
@@ -1190,8 +1193,8 @@ function startBossBattle() {
   // 隱藏其他UI元素（保留排行榜）
   const timePeriod = document.getElementById('time-period');
   if (timePeriod) timePeriod.style.display = 'none';
-  const leaderboardBtn = document.querySelector('.leaderboard-btn');
-  if (leaderboardBtn) leaderboardBtn.style.display = 'none';
+  const timePeriodDisplay = document.getElementById('timePeriodDisplay');
+  if (timePeriodDisplay) timePeriodDisplay.style.display = 'none';
   const counterDisplay = document.querySelector('.counter-display');
   if (counterDisplay) counterDisplay.style.display = 'none';
 
@@ -1225,7 +1228,7 @@ function startBossBattle() {
   startSupportMessages();
 
   // 播放第一階段戰鬥音樂
-  switchBGM('assets/music/PerituneMaterial_8bitRPG_Battle.mp3', true);
+  switchBGM('assets/music/peritunematerial-8bitrpg-battle.mp3', true);
 
   // 月亮變成血月並開始快速亂跑
   startBossMovement();
@@ -1647,8 +1650,8 @@ function defeatBoss() {
   // 恢復其他UI元素
   const timePeriod = document.getElementById('time-period');
   if (timePeriod) timePeriod.style.display = 'block';
-  const leaderboardBtn = document.querySelector('.leaderboard-btn');
-  if (leaderboardBtn) leaderboardBtn.style.display = 'block';
+  const timePeriodDisplay = document.getElementById('timePeriodDisplay');
+  if (timePeriodDisplay) timePeriodDisplay.style.display = 'block';
   const counterDisplay = document.querySelector('.counter-display');
   if (counterDisplay) counterDisplay.style.display = 'block';
 
@@ -1703,6 +1706,13 @@ function defeatBoss() {
 
   // 重新啟用月亮拖動功能
   initMoonDrag();
+
+  // 🏆 檢查是否為第一名，觸發獎勵
+  if (window.firstPlaceRewardSystem) {
+    window.firstPlaceRewardSystem.checkAndTrigger().catch(err => {
+      console.error('❌ 檢查第一名獎勵時發生錯誤:', err);
+    });
+  }
 
   // 先顯示恭喜訊息，再顯示選擇畫面
   setTimeout(() => {
@@ -2795,7 +2805,7 @@ document.addEventListener('click', (e) => {
 function addButtonFeedbackToAll() {
   // 所有需要添加音效的按鈕 ID
   const buttonIds = [
-    'leaderboard-toggle', 'feedback-toggle', 'music-toggle',
+    'feedback-toggle', 'music-toggle',
     'player-name-toggle', 'leaderboard-close', 'feedback-close',
     'wish-close', 'alarm-close',
     'save-username-btn', 'change-username-btn', 'feedback-submit-btn'

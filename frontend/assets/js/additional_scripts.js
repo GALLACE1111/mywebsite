@@ -1,3 +1,66 @@
+// ===== 宇宙粒子特效系統 =====
+function triggerCosmicButtonEffect(button) {
+  // 播放音效
+  if (typeof SoundEffects !== 'undefined' && SoundEffects.playButtonClickSound) {
+    SoundEffects.playButtonClickSound();
+  }
+
+  // 強調背景框動畫
+  button.classList.add('cosmic-pulse');
+  setTimeout(() => {
+    button.classList.remove('cosmic-pulse');
+  }, 800);
+
+  // 生成宇宙粒子（白色和黑色混合）
+  const particleCount = 20; // 粒子數量
+  const buttonRect = button.getBoundingClientRect();
+  const centerX = buttonRect.left + buttonRect.width / 2;
+  const centerY = buttonRect.top + buttonRect.height / 2;
+
+  for (let i = 0; i < particleCount; i++) {
+    createCosmicParticle(centerX, centerY);
+  }
+
+  // 觸覺反饋（手機震動）
+  if ('vibrate' in navigator) {
+    navigator.vibrate(50);
+  }
+}
+
+function createCosmicParticle(x, y) {
+  const particle = document.createElement('div');
+
+  // 隨機選擇白色或黑色粒子（70%白色，30%黑色，模擬宇宙星空）
+  const isWhite = Math.random() > 0.3;
+  particle.className = isWhite ? 'cosmic-particle white' : 'cosmic-particle black';
+
+  // 隨機大小
+  const size = Math.random() * 4 + 2; // 2-6px
+  particle.style.width = size + 'px';
+  particle.style.height = size + 'px';
+
+  // 初始位置
+  particle.style.left = x + 'px';
+  particle.style.top = y + 'px';
+
+  // 隨機方向和距離
+  const angle = Math.random() * Math.PI * 2;
+  const distance = Math.random() * 80 + 40; // 40-120px
+  const endX = x + Math.cos(angle) * distance;
+  const endY = y + Math.sin(angle) * distance;
+
+  // 設置 CSS 變量用於動畫
+  particle.style.setProperty('--end-x', endX + 'px');
+  particle.style.setProperty('--end-y', endY + 'px');
+
+  document.body.appendChild(particle);
+
+  // 動畫結束後移除
+  setTimeout(() => {
+    particle.remove();
+  }, 1000);
+}
+
 // ===== 放鬆驚喜系統 =====
 let relaxationInterval = null;
 
@@ -157,7 +220,7 @@ function enterMoonDimension() {
     if (typeof showMoonConfirmDialog === 'function') {
       showMoonConfirmDialog();
     }
-  }, 150); // 優化：從300ms減少到150ms，提升反應速度
+  }, 50); // 優化：減少到50ms，極速反應
 }
 
 // 月球傳送門彈窗文案庫（藍色未知風格）
@@ -225,9 +288,9 @@ function showMoonPortalDialog() {
   const noBtn = dialog.querySelector('.battle-no');
 
   yesBtn.addEventListener('click', () => {
-    if (typeof triggerButtonFeedback === 'function') {
-      triggerButtonFeedback(yesBtn);
-    }
+    // 使用宇宙粒子特效
+    triggerCosmicButtonEffect(yesBtn);
+
     if (typeof closeBattleDialog === 'function') {
       closeBattleDialog(dialog);
     }
@@ -238,9 +301,9 @@ function showMoonPortalDialog() {
   });
 
   noBtn.addEventListener('click', () => {
-    if (typeof triggerButtonFeedback === 'function') {
-      triggerButtonFeedback(noBtn);
-    }
+    // 使用宇宙粒子特效
+    triggerCosmicButtonEffect(noBtn);
+
     if (typeof closeBattleDialog === 'function') {
       closeBattleDialog(dialog);
     }
@@ -318,9 +381,9 @@ function showMoonWorldInnerDialog() {
 
   const continueBtn = dialog.querySelector('.battle-continue');
   continueBtn.addEventListener('click', () => {
-    if (typeof triggerButtonFeedback === 'function') {
-      triggerButtonFeedback(continueBtn);
-    }
+    // 使用宇宙粒子特效
+    triggerCosmicButtonEffect(continueBtn);
+
     if (typeof closeBattleDialog === 'function') {
       closeBattleDialog(dialog);
     }
@@ -404,7 +467,7 @@ function initMoonPortal() {
       moonClickTimer = setTimeout(() => {
         moonClickCount = 0;
         console.log('⏰ 點擊計時器重置');
-      }, 200); // 優化：從300ms減少到200ms，提升反應速度
+      }, 500); // 優化：增加到500ms，讓雙擊更容易觸發
     } else if (moonClickCount === 2) {
       console.log('👆👆 雙擊偵測！');
       clearTimeout(moonClickTimer);

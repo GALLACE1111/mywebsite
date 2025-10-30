@@ -3,18 +3,10 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    const leaderboardToggle = document.getElementById('leaderboard-toggle');
     const leaderboardPanel = document.getElementById('leaderboard-panel');
     const leaderboardClose = document.getElementById('leaderboard-close');
     const leaderboardList = document.getElementById('leaderboard-list');
     const userRankDisplay = document.getElementById('user-rank-display');
-
-    // 打開排行榜
-    if (leaderboardToggle) {
-        leaderboardToggle.addEventListener('click', () => {
-            showLeaderboard();
-        });
-    }
 
     // 關閉排行榜
     if (leaderboardClose) {

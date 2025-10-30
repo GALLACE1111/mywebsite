@@ -312,10 +312,10 @@ body.mobile-mode .time-period-display {
 /* ===== 左側縱向排行榜 ===== */
 .side-leaderboard {
   position: fixed;
-  top: 75px; /* 更貼近時段顯示器 */
+  top: 150px;
   left: 25px;
   width: 280px;
-  max-height: calc(100vh - 105px); /* 確保不超出螢幕 */
+  max-height: calc(100vh - 180px);
   background: rgba(40, 40, 50, 0.90); /* 稍微加深背景避免遮擋時難以閱讀 */
   backdrop-filter: blur(15px);
   border-radius: 20px;
@@ -550,37 +550,6 @@ body.mobile-mode .time-period-display {
 }
 
 /* 展開/收起按鈕 */
-.leaderboard-expand-btn {
-  width: 100%;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  padding: 10px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  display: none; /* 默認隱藏,有數據時顯示 */
-}
-
-.leaderboard-expand-btn:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
-}
-
-.leaderboard-expand-btn:active {
-  transform: scale(0.98);
-}
-
-.leaderboard-expand-btn span {
-  display: inline-block;
-  transition: transform 0.3s ease;
-}
-
-.leaderboard-expand-btn:hover span {
-  transform: translateY(2px);
-}
-
 /* 手機版：隱藏左側排行榜 */
 body.mobile-mode .side-leaderboard {
   display: none;
@@ -1312,45 +1281,6 @@ body.mobile-mode .social-link:hover {
   transform: translateY(-5px) scale(1.1);
 }
 
-/* ===== 愛心排行榜按鈕（重新定位到時段顯示器右邊） ===== */
-.leaderboard-btn {
-  position: fixed;
-  top: 25px; /* 與時段顯示器對齊 */
-  left: 330px; /* 時段顯示器寬度 + 間距 */
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  font-size: 28px;
-  color: white;
-  cursor: pointer;
-  z-index: 10000;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: leaderboardPulse 2s infinite;
-}
-
-@keyframes leaderboardPulse {
-  0%, 100% {
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4), 0 0 15px rgba(102, 126, 234, 0.3);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 8px 35px rgba(102, 126, 234, 0.9), 0 0 25px rgba(102, 126, 234, 0.7);
-    transform: scale(1.05);
-  }
-}
-
-.leaderboard-btn:hover {
-  transform: scale(1.15);
-  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.8), 0 0 30px rgba(102, 126, 234, 0.6);
-  animation: none; /* 停止脈衝，避免與hover衝突 */
-}
-
 /* ===== 意見回饋系統 ===== */
 .feedback-btn {
   position: fixed;
@@ -1593,16 +1523,6 @@ body.mobile-mode .social-link:hover {
   padding: 30px;
   color: #999;
   font-size: 15px;
-}
-
-/* 手機版：排行榜按鈕移到右上角（時段顯示器右邊） */
-body.mobile-mode .leaderboard-btn {
-  top: 15px;
-  left: auto;
-  right: 15px; /* 手機版改到右上角 */
-  width: 50px;
-  height: 50px;
-  font-size: 24px;
 }
 
 body.mobile-mode .feedback-btn {
@@ -2994,4 +2914,9 @@ body.mobile-mode .char-message {
     max-height: 250px;
     left: 10px;
   }
+}
+
+/* ===== 月球模式：隱藏排行榜相關元素 ===== */
+body.moon-mode .side-leaderboard {
+  display: none !important;
 }

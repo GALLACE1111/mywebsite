@@ -2,28 +2,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // 開發測試模式 - 允許所有讀寫
+    // 這個規則適合開發和測試使用
+    // 生產環境請記得更新為更嚴格的規則
 
-    // 用戶集合 - 允許讀取,只允許用戶更新自己的數據
-    match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
-      // 如果沒有驗證系統,暫時允許所有寫入(開發階段)
-      allow create, update: if true;
-    }
-
-    // 分數記錄 - 允許讀取和創建
-    match /scores/{scoreId} {
-      allow read: if true;
-      allow create: if true;
-      // 禁止直接更新或刪除分數記錄
-      allow update, delete: if false;
-    }
-
-    // 用戶總分 - 用於排行榜
-    match /userTotals/{userId} {
-      allow read: if true;
-      // 只允許通過 Cloud Functions 更新
-      allow write: if request.auth != null || true; // 開發階段允許所有寫入
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }

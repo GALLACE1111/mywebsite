@@ -1,3 +1,67 @@
+/* ===== 宇宙粒子特效 ===== */
+.cosmic-particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  animation: cosmic-burst 1s ease-out forwards;
+}
+
+.cosmic-particle.white {
+  background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 100%);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 12px rgba(200, 220, 255, 0.6);
+}
+
+.cosmic-particle.black {
+  background: radial-gradient(circle, rgba(50, 50, 80, 1) 0%, rgba(30, 30, 50, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
+  box-shadow: 0 0 6px rgba(50, 50, 80, 0.8), 0 0 10px rgba(30, 30, 50, 0.5);
+}
+
+@keyframes cosmic-burst {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+      calc(var(--end-x) - 50vw),
+      calc(var(--end-y) - 50vh)
+    ) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* 按鈕強調背景框動畫（宇宙脈衝） */
+.cosmic-pulse {
+  animation: cosmic-pulse-anim 0.8s ease-out forwards !important;
+  position: relative;
+  overflow: visible !important;
+}
+
+@keyframes cosmic-pulse-anim {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(33, 150, 243, 0.7),
+      0 0 20px rgba(33, 150, 243, 0.5),
+      inset 0 0 20px rgba(255, 255, 255, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 15px rgba(33, 150, 243, 0),
+      0 0 40px rgba(33, 150, 243, 0.8),
+      inset 0 0 30px rgba(255, 255, 255, 0.5);
+    transform: scale(1.08);
+  }
+  100% {
+    box-shadow:
+      0 0 0 25px rgba(33, 150, 243, 0),
+      0 0 20px rgba(33, 150, 243, 0.3),
+      inset 0 0 15px rgba(255, 255, 255, 0.2);
+    transform: scale(1);
+  }
+}
+
 /* ===== 放鬆驚喜 ===== */
 .relaxation-surprise {
   position: fixed;

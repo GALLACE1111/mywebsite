@@ -2,10 +2,19 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../GALLACE1111"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.DS_Store": true,
+			"**/node_modules": true,
+			"**/.backup": true
+		},
+		"search.exclude": {
+			"**/node_modules": true,
+			"**/.backup": true,
+			"**/package-lock.json": true
+		}
+	}
 }

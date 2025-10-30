@@ -5,10 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>阿賢的小窩</title>
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/additional_styles.css">
+  <link rel="stylesheet" href="assets/css/additional_styles.css?v=2">
   <link rel="stylesheet" href="assets/css/leaderboard.css">
+  <link rel="stylesheet" href="assets/css/first-place-reward.css">
+  <link rel="stylesheet" href="assets/css/title-badge.css">
+  <link rel="stylesheet" href="assets/css/heart-physics.css">
+  <!-- 虛擬滾動庫 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/clusterize.js@0.18.0/clusterize.min.css">
 </head>
 <body>
+  <!-- 全服公告跑馬燈 -->
+  <div id="global-announcement" class="global-announcement" style="display: none;">
+    <div class="announcement-text"></div>
+  </div>
+
   <!-- Canvas 動畫背景層 -->
   <canvas id="mainCanvas"></canvas>
 
@@ -42,13 +52,16 @@
   <div class="side-leaderboard" id="sideLeaderboard">
     <div class="side-leaderboard-header">
       <h3>🏆 愛心排行榜</h3>
+      <span class="expand-hint">點擊展開</span>
     </div>
     <div class="side-leaderboard-list" id="sideLeaderboardList">
-      <div class="side-leaderboard-loading">載入中...</div>
+      <!-- 虛擬滾動容器 -->
+      <div id="scrollArea" class="clusterize-scroll">
+        <div id="contentArea" class="clusterize-content">
+          <div class="side-leaderboard-loading">載入中...</div>
+        </div>
+      </div>
     </div>
-    <button class="leaderboard-expand-btn" id="leaderboardExpandBtn" style="display: none;">
-      <span>▼ 查看完整排行榜</span>
-    </button>
     <div class="side-leaderboard-user" id="sideLeaderboardUser">
       <div class="user-rank-display">
         <span class="user-rank-label">我的排名</span>
@@ -134,26 +147,21 @@
   <div id="support-team" class="support-team-container" style="display: none;">
     <div class="support-character support-char-1">
       <div class="char-message">加油！主人！</div>
-      <img src="assets/images/Support Group1.png" alt="應援角色1" class="char-image">
+      <img src="assets/images/support-group1.png" alt="應援角色1" class="char-image">
     </div>
     <div class="support-character support-char-2">
       <div class="char-message">你可以的呢！</div>
-      <img src="assets/images/Support Group2.png" alt="應援角色2" class="char-image">
+      <img src="assets/images/support-group2.png" alt="應援角色2" class="char-image">
     </div>
     <div class="support-character support-char-3">
       <div class="char-message">Fighting！先輩！</div>
-      <img src="assets/images/Support Group3.png" alt="應援角色3" class="char-image">
+      <img src="assets/images/support-group3.png" alt="應援角色3" class="char-image">
     </div>
     <div class="support-character support-char-4">
       <div class="char-message">頑張って！</div>
-      <img src="assets/images/Support Group4.png" alt="應援角色4" class="char-image">
+      <img src="assets/images/support-group4.png" alt="應援角色4" class="char-image">
     </div>
   </div>
-
-  <!-- 愛心排行榜按鈕 -->
-  <button id="leaderboard-toggle" class="leaderboard-btn" title="愛心排行榜">
-    🏆
-  </button>
 
   <!-- 意見回饋按鈕 -->
   <button id="feedback-toggle" class="feedback-btn" title="設定">
@@ -300,13 +308,23 @@
     </div>
   </div>
 
+  <!-- Matter.js 物理引擎 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+  <!-- 虛擬滾動庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/clusterize.js@0.18.0/clusterize.min.js"></script>
+
   <script src="config.js"></script>
-  <script src="assets/js/leaderboard.js"></script>
+  <script src="assets/js/avatar-upload.js"></script>
+  <!-- leaderboard.js 已移除 - 改用純後端 API -->
   <script src="assets/js/leaderboard-ui.js"></script>
   <script src="assets/js/side-leaderboard.js"></script>
+  <script src="assets/js/heart-physics.js"></script>
+  <script src="assets/js/title-badge.js"></script>
+  <script src="assets/js/first-place-reward.js"></script>
   <!-- <script src="assets/js/blood-particles.js"></script> -->
   <script src="assets/js/script.js"></script>
-  <script src="assets/js/additional_scripts.js"></script>
+  <script src="assets/js/additional_scripts.js?v=2"></script>
 </body>
 </html>
 

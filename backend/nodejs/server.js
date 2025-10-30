@@ -1,10 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { initializeFirebase, testFirebaseConnection, closeConnections } from './config/firebase.js';
 import leaderboardRoutes from './routes/leaderboard.routes.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +23,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 提供前端靜態文件
+const frontendPath = path.join(__dirname, '../../frontend');
+app.use(express.static(frontendPath));
+
 app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
@@ -27,7 +36,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/', (req, res) => {
+// API 資訊路由
+app.get('/api', (req, res) => {
     res.json({
         message: 'Simplified Leaderboard API Server',
         version: '1.0.0',
@@ -40,14 +50,13 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/health', async (req, res) => {
-    const firebaseOk = await testFirebaseConnection();
+// 優化：健康檢查不查詢 Firestore，減少配額消耗
+app.get('/api/health', (req, res) => {
     res.json({
-        status: firebaseOk ? 'ok' : 'degraded',
+        status: 'ok',
         timestamp: new Date().toISOString(),
-        services: {
-            firebase: firebaseOk ? 'connected' : 'disconnected'
-        }
+        service: 'leaderboard-api',
+        uptime: process.uptime()
     });
 });
 

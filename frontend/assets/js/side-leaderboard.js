@@ -1,22 +1,27 @@
 /**
- * 左側縱向排行榜系統
+ * 左側縱向排行榜系統 - 純後端版本
  * - 顯示前10名玩家（可滾動查看所有）
  * - 玩家名稱編輯功能
- * - 每5秒自動更新
- * - 與後端API整合
+ * - 每2秒自動更新
+ * - 完全依賴後端 Firebase API
  */
 
 class SideLeaderboard {
     constructor() {
         // 使用配置文件中的 API 地址
         this.apiBaseUrl = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || 'http://localhost:3000/api';
-        this.updateInterval = 5000; // 5秒更新一次
+        this.updateInterval = 2000; // 2秒更新一次
         this.userId = this.getUserId();
         this.intervalId = null;
         this.isExpanded = false; // 展開狀態
         this.displayLimit = 10; // 默認顯示10人
         this.maxLimit = 100; // 最多100人
         this.currentData = []; // 緩存當前數據
+        this.currentScore = 0; // 緩存當前玩家分數
+
+        // 虛擬滾動相關
+        this.clusterize = null;
+
         this.init();
     }
 
@@ -36,25 +41,54 @@ class SideLeaderboard {
      * 初始化
      */
     init() {
-        console.log('🏆 初始化左側排行榜系統...');
+        console.log('🏆 初始化左側排行榜系統（純後端版本）...');
+        this.initVirtualScroll();
         this.bindEvents();
         this.loadLeaderboard();
         this.startAutoUpdate();
     }
 
     /**
+     * 初始化虛擬滾動
+     */
+    initVirtualScroll() {
+        setTimeout(() => {
+            if (typeof Clusterize !== 'undefined') {
+                this.clusterize = new Clusterize({
+                    rows: [],
+                    scrollId: 'scrollArea',
+                    contentId: 'contentArea',
+                    rows_in_block: 10,
+                    blocks_in_cluster: 4
+                });
+                console.log('✅ 虛擬滾動已初始化');
+            } else {
+                console.warn('⚠️ Clusterize.js 未載入');
+            }
+        }, 100);
+    }
+
+    /**
      * 綁定事件
      */
     bindEvents() {
-        const editBtn = document.getElementById('userNameEditBtn');
-        if (editBtn) {
-            editBtn.addEventListener('click', () => this.showNameEditDialog());
+        // 點擊標題展開/收起
+        const header = document.querySelector('.side-leaderboard-header');
+        if (header) {
+            header.addEventListener('click', (e) => {
+                if (e.target.closest('#userNameEditBtn')) return;
+                this.toggleExpand();
+            });
+            header.style.cursor = 'pointer';
         }
 
-        // 綁定展開/收起按鈕事件
-        const expandBtn = document.getElementById('leaderboardExpandBtn');
-        if (expandBtn) {
-            expandBtn.addEventListener('click', () => this.toggleExpand());
+        // 名稱編輯按鈕
+        const editBtn = document.getElementById('userNameEditBtn');
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showNameEditDialog();
+            });
         }
     }
 
@@ -65,33 +99,31 @@ class SideLeaderboard {
         this.isExpanded = !this.isExpanded;
         this.displayLimit = this.isExpanded ? this.maxLimit : 10;
 
-        // 更新容器類
         const container = document.getElementById('sideLeaderboard');
         if (container) {
-            if (this.isExpanded) {
-                container.classList.add('expanded');
-            } else {
-                container.classList.remove('expanded');
-            }
+            container.classList.toggle('expanded', this.isExpanded);
         }
 
-        // 更新按鈕文字
-        const expandBtn = document.getElementById('leaderboardExpandBtn');
-        if (expandBtn) {
-            expandBtn.innerHTML = this.isExpanded
-                ? '<span>▲ 收起排行榜</span>'
-                : '<span>▼ 查看完整排行榜</span>';
+        const header = document.querySelector('.side-leaderboard-header h3');
+        if (header) {
+            const indicator = this.isExpanded ? '▲' : '▼';
+            header.textContent = `${indicator} 🏆 愛心排行榜`;
         }
 
-        // 重新渲染
+        const hint = document.querySelector('.expand-hint');
+        if (hint) {
+            hint.textContent = this.isExpanded ? '點擊收起' : '點擊展開';
+        }
+
         if (this.currentData.length > 0) {
             this.renderLeaderboard(this.currentData);
         }
 
-        // 平滑滾動到頂部
-        const listContainer = document.getElementById('sideLeaderboardList');
-        if (listContainer && !this.isExpanded) {
-            listContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!this.isExpanded) {
+            const scrollArea = document.getElementById('scrollArea');
+            if (scrollArea) {
+                scrollArea.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
     }
 
@@ -184,11 +216,6 @@ class SideLeaderboard {
         const oldName = localStorage.getItem('playerName') || '匿名玩家';
         localStorage.setItem('playerName', newName);
 
-        // 同步到 leaderboardManager
-        if (window.leaderboardManager) {
-            window.leaderboardManager.setCurrentUser(newName);
-        }
-
         // 更新UI
         const userNameText = document.getElementById('userNameText');
         if (userNameText) {
@@ -217,93 +244,114 @@ class SideLeaderboard {
                 console.warn('⚠️ 名稱同步到後端失敗');
             }
         } catch (error) {
-            console.warn('⚠️ 無法連接到後端API，名稱只保存在本地:', error);
+            console.error('❌ 無法連接到後端API:', error);
+            alert('⚠️ 無法連接到伺服器，請檢查網路連線');
         }
     }
 
     /**
-     * 載入排行榜
+     * 載入排行榜（從後端）
      */
     async loadLeaderboard() {
         try {
             const response = await fetch(`${this.apiBaseUrl}/leaderboard?limit=100`);
 
             if (!response.ok) {
-                throw new Error('API請求失敗');
+                throw new Error(`API請求失敗: ${response.status}`);
             }
 
             const result = await response.json();
-            const data = result.data || result; // 支持不同的響應格式
+            const data = result.data || result;
 
             // 緩存數據
             this.currentData = data;
 
             this.renderLeaderboard(data);
 
-            // 獲取當前玩家排名
+            // 獲取當前玩家排名和分數
             await this.loadMyRank();
         } catch (error) {
-            console.warn('⚠️ 無法從後端載入排行榜，使用LocalStorage備用方案:', error);
-            this.loadLeaderboardFromLocalStorage();
+            console.error('❌ 無法從後端載入排行榜:', error);
+            this.showErrorState();
         }
     }
 
     /**
-     * 從LocalStorage載入排行榜（備用方案）
+     * 顯示錯誤狀態
      */
-    loadLeaderboardFromLocalStorage() {
-        const leaderboardManager = window.leaderboardManager;
-        if (!leaderboardManager) {
-            console.warn('⚠️ LeaderboardManager未初始化，正在重試...');
-            // 延遲重試，等待 leaderboardManager 初始化
-            setTimeout(() => {
-                if (window.leaderboardManager) {
-                    this.loadLeaderboardFromLocalStorage();
-                } else {
-                    console.error('❌ LeaderboardManager初始化失敗');
-                    const listContainer = document.getElementById('sideLeaderboardList');
-                    if (listContainer) {
-                        listContainer.innerHTML = '<div class="side-leaderboard-loading">排行榜載入失敗</div>';
-                    }
-                }
-            }, 500);
-            return;
-        }
+    showErrorState() {
+        const errorHtml = `
+            <div class="side-leaderboard-error">
+                <p>❌ 無法連接到伺服器</p>
+                <p style="font-size: 14px; color: #666;">請檢查網路連線</p>
+            </div>
+        `;
 
-        const data = leaderboardManager.getLeaderboard(100);
-
-        if (!data || data.length === 0) {
-            console.log('📊 排行榜為空，顯示初始數據');
-        }
-
-        // 緩存數據
-        this.currentData = data;
-
-        this.renderLeaderboard(data);
-
-        // 獲取當前玩家排名
-        const playerName = localStorage.getItem('playerName') || '匿名玩家';
-        const currentUser = data.find(item => item.username === playerName);
-        const rank = currentUser ? data.indexOf(currentUser) + 1 : '-';
-
-        const userRankValue = document.getElementById('userRankValue');
-        if (userRankValue) {
-            userRankValue.textContent = rank === '-' ? '-' : `#${rank}`;
+        if (this.clusterize) {
+            this.clusterize.update([errorHtml]);
         }
     }
 
     /**
      * 即時更新當前玩家分數（供外部調用）
      */
-    updateCurrentPlayerScore(loveCount) {
+    async updateCurrentPlayerScore(loveCount) {
         const playerName = localStorage.getItem('playerName') || '匿名玩家';
 
-        // 更新到LeaderboardManager
-        if (window.leaderboardManager) {
-            window.leaderboardManager.submitLove(playerName, loveCount);
+        // 本地累加分數（樂觀更新）
+        this.currentScore += loveCount;
 
-            // 立即重新載入排行榜
-            this.loadLeaderboardFromLocalStorage();
+        // 同步到後端API
+        await this.syncScoreToBackend(playerName);
+    }
+
+    /**
+     * 同步分數到後端
+     */
+    async syncScoreToBackend(playerName) {
+        try {
+            console.log(`📤 正在同步分數到後端: userId=${this.userId}, total_score=${this.currentScore}`);
+
+            const response = await fetch(`${this.apiBaseUrl}/leaderboard/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: String(this.userId),  // ✅ 確保為字串
+                    username: playerName,
+                    score: this.currentScore  // ✅ 提交總分（後端已改為覆蓋式更新）
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                console.log('✅ 分數已同步到後端:', result);
+                // 立即重新載入排行榜
+                await this.loadLeaderboard();
+            } else {
+                console.warn('⚠️ 後端分數同步失敗:', response.status, result);
+            }
+        } catch (error) {
+            console.error('❌ 無法連接到後端API進行分數同步:', error);
+        }
+    }
+
+    /**
+     * 從後端獲取當前分數並初始化
+     */
+    async initializeCurrentScore() {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/leaderboard/my-rank/${this.userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                this.currentScore = data.total_score || 0;
+                console.log(`📊 當前分數初始化: ${this.currentScore}`);
+            }
+        } catch (error) {
+            console.warn('⚠️ 無法從後端獲取當前分數:', error);
+            this.currentScore = 0;
         }
     }
 
@@ -311,47 +359,72 @@ class SideLeaderboard {
      * 渲染排行榜
      */
     renderLeaderboard(data) {
-        const listContainer = document.getElementById('sideLeaderboardList');
-        if (!listContainer) return;
-
         const playerName = localStorage.getItem('playerName') || '匿名玩家';
 
-        // 根據展開狀態決定顯示數量
         const displayData = data.slice(0, this.displayLimit);
 
         if (displayData.length === 0) {
-            listContainer.innerHTML = '<div class="side-leaderboard-loading">暫無排行榜數據</div>';
+            if (this.clusterize) {
+                this.clusterize.update(['<div class="side-leaderboard-loading">暫無排行榜數據</div>']);
+            }
             return;
         }
 
-        // 獎盃圖標 - 使用更華麗的獎盃
         const trophies = ['🏆', '🥈', '🥉'];
         const trophyClasses = ['gold-trophy', 'silver-trophy', 'bronze-trophy'];
 
-        listContainer.innerHTML = displayData.map((player, index) => {
-            const rank = index + 1;
+        const rows = displayData.map((player, index) => {
+            const rank = player.rank || (index + 1);
             const isCurrentUser = player.username === playerName || player.user_id === this.userId;
 
-            // 前三名顯示獎盃,其他顯示排名
             const rankDisplay = rank <= 3
                 ? `<div class="rank-trophy ${trophyClasses[index]}">${trophies[index]}</div>`
                 : `<div class="rank-badge">#${rank}</div>`;
 
-            // 獲取分數,兼容不同的數據格式
-            const score = player.totalLoves || player.score || player.total_loves || 0;
+            // ✅ 統一使用 total_score (snake_case)
+            const score = player.total_score || 0;
+
+            // 更新當前玩家分數
+            if (isCurrentUser) {
+                this.currentScore = score;
+            }
+
+            // 檢查稱號
+            const hasBelovedTitle = player.titles &&
+                                    Array.isArray(player.titles) &&
+                                    player.titles.some(t => t.titleId === 'xian_xian_beloved');
+
+            const titleClass = hasBelovedTitle ? 'has-title' : '';
+
+            // 大頭貼
+            const avatarUrl = player.avatar_url;
+            const avatarHtml = avatarUrl
+                ? `<img src="${avatarUrl}" alt="${this.escapeHtml(player.username)}" class="player-avatar" onerror="this.style.display='none'">`
+                : '';
+
+            const uploadBtnHtml = isCurrentUser
+                ? `<button class="avatar-upload-btn" onclick="sideLeaderboard.uploadAvatar('${player.user_id || this.userId}')" title="上傳大頭貼">📷</button>`
+                : '';
 
             return `
-                <div class="side-leaderboard-item ${isCurrentUser ? 'current-user' : ''} ${rank <= 3 ? 'top-three' : ''}">
+                <div class="side-leaderboard-item ${isCurrentUser ? 'current-user' : ''} ${rank <= 3 ? 'top-three' : ''} ${titleClass}">
                     ${rankDisplay}
+                    <div class="player-avatar-container">
+                        ${avatarHtml}
+                        ${uploadBtnHtml}
+                    </div>
                     <div class="player-info">
                         <div class="player-name">${this.escapeHtml(player.username)}</div>
                         <div class="player-loves">💖 ${score}</div>
                     </div>
                 </div>
             `;
-        }).join('');
+        });
 
-        // 更新顯示計數
+        if (this.clusterize) {
+            this.clusterize.update(rows);
+        }
+
         this.updateDisplayCount(displayData.length, data.length);
     }
 
@@ -359,13 +432,12 @@ class SideLeaderboard {
      * 更新顯示計數
      */
     updateDisplayCount(displayed, total) {
-        const expandBtn = document.getElementById('leaderboardExpandBtn');
-        if (expandBtn && total > 10) {
-            expandBtn.style.display = 'block';
-            const btnText = this.isExpanded
-                ? `▲ 收起排行榜 (顯示 ${displayed}/${total})`
-                : `▼ 查看完整排行榜 (${total}人)`;
-            expandBtn.innerHTML = `<span>${btnText}</span>`;
+        const hint = document.querySelector('.expand-hint');
+        if (hint && total > 10) {
+            const hintText = this.isExpanded
+                ? `點擊收起 (${displayed}/${total})`
+                : `點擊展開 (${total}人)`;
+            hint.textContent = hintText;
         }
     }
 
@@ -386,6 +458,11 @@ class SideLeaderboard {
             if (userRankValue) {
                 userRankValue.textContent = data.rank ? `#${data.rank}` : '-';
             }
+
+            // 更新當前分數
+            if (data.total_score !== undefined) {
+                this.currentScore = data.total_score;
+            }
         } catch (error) {
             console.warn('⚠️ 無法從後端獲取排名:', error);
         }
@@ -396,6 +473,9 @@ class SideLeaderboard {
      */
     startAutoUpdate() {
         console.log(`⏱️ 開始自動更新排行榜（每${this.updateInterval / 1000}秒）`);
+
+        // 初始化當前分數
+        this.initializeCurrentScore();
 
         this.intervalId = setInterval(() => {
             this.loadLeaderboard();
@@ -414,6 +494,62 @@ class SideLeaderboard {
     }
 
     /**
+     * 上傳大頭貼
+     */
+    uploadAvatar(userId) {
+        if (!window.avatarUploadManager) {
+            console.error('❌ AvatarUploadManager 未初始化');
+            return;
+        }
+
+        window.avatarUploadManager.selectAndUpload(
+            userId,
+            (message) => {
+                console.log('📤', message);
+            },
+            (result) => {
+                console.log('✅ 大頭貼上傳成功:', result);
+                this.showMessage('✨ 大頭貼上傳成功！');
+                this.loadLeaderboard();
+            },
+            (error) => {
+                console.error('❌ 大頭貼上傳失敗:', error);
+                this.showMessage('❌ ' + error.message, 'error');
+            }
+        );
+    }
+
+    /**
+     * 顯示訊息提示
+     */
+    showMessage(message, type = 'success') {
+        const messageEl = document.createElement('div');
+        messageEl.className = `upload-message ${type}`;
+        messageEl.textContent = message;
+        messageEl.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: ${type === 'success' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'};
+            color: white;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        `;
+
+        document.body.appendChild(messageEl);
+
+        setTimeout(() => {
+            messageEl.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => messageEl.remove(), 300);
+        }, 3000);
+    }
+
+    /**
      * HTML轉義
      */
     escapeHtml(text) {
@@ -425,29 +561,17 @@ class SideLeaderboard {
 
 // 在DOM載入完成後初始化
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🏆 準備初始化左側排行榜...');
+    console.log('🏆 準備初始化左側排行榜（純後端版本）...');
 
-    // 等待其他系統初始化完成
     setTimeout(() => {
         window.sideLeaderboard = new SideLeaderboard();
 
-        // 同步玩家名稱（優先使用 leaderboardManager 的名稱）
+        // 從 localStorage 讀取玩家名稱
         let playerName = localStorage.getItem('playerName');
 
-        // 如果沒有 playerName，嘗試從 leaderboardManager 獲取
-        if (!playerName && window.leaderboardManager) {
-            playerName = window.leaderboardManager.getCurrentUser();
-            if (playerName) {
-                localStorage.setItem('playerName', playerName);
-            }
-        }
-
-        // 如果還是沒有，使用默認值並同步到 leaderboardManager
         if (!playerName) {
             playerName = '匿名玩家';
-            if (window.leaderboardManager) {
-                window.leaderboardManager.setCurrentUser(playerName);
-            }
+            localStorage.setItem('playerName', playerName);
         }
 
         // 更新UI

@@ -50,7 +50,7 @@ Desktop.ini
 ehthumbs.db
 
 # 編輯器
-.vscode/
+# .vscode/ - 保留專案配置
 .idea/
 *.swp
 *.swo

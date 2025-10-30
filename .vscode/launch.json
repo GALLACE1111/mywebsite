@@ -7,9 +7,18 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "開啟 index.html",
-            "url": "file:///${workspaceFolder}/index.html",
-            "webRoot": "${workspaceFolder}"
+            "name": "開啟前端頁面",
+            "url": "http://localhost:5500/frontend/index.html",
+            "webRoot": "${workspaceFolder}/frontend"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "啟動後端服務器",
+            "program": "${workspaceFolder}/backend/nodejs/server.js",
+            "cwd": "${workspaceFolder}/backend/nodejs",
+            "envFile": "${workspaceFolder}/backend/nodejs/.env",
+            "console": "integratedTerminal"
         }
     ]
 }

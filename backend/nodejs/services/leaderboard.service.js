@@ -1,5 +1,10 @@
 import { getFirestore, admin } from '../config/firebase.js';
 
+// ============ 排行榜服務 ============
+// 數據庫: Firebase Firestore (NoSQL，非 MySQL)
+// 玩家上限: 100人 (Firebase 免費版限制)
+// 注意: 免費版有每日讀寫配額限制，不可隨意擴展
+
 class LeaderboardService {
     constructor() {
         this.db = null;
@@ -41,7 +46,7 @@ class LeaderboardService {
                     rank: offset + index + 1,
                     user_id: doc.id,
                     username: data.username || `User ${doc.id}`,
-                    score: data.totalScore || 0
+                    total_score: data.totalScore || 0  // ✅ 改為 snake_case
                 });
             });
 
@@ -72,7 +77,7 @@ class LeaderboardService {
                     success: true,
                     user_id: userId,
                     rank: null,
-                    score: null,
+                    total_score: null,  // ✅ 改為 snake_case
                     message: 'User not found in leaderboard'
                 };
             }
@@ -105,7 +110,7 @@ class LeaderboardService {
                 user_id: userId,
                 username: username || `User ${userId}`,
                 rank: rank,
-                score: userScore,
+                total_score: userScore,  // ✅ 改為 snake_case
                 total_users: total,
                 percentile: total > 0 ? ((total - rank + 1) / total * 100).toFixed(2) + '%' : '0%'
             };
@@ -148,7 +153,7 @@ class LeaderboardService {
                     rank: start + index,
                     user_id: doc.id,
                     username: data.username || `User ${doc.id}`,
-                    score: data.totalScore || 0,
+                    total_score: data.totalScore || 0,  // ✅ 改為 snake_case
                     is_current_user: doc.id === userId
                 });
             });
@@ -197,14 +202,15 @@ class LeaderboardService {
                     createdAt: admin.firestore.FieldValue.serverTimestamp()
                 });
 
-                // 更新用户总分
+                // 更新用户总分（✅ 覆蓋式更新，不累加）
                 const userTotalRef = db.collection('userTotals').doc(userId);
                 const userTotalDoc = await transaction.get(userTotalRef);
 
                 if (userTotalDoc.exists) {
-                    const currentTotal = userTotalDoc.data().totalScore || 0;
+                    // ✅ 直接設定為新的總分，不累加
                     transaction.update(userTotalRef, {
-                        totalScore: currentTotal + score,
+                        totalScore: score,
+                        username: username,
                         lastUpdated: admin.firestore.FieldValue.serverTimestamp()
                     });
                 } else {
@@ -227,7 +233,7 @@ class LeaderboardService {
                 success: true,
                 score_id: result.scoreId,
                 user_id: result.userId,
-                score: result.score,
+                total_score: result.score,  // ✅ 改為 snake_case
                 message: 'Score submitted successfully'
             };
         } catch (error) {

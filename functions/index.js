@@ -14,6 +14,17 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
 
+// ============ 配置 ============
+// 數據庫: Firebase Firestore (NoSQL 文檔數據庫，非 MySQL/關聯式數據庫)
+// 玩家數量上限: 100人 (因使用 Firebase 免費版，受配額限制)
+// ⚠️ Firebase 免費版限制:
+//    - 每日讀取: 50,000 次
+//    - 每日寫入: 20,000 次
+//    - 每日刪除: 20,000 次
+//    - 儲存空間: 1 GB
+// 注意: 不可隨意擴展容量，需升級到付費方案才能擴展
+const MAX_PLAYERS = 100;
+
 // ============ 排行榜服務邏輯 ============
 
 /**
@@ -186,7 +197,21 @@ async function submitScore(userId, score, gameType = 'default') {
         const result = await db.runTransaction(async (transaction) => {
             // 檢查用戶是否存在
             const userRef = db.collection('users').doc(userId);
+            const userTotalRef = db.collection('userTotals').doc(userId);
+
             const userDoc = await transaction.get(userRef);
+            const userTotalDoc = await transaction.get(userTotalRef);
+
+            // ====== 檢查玩家數量限制 ======
+            if (!userDoc.exists && !userTotalDoc.exists) {
+                // 這是新玩家，需要檢查是否已達到上限
+                const totalUsersSnapshot = await db.collection('users').count().get();
+                const currentPlayerCount = totalUsersSnapshot.data().count;
+
+                if (currentPlayerCount >= MAX_PLAYERS) {
+                    throw new Error('PLAYER_LIMIT_REACHED');
+                }
+            }
 
             if (!userDoc.exists) {
                 // 如果用戶不存在,創建用戶
@@ -208,9 +233,6 @@ async function submitScore(userId, score, gameType = 'default') {
             });
 
             // 更新用戶總分
-            const userTotalRef = db.collection('userTotals').doc(userId);
-            const userTotalDoc = await transaction.get(userTotalRef);
-
             if (userTotalDoc.exists) {
                 const currentTotal = userTotalDoc.data().totalScore || 0;
                 transaction.update(userTotalRef, {
@@ -242,6 +264,16 @@ async function submitScore(userId, score, gameType = 'default') {
         };
     } catch (error) {
         console.error('Error submitting score:', error);
+
+        // 處理玩家上限錯誤
+        if (error.message === 'PLAYER_LIMIT_REACHED') {
+            return {
+                success: false,
+                error: 'PLAYER_LIMIT_REACHED',
+                message: `抱歉，遊戲已達到${MAX_PLAYERS}名玩家上限`
+            };
+        }
+
         throw error;
     }
 }
@@ -340,6 +372,12 @@ app.post('/leaderboard/submit', async (req, res) => {
         }
 
         const result = await submitScore(user_id, scoreNum, game_type);
+
+        // 處理玩家上限情況
+        if (!result.success && result.error === 'PLAYER_LIMIT_REACHED') {
+            return res.status(403).json(result); // 使用 403 Forbidden
+        }
+
         res.json(result);
     } catch (error) {
         console.error('Error in POST /leaderboard/submit:', error);

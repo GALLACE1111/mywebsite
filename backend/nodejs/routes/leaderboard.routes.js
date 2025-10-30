@@ -1,5 +1,6 @@
 import express from 'express';
 import leaderboardService from '../services/leaderboard.service.js';
+import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
         } = req.query;
 
         const pageNum = parseInt(page);
-        const limitNum = Math.min(parseInt(limit), 100);
+        const limitNum = Math.min(parseInt(limit), 200); // 支持查看更多功能
 
         if (pageNum < 1 || limitNum < 1) {
             return res.status(400).json({
@@ -51,9 +52,10 @@ router.get('/', async (req, res) => {
 router.get('/my-rank/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const userIdNum = parseInt(userId);
+        console.log(`📊 Fetching rank for user: ${userId}`);
 
-        if (isNaN(userIdNum) || userIdNum < 1) {
+        if (!userId || userId.trim() === '') {
+            console.error('❌ Invalid user ID:', userId);
             return res.status(400).json({
                 success: false,
                 error: 'Invalid user ID'
@@ -61,14 +63,17 @@ router.get('/my-rank/:userId', async (req, res) => {
         }
 
         // 獲取用戶排名
-        const result = await leaderboardService.getUserRank(userIdNum);
+        const result = await leaderboardService.getUserRank(userId);
+        console.log(`✅ User rank result:`, result);
         res.json(result);
 
     } catch (error) {
-        console.error('Error in GET /leaderboard/my-rank:', error);
+        console.error('❌ Error in GET /leaderboard/my-rank:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
-            error: 'Internal server error'
+            error: 'Internal server error',
+            message: error.message
         });
     }
 });
@@ -88,10 +93,9 @@ router.get('/around/:userId', async (req, res) => {
         const { userId } = req.params;
         const { range = 5 } = req.query;
 
-        const userIdNum = parseInt(userId);
         const rangeNum = Math.min(parseInt(range), 20);
 
-        if (isNaN(userIdNum) || userIdNum < 1) {
+        if (!userId || userId.trim() === '') {
             return res.status(400).json({
                 success: false,
                 error: 'Invalid user ID'
@@ -99,7 +103,7 @@ router.get('/around/:userId', async (req, res) => {
         }
 
         // 獲取周圍排名
-        const result = await leaderboardService.getUserRankWithContext(userIdNum, rangeNum);
+        const result = await leaderboardService.getUserRankWithContext(userId, rangeNum);
         res.json(result);
 
     } catch (error) {
@@ -117,25 +121,24 @@ router.get('/around/:userId', async (req, res) => {
  *
  * 請求體：
  * - user_id: 用戶ID (必填)
+ * - username: 用戶名稱 (選填)
  * - score: 分數 (必填)
- * - game_type: 遊戲類型 (選填, 預設: default)
  */
 router.post('/submit', async (req, res) => {
     try {
-        const { user_id, score, game_type = 'default' } = req.body;
+        const { user_id, username, score } = req.body;
 
         // 驗證參數
-        if (!user_id || !score) {
+        if (!user_id || score === undefined || score === null) {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields: user_id and score'
             });
         }
 
-        const userIdNum = parseInt(user_id);
         const scoreNum = parseInt(score);
 
-        if (isNaN(userIdNum) || userIdNum < 1) {
+        if (typeof user_id !== 'string' || user_id.trim() === '') {
             return res.status(400).json({
                 success: false,
                 error: 'Invalid user_id'
@@ -150,7 +153,13 @@ router.post('/submit', async (req, res) => {
         }
 
         // 提交分數
-        const result = await leaderboardService.submitScore(userIdNum, scoreNum, game_type);
+        const result = await leaderboardService.submitScore(user_id, username, scoreNum);
+
+        // 處理玩家上限情況
+        if (!result.success && result.error === 'PLAYER_LIMIT_REACHED') {
+            return res.status(403).json(result); // 使用 403 Forbidden
+        }
+
         res.json(result);
 
     } catch (error) {
@@ -158,6 +167,194 @@ router.post('/submit', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * PUT /api/leaderboard/username
+ * 更新用戶名稱
+ *
+ * 請求體：
+ * - userId: 用戶ID (必填)
+ * - newUsername: 新用戶名稱 (必填, 2-20字元)
+ */
+router.put('/username', async (req, res) => {
+    try {
+        const { userId, newUsername } = req.body;
+
+        // 驗證參數
+        if (!userId || !newUsername) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: userId and newUsername'
+            });
+        }
+
+        if (typeof userId !== 'string' || userId.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid userId'
+            });
+        }
+
+        if (typeof newUsername !== 'string' || newUsername.trim().length < 2 || newUsername.trim().length > 20) {
+            return res.status(400).json({
+                success: false,
+                error: 'Username must be between 2 and 20 characters'
+            });
+        }
+
+        // 更新用戶名稱
+        const result = await leaderboardService.updateUsername(userId, newUsername);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in PUT /leaderboard/username:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+});
+
+/**
+ * POST /api/leaderboard/grant-title
+ * 授予玩家稱號
+ *
+ * 請求體：
+ * - userId: 用戶ID (必填)
+ * - titleId: 稱號ID (必填)
+ * - titleName: 稱號名稱 (必填)
+ */
+router.post('/grant-title', async (req, res) => {
+    try {
+        const { userId, titleId, titleName } = req.body;
+
+        // 驗證參數
+        if (!userId || !titleId || !titleName) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: userId, titleId, and titleName'
+            });
+        }
+
+        // 授予稱號
+        const result = await leaderboardService.grantTitle(userId, titleId, titleName);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in POST /leaderboard/grant-title:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * GET /api/leaderboard/titles/:userId
+ * 獲取玩家稱號列表
+ *
+ * 路徑參數：
+ * - userId: 用戶ID
+ */
+router.get('/titles/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId || userId.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid user ID'
+            });
+        }
+
+        // 獲取稱號
+        const result = await leaderboardService.getUserTitles(userId);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in GET /leaderboard/titles:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * GET /api/leaderboard/check-first/:userId
+ * 檢查玩家是否為第一名
+ *
+ * 路徑參數：
+ * - userId: 用戶ID
+ */
+router.get('/check-first/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId || userId.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid user ID'
+            });
+        }
+
+        // 檢查第一名
+        const result = await leaderboardService.checkFirstPlace(userId);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in GET /leaderboard/check-first:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * POST /api/leaderboard/avatar
+ * 上傳用戶大頭貼
+ *
+ * Body (multipart/form-data):
+ * - userId: 用戶ID (必填)
+ * - avatar: 圖片文件 (必填)
+ */
+router.post('/avatar', upload.single('avatar'), async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        // 驗證參數
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required field: userId'
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'No image file uploaded'
+            });
+        }
+
+        // 上傳大頭貼
+        const result = await leaderboardService.uploadAvatar(
+            userId,
+            req.file.buffer,
+            req.file.mimetype
+        );
+
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in POST /leaderboard/avatar:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
         });
     }
 });
