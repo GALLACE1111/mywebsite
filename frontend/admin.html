@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排行榜管理後台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 登入頁面樣式 */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-box h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .login-box p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .login-form label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.authenticated {
+            display: block;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .warning {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #155724;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            color: #333;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .players-table {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .action-btn.reset {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .action-btn.delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+        }
+
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            color: white;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登入頁面 -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>🔒 管理後台登入</h1>
+            <p>請輸入管理員密碼以繼續</p>
+
+            <div class="login-error" id="loginError">
+                密碼錯誤，請重試
+            </div>
+
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="password">密碼</label>
+                    <input type="password" id="password" placeholder="請輸入管理員密碼" required autofocus>
+                </div>
+                <button type="submit" class="login-btn">登入</button>
+            </form>
+
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                💡 預設密碼：admin123<br>
+                請在 admin.js 中修改密碼
+            </p>
+        </div>
+    </div>
+
+    <!-- 管理後台內容 -->
+    <div class="admin-content" id="adminContent">
+        <div class="container">
+            <div class="header">
+                <div class="header-actions">
+                    <div class="header-info">
+                        <h1>🛠️ 排行榜管理後台</h1>
+                        <p>管理玩家資料、重置分數、清空排行榜</p>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">🚪 登出</button>
+                </div>
+            </div>
+
+            <div class="warning">
+                ✅ <strong>已啟用密碼保護</strong> - 您已成功登入管理後台。所有刪除操作無法復原，請謹慎操作。
+            </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>總玩家數</h3>
+                <div class="value" id="totalPlayers">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>當前頁面</h3>
+                <div class="value" id="currentPage">1</div>
+            </div>
+            <div class="stat-card">
+                <h3>總頁數</h3>
+                <div class="value" id="totalPages">-</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="refreshPlayers()">🔄 重新載入</button>
+            <button class="btn btn-danger" onclick="showClearAllModal()">🗑️ 清空排行榜</button>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜尋玩家 ID 或名稱..." onkeyup="filterPlayers()">
+        </div>
+
+        <div class="players-table">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>載入中...</p>
+            </div>
+            <table id="playersTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>玩家 ID</th>
+                        <th>名稱</th>
+                        <th>分數</th>
+                        <th>最後更新</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="playersBody">
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <button onclick="prevPage()" id="prevBtn">上一頁</button>
+                <span id="pageInfo">第 1 頁</span>
+                <button onclick="nextPage()" id="nextBtn">下一頁</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 清空排行榜確認 Modal -->
+    <div class="modal" id="clearAllModal">
+        <div class="modal-content">
+            <h2>⚠️ 確認清空排行榜</h2>
+            <p>此操作將<strong>刪除所有玩家資料</strong>，包含分數記錄和歷史資料。</p>
+            <p style="color: red;">此操作<strong>無法復原</strong>！</p>
+            <p>請輸入 <strong>DELETE ALL</strong> 來確認：</p>
+            <input type="text" id="clearConfirmInput" style="width: 100%; padding: 10px; border: 2px solid #dc3545; border-radius: 6px; margin-bottom: 20px;">
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeClearAllModal()">取消</button>
+                <button class="btn btn-danger" onclick="confirmClearAll()">確認刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重置分數 Modal -->
+    <div class="modal" id="resetScoreModal">
+        <div class="modal-content">
+            <h2>🔄 重置玩家分數</h2>
+            <p>玩家：<strong id="resetPlayerName"></strong></p>
+            <p>當前分數：<strong id="resetPlayerScore"></strong></p>
+            <label style="display: block; margin: 15px 0;">
+                <input type="checkbox" id="deleteHistoryCheck">
+                同時刪除歷史分數記錄
+            </label>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeResetScoreModal()">取消</button>
+                <button class="btn btn-warning" onclick="confirmResetScore()">確認重置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 刪除玩家 Modal -->
+    <div class="modal" id="deletePlayerModal">
+        <div class="modal-content">
+            <h2>🗑️ 刪除玩家</h2>
+            <p>玩家：<strong id="deletePlayerName"></strong></p>
+            <p>分數：<strong id="deletePlayerScore"></strong></p>
+            <p style="color: red;">此操作將<strong>永久刪除</strong>該玩家的所有資料，包含歷史記錄。</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeDeletePlayerModal()">取消</button>
+                <button class="btn btn-danger" onclick="confirmDeletePlayer()">確認刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div class="toast" id="toast"></div>
+
+        </div>
+    </div>
+
+    <script src="assets/js/admin.js"></script>
+</body>
+</html>

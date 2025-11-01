@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: leaderboard-api
+    env: node
+    region: oregon  # 或 singapore, frankfurt
+    plan: free      # 免費方案
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+
+      # Firebase 配置（需要在 Render Dashboard 手動添加）
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+
+      # Redis 配置（可選）
+      - key: USE_REDIS
+        value: false

@@ -1,5 +1,6 @@
-// API 基礎網址
-const API_BASE = 'http://localhost:3000/api/leaderboard';
+// API 基礎網址 - 使用配置文件
+const API_BASE_URL = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || 'http://localhost:3000/api';
+const API_BASE = API_BASE_URL + '/leaderboard';
 
 // 頁面載入時檢查後端狀態
 window.addEventListener('DOMContentLoaded', () => {
@@ -10,7 +11,8 @@ window.addEventListener('DOMContentLoaded', () => {
 async function checkBackendStatus() {
     const statusElement = document.getElementById('backend-status');
     try {
-        const response = await fetch('http://localhost:3000/health');
+        const baseUrl = API_BASE_URL.replace('/api', '');
+        const response = await fetch(baseUrl + '/health');
         if (response.ok) {
             const data = await response.json();
             statusElement.textContent = '已連接';

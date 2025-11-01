@@ -691,16 +691,12 @@ loadBackgroundImages();
 
 // ===== 時鐘功能 =====
 function updateClock() {
-  // Boss戰時顯示愛心數量，平時顯示時間
+  // 時鐘始終顯示當前時間
   const clockElement = document.getElementById('clock');
-  if (isBossBattle) {
-    clockElement.textContent = `💖 ${touchCount}`;
-  } else {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    clockElement.textContent = `${hours}:${minutes}`;
-  }
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  clockElement.textContent = `${hours}:${minutes}`;
 }
 // 每秒更新時鐘以確保即時同步，避免延遲
 setInterval(updateClock, 1000); // 1秒更新一次
@@ -1197,17 +1193,19 @@ function startBossBattle() {
   const mainBtn = document.getElementById('main-btn');
   if (mainBtn) mainBtn.style.display = 'none';
 
-  // 隱藏其他UI元素（保留排行榜）
+  // 隱藏其他UI元素（保留排行榜和月亮上的計數器）
   const timePeriod = document.getElementById('time-period');
   if (timePeriod) timePeriod.style.display = 'none';
   const timePeriodDisplay = document.getElementById('timePeriodDisplay');
   if (timePeriodDisplay) timePeriodDisplay.style.display = 'none';
+
+  // 保持月亮上的計數器顯示，但改成顯示愛心數量
   const counterDisplay = document.querySelector('.counter-display');
   if (counterDisplay) {
-    counterDisplay.style.display = 'none';
-    counterDisplay.style.visibility = 'hidden'; // 強制隱藏
-    counterDisplay.style.opacity = '0'; // 第三層保險
-    console.log('✅ 已隱藏「我收到的愛」計數器');
+    counterDisplay.style.display = 'flex';
+    counterDisplay.style.visibility = 'visible';
+    counterDisplay.style.opacity = '1';
+    console.log('✅ 月亮計數器繼續顯示（戰鬥模式）');
   }
 
   // 隱藏「雙擊進入月球」提示
@@ -1495,7 +1493,10 @@ function animateBossMovement() {
       moonElement.style.setProperty('left', newX + 'px', 'important');
       moonElement.style.setProperty('top', newY + 'px', 'important');
 
-// 生成紅色軌跡      if (typeof updateBossTrail === 'function') {        updateBossTrail(newX, newY);      }
+      // 生成紅色軌跡
+      if (typeof updateBossTrail === 'function') {
+        updateBossTrail(newX, newY);
+      }
     }
     // 停格狀態時不移動
   } else {
@@ -1511,7 +1512,11 @@ function animateBossMovement() {
 
       moonElement.style.setProperty('left', (currentX + moveX) + 'px', 'important');
       moonElement.style.setProperty('top', (currentY + moveY) + 'px', 'important');
-// 生成紅色軌跡      if (typeof updateBossTrail === 'function') {        updateBossTrail(currentX + moveX, currentY + moveY);      }
+
+      // 生成紅色軌跡
+      if (typeof updateBossTrail === 'function') {
+        updateBossTrail(currentX + moveX, currentY + moveY);
+      }
     }
   }
 
@@ -1520,7 +1525,53 @@ function animateBossMovement() {
 
   requestAnimationFrame(animateBossMovement);
 }
-// ===== Boss 移動軌跡系統 =====function createTrailParticle(x, y) {  const trail = document.createElement('div');  trail.className = 'boss-trail-particle';  trail.style.cssText = `    position: fixed;    left: ${x}px;    top: ${y}px;    width: 20px;    height: 20px;    background: radial-gradient(circle, rgba(220, 0, 0, 0.8) 0%, rgba(139, 0, 0, 0.4) 50%, transparent 100%);    border-radius: 50%;    pointer-events: none;    z-index: 9999;    animation: trailFade 0.5s ease-out forwards;  `;  document.body.appendChild(trail);  setTimeout(() => {    trail.remove();  }, 500);}// 添加軌跡動畫CSSif (!document.getElementById('boss-trail-animation')) {  const style = document.createElement('style');  style.id = 'boss-trail-animation';  style.textContent = `    @keyframes trailFade {      0% {        opacity: 1;        transform: scale(1);      }      100% {        opacity: 0;        transform: scale(0.5);      }    }  `;  document.head.appendChild(style);}
+
+// ===== Boss 移動軌跡系統 =====
+// 更新軌跡（調用粒子生成）
+function updateBossTrail(x, y) {
+  createTrailParticle(x, y);
+}
+
+// 創建軌跡粒子
+function createTrailParticle(x, y) {
+  const trail = document.createElement('div');
+  trail.className = 'boss-trail-particle';
+  trail.style.cssText = `
+    position: fixed;
+    left: ${x}px;
+    top: ${y}px;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, rgba(220, 0, 0, 0.8) 0%, rgba(139, 0, 0, 0.4) 50%, transparent 100%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    animation: trailFade 0.5s ease-out forwards;
+  `;
+  document.body.appendChild(trail);
+  setTimeout(() => {
+    trail.remove();
+  }, 500);
+}
+
+// 添加軌跡動畫CSS
+if (!document.getElementById('boss-trail-animation')) {
+  const style = document.createElement('style');
+  style.id = 'boss-trail-animation';
+  style.textContent = `
+    @keyframes trailFade {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 // 血月視覺效果
 function updateBloodMoonEffect(moonElement) {
@@ -1639,15 +1690,18 @@ function stopSupportMessages() {
 
 // 擊敗 Boss
 function defeatBoss() {
+  // ===== 第一步：立即重置所有戰鬥狀態 =====
   isBossBattle = false;
   isBerserkMode = false;
   bossBattleStarted = false; // 重置，允許再次彈出確認對話框
   bossDialogueStage = 0; // 重置對話階段
   currentBGMStage = 0; // 重置音樂階段
-  stopBossMovement();
 
-  // 立即更新時鐘恢復顯示時間
+  // ===== 第二步：立即更新時鐘顯示（確保狀態已重置） =====
   updateClock();
+
+  // ===== 第三步：停止Boss移動和其他清理 =====
+  stopBossMovement();
 
   // 解鎖並恢復戰鬥前的背景輪替
   bgRotationLocked = false;

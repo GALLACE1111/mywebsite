@@ -2618,11 +2618,12 @@ body.boss-battle .support-team-container {
 }
 
 /* Boss戰時強制隱藏特定UI元素 */
-body.boss-battle .counter-display {
+/* 註解掉：讓月亮上的計數器在戰鬥中也顯示 */
+/* body.boss-battle .counter-display {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
-}
+} */
 
 body.boss-battle .moon-hint-container {
   display: none !important;

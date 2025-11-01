@@ -153,7 +153,7 @@ router.post('/submit', async (req, res) => {
         }
 
         // 提交分數
-        const result = await leaderboardService.submitScore(user_id, username, scoreNum);
+        const result = await leaderboardService.submitScore(user_id, scoreNum);
 
         // 處理玩家上限情況
         if (!result.success && result.error === 'PLAYER_LIMIT_REACHED') {
@@ -355,6 +355,150 @@ router.post('/avatar', upload.single('avatar'), async (req, res) => {
         res.status(500).json({
             success: false,
             error: error.message || 'Internal server error'
+        });
+    }
+});
+
+// ============ 管理 API ============
+// ⚠️ 注意：這些端點應該受到身份驗證保護
+// 建議在生產環境中添加 API 密鑰或管理員身份驗證
+
+/**
+ * GET /api/leaderboard/admin/players
+ * 獲取所有玩家列表（管理用）
+ *
+ * 查詢參數：
+ * - page: 頁碼 (預設: 1)
+ * - limit: 每頁數量 (預設: 50, 最大: 200)
+ */
+router.get('/admin/players', async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 50
+        } = req.query;
+
+        const pageNum = parseInt(page);
+        const limitNum = Math.min(parseInt(limit), 200);
+
+        if (pageNum < 1 || limitNum < 1) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid page or limit'
+            });
+        }
+
+        const result = await leaderboardService.getAllPlayers(pageNum, limitNum);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in GET /leaderboard/admin/players:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * DELETE /api/leaderboard/admin/player/:userId
+ * 刪除特定玩家的所有資料
+ *
+ * 路徑參數：
+ * - userId: 用戶ID
+ */
+router.delete('/admin/player/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId || userId.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid user ID'
+            });
+        }
+
+        const result = await leaderboardService.deletePlayer(userId);
+
+        if (!result.success) {
+            return res.status(404).json(result);
+        }
+
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in DELETE /leaderboard/admin/player:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * POST /api/leaderboard/admin/reset-score
+ * 重置玩家分數為 0
+ *
+ * 請求體：
+ * - userId: 用戶ID (必填)
+ * - deleteHistory: 是否刪除歷史記錄 (選填, 預設: false)
+ */
+router.post('/admin/reset-score', async (req, res) => {
+    try {
+        const { userId, deleteHistory = false } = req.body;
+
+        if (!userId || userId.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required field: userId'
+            });
+        }
+
+        const result = await leaderboardService.resetPlayerScore(userId, deleteHistory);
+
+        if (!result.success) {
+            return res.status(404).json(result);
+        }
+
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in POST /leaderboard/admin/reset-score:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+
+/**
+ * POST /api/leaderboard/admin/clear-all
+ * 清空整個排行榜
+ * ⚠️ 危險操作！會刪除所有玩家資料
+ *
+ * 請求體：
+ * - confirm: 必須為 "DELETE ALL" 才能執行
+ */
+router.post('/admin/clear-all', async (req, res) => {
+    try {
+        const { confirm } = req.body;
+
+        // 二次確認機制
+        if (confirm !== 'DELETE ALL') {
+            return res.status(400).json({
+                success: false,
+                error: 'Confirmation required: must send { "confirm": "DELETE ALL" }'
+            });
+        }
+
+        const result = await leaderboardService.clearLeaderboard();
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error in POST /leaderboard/admin/clear-all:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
         });
     }
 });
