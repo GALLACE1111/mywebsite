@@ -30,6 +30,11 @@ export default defineNuxtConfig({
         // 基本 Meta
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        // CSP for GitHub Pages
+        {
+          'http-equiv': 'Content-Security-Policy',
+          content: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://side-project-663de.web.app https://side-project-663de.firebaseapp.com"
+        },
 
         // SEO Meta
         { name: 'description', content: '一款充滿愛心的互動網頁遊戲！點擊收集愛心、探索月球世界、挑戰血月守護者、使用專注鬧鐘提升效率。完整的社交功能包括許願池、排行榜競爭，還有個人資料自定義。立即開始你的冒險！' },
