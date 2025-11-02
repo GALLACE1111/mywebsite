@@ -33,8 +33,8 @@ jobs:
       - name: 📦 安裝 Frontend 依賴
         working-directory: ./frontend-nuxt
         run: |
-          rm -rf node_modules package-lock.json
-          npm install
+          npm install --ignore-scripts
+          npm run prepare
 
       - name: 🔨 構建 Nuxt 專案
         working-directory: ./frontend-nuxt
