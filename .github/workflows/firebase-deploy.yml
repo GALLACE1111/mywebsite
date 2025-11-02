@@ -1,0 +1,64 @@
+name: 自動部署到 Firebase
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend-nuxt/**'
+      - 'functions/**'
+      - 'firebase.json'
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - 'storage.rules'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout 代碼
+        uses: actions/checkout@v4
+
+      - name: 🟢 設置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            frontend-nuxt/package-lock.json
+            functions/package-lock.json
+
+      - name: 📦 安裝 Frontend 依賴
+        working-directory: ./frontend-nuxt
+        run: npm ci
+
+      - name: 🔨 構建 Nuxt 專案
+        working-directory: ./frontend-nuxt
+        run: npm run build
+
+      - name: 📦 安裝 Functions 依賴
+        working-directory: ./functions
+        run: npm ci
+
+      - name: 🔧 安裝 Firebase Tools
+        run: npm install -g firebase-tools
+
+      - name: 🚀 部署到 Firebase Hosting
+        run: firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive
+
+      - name: 📊 部署 Firestore 規則
+        run: firebase deploy --only firestore --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive
+
+      - name: 📁 部署 Storage 規則
+        run: firebase deploy --only storage --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive
+
+      - name: ⚡ 部署 Functions
+        run: firebase deploy --only functions --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive
+
+      - name: ✅ 部署完成通知
+        run: |
+          echo "🎉 部署成功！"
+          echo "📱 專案: side-project-663de"
+          echo "🔗 查看: https://side-project-663de.web.app"
