@@ -23,6 +23,8 @@ export default defineNuxtConfig({
 
   // App 配置
   app: {
+    baseURL: '/',
+    buildAssetsDir: '/_nuxt/',
     head: {
       title: '愛心互動遊戲 - 收集愛心、挑戰 Boss、登上排行榜',
       titleTemplate: '%s | 愛心互動遊戲',
