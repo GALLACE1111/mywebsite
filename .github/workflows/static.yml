@@ -44,7 +44,9 @@ jobs:
 
       - name: 📦 Install dependencies
         working-directory: ./frontend-nuxt
-        run: npm ci
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: 🔨 Generate static site (SSG)
         working-directory: ./frontend-nuxt
