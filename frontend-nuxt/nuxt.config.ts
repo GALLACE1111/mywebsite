@@ -18,7 +18,7 @@ export default defineNuxtConfig({
 
   // CSS 配置
   css: [
-    '~/assets/css/global.css'
+    '@/assets/css/global.css'
   ],
 
   // App 配置
