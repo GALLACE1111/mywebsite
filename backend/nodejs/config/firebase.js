@@ -116,4 +116,6 @@ export async function closeConnections() {
     }
 }
 
+// 導出 db 和 admin
 export { admin };
+export { db };

@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "frontend",
+    "public": "frontend-nuxt/.output/public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -22,7 +22,8 @@
           }
         ]
       }
-    ]
+    ],
+    "cleanUrls": true
   },
   "functions": [
     {

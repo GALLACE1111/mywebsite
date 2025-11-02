@@ -3,11 +3,17 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import helmet from 'helmet';
+import compression from 'compression';
 import { initializeFirebase, testFirebaseConnection, closeConnections } from './config/firebase.js';
 import { initializeCache } from './utils/cache.js';
 import leaderboardRoutes from './routes/leaderboard.routes.js';
 import monitoringRoutes from './routes/monitoring.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import wishesRoutes from './routes/wishes.routes.js';
+import feedbackRoutes from './routes/feedback.routes.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { apiLimiter } from './middleware/rateLimiter.js';
 
 dotenv.config();
 
@@ -17,14 +23,37 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ===== 安全中間件 =====
+// Helmet: 設置安全 HTTP 標頭
+app.use(helmet({
+    contentSecurityPolicy: false, // 暫時禁用 CSP，避免影響前端
+    crossOriginEmbedderPolicy: false
+}));
+
+// Compression: 響應壓縮（減少 70% 流量）
+app.use(compression({
+    filter: (req, res) => {
+        if (req.headers['x-no-compression']) {
+            return false;
+        }
+        return compression.filter(req, res);
+    },
+    level: 6 // 壓縮級別 0-9
+}));
+
+// CORS 配置
 app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body 解析
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 通用速率限制：每分鐘 60 次
+app.use('/api', apiLimiter);
 
 // 提供前端靜態文件
 const frontendPath = path.join(__dirname, '../../frontend');
@@ -42,15 +71,29 @@ app.use((req, res, next) => {
 // API 資訊路由
 app.get('/api', (req, res) => {
     res.json({
-        message: 'Leaderboard API Server with Redis & Monitoring',
-        version: '2.0.0',
-        features: ['Redis Cache', 'Monitoring Dashboard', 'Admin Panel'],
+        message: 'Heart Game API Server - Full Featured',
+        version: '3.0.0',
+        features: ['Redis Cache', 'Monitoring Dashboard', 'Admin Panel', 'Wishing Well', 'Feedback System'],
         endpoints: {
             leaderboard: {
                 list: 'GET /api/leaderboard',
                 myRank: 'GET /api/leaderboard/my-rank/:userId',
                 around: 'GET /api/leaderboard/around/:userId',
                 submit: 'POST /api/leaderboard/submit'
+            },
+            wishes: {
+                list: 'GET /api/wishes',
+                create: 'POST /api/wishes',
+                like: 'POST /api/wishes/:wishId/like',
+                myWishes: 'GET /api/wishes/my/:playerId',
+                delete: 'DELETE /api/wishes/:wishId'
+            },
+            feedback: {
+                submit: 'POST /api/feedback',
+                myFeedback: 'GET /api/feedback/my/:playerId',
+                list: 'GET /api/feedback (admin)',
+                updateStatus: 'PUT /api/feedback/:feedbackId/status (admin)',
+                stats: 'GET /api/feedback/stats (admin)'
             },
             monitoring: {
                 stats: 'GET /api/monitoring/stats',
@@ -88,32 +131,32 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 路由註冊
+// ===== 路由註冊 =====
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/monitoring', monitoringRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/wishes', wishesRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
-// 404 處理
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'Not found'
-    });
-});
+// ===== 錯誤處理 =====
+// 404 處理（必須在所有路由之後）
+app.use(notFoundHandler);
 
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-    });
-});
+// 統一錯誤處理（必須在最後）
+app.use(errorHandler);
 
 const server = app.listen(PORT, async () => {
-    console.log('\n🚀 Leaderboard API Server v2.0');
+    console.log('\n🚀 Heart Game API Server v3.1 - Enterprise Edition');
     console.log(`📡 Listening on port ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 Base URL: http://localhost:${PORT}`);
+    console.log('');
+    console.log('✅ Security Enhancements:');
+    console.log('   ✓ Helmet - Security Headers');
+    console.log('   ✓ Compression - Response Optimization');
+    console.log('   ✓ Rate Limiting - API Protection');
+    console.log('   ✓ Error Handling - Unified Responses');
+    console.log('   ✓ Request Validation - Input Sanitization');
     console.log('');
 
     // 初始化 Cache（Redis 或 Memory）

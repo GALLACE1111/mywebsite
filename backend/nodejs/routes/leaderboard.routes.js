@@ -1,6 +1,9 @@
 import express from 'express';
 import leaderboardService from '../services/leaderboard.service.js';
 import upload from '../middleware/upload.js';
+import { validate } from '../middleware/validate.js';
+import { submitLimiter, queryLimiter } from '../middleware/rateLimiter.js';
+import { asyncHandler } from '../middleware/errorHandler.js';
 
 const router = express.Router();
 
@@ -120,56 +123,24 @@ router.get('/around/:userId', async (req, res) => {
  * 提交分數
  *
  * 請求體：
- * - user_id: 用戶ID (必填)
- * - username: 用戶名稱 (選填)
+ * - player_id: 用戶ID (必填)
+ * - username: 用戶名稱 (必填)
  * - score: 分數 (必填)
  */
-router.post('/submit', async (req, res) => {
-    try {
-        const { user_id, username, score } = req.body;
+router.post('/submit', submitLimiter, validate('submitScore'), asyncHandler(async (req, res) => {
+    // 驗證中間件已處理輸入驗證
+    const { player_id, username, score } = req.body;
 
-        // 驗證參數
-        if (!user_id || score === undefined || score === null) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required fields: user_id and score'
-            });
-        }
+    // 提交分數
+    const result = await leaderboardService.submitScore(player_id, score);
 
-        const scoreNum = parseInt(score);
-
-        if (typeof user_id !== 'string' || user_id.trim() === '') {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid user_id'
-            });
-        }
-
-        if (isNaN(scoreNum) || scoreNum < 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid score'
-            });
-        }
-
-        // 提交分數
-        const result = await leaderboardService.submitScore(user_id, scoreNum);
-
-        // 處理玩家上限情況
-        if (!result.success && result.error === 'PLAYER_LIMIT_REACHED') {
-            return res.status(403).json(result); // 使用 403 Forbidden
-        }
-
-        res.json(result);
-
-    } catch (error) {
-        console.error('Error in POST /leaderboard/submit:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Internal server error'
-        });
+    // 處理玩家上限情況
+    if (!result.success && result.error === 'PLAYER_LIMIT_REACHED') {
+        return res.status(403).json(result);
     }
-});
+
+    res.json(result);
+}));
 
 /**
  * PUT /api/leaderboard/username
