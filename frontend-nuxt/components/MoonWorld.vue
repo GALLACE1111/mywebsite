@@ -86,7 +86,7 @@ const handleDialogueAction = () => {
 const startBossBattle = () => {
   showDialogue.value = false
   gameStore.initBoss()
-  playSound('boss-appear')
+  // Boss戰鬥音效會在BossBattle組件中播放
 }
 
 // 退出月球世界
@@ -116,6 +116,9 @@ const getStarStyle = (index: number) => {
 // 監聽進入月球世界
 watch(() => gameStore.inMoonWorld, (newValue) => {
   if (newValue && !gameStore.inBossBattle) {
+    // 播放進入月球的開場音效
+    playSound('moon-start')
+
     setTimeout(() => {
       initDialogue()
     }, 500)
@@ -125,6 +128,9 @@ watch(() => gameStore.inMoonWorld, (newValue) => {
 // 初始化
 onMounted(() => {
   if (gameStore.inMoonWorld && !gameStore.inBossBattle) {
+    // 播放進入月球的開場音效
+    playSound('moon-start')
+
     setTimeout(() => {
       initDialogue()
     }, 500)

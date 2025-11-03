@@ -3,12 +3,14 @@
     <!-- 主愛心 -->
     <div class="main-heart-wrapper">
       <div
+        ref="mainHeartElement"
         class="main-heart"
         :class="{
           beating: isBeating,
           glowing: gameStore.heartCount > 0
         }"
         @click="handleHeartClick"
+        @contextmenu="handleRightClick"
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"
       >
@@ -36,6 +38,14 @@
     <div class="greeting">
       {{ getGreeting() }}
     </div>
+
+    <!-- 角色操作指南 -->
+    <CharacterGuide
+      ref="characterGuide"
+      :target-element="mainHeartElement"
+      @open="onGuideOpen"
+      @close="onGuideClose"
+    />
   </div>
 </template>
 
@@ -48,6 +58,8 @@ const physicsContainer = ref<HTMLElement>()
 const isBeating = ref(false)
 const showParticles = ref(false)
 const isHovering = ref(false)
+const mainHeartElement = ref<HTMLElement | null>(null)
+const characterGuide = ref<any>(null)
 
 // 初始化物理引擎
 onMounted(() => {
@@ -172,6 +184,24 @@ const onMouseEnter = () => {
 // 滑鼠離開
 const onMouseLeave = () => {
   isHovering.value = false
+}
+
+// 操作指南打開回調
+const onGuideOpen = () => {
+  localStorage.setItem('hasSeenGuide', 'true')
+}
+
+// 操作指南關閉回調
+const onGuideClose = () => {
+  // 可以在這裡添加關閉後的邏輯
+}
+
+// 處理右鍵點擊打開指南
+const handleRightClick = (e: MouseEvent) => {
+  e.preventDefault()
+  if (characterGuide.value) {
+    characterGuide.value.openGuide()
+  }
 }
 
 // 監聽視窗大小變化

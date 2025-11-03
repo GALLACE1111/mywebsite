@@ -50,12 +50,24 @@
         </button>
       </div>
     </div>
+    <!-- 血月橫向閃過效果 -->
+    <div
+      v-if="isBloodMoonFlashing"
+      class="blood-moon-flash"
+      :class="{ 'second-wave': bloodMoonWave === 2 }"
+    >
+      <div class="blood-moon-image"></div>
+    </div>
+
+    <!-- 固定紅色軌跡（尖角處） -->
+    <div class="sharp-corner-trail corner-top-left"></div>
+    <div class="sharp-corner-trail corner-bottom-right"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 const gameStore = useGameStore()
-const { playSound } = useAudio()
+const { playSound, playMusic, stopMusic } = useAudio()
 
 const bossElement = ref<HTMLElement>()
 const trailContainer = ref<HTMLElement>()
@@ -67,6 +79,11 @@ const targetPosition = ref({ x: 0, y: 0 })
 const isBerserkMode = ref(false)
 const isFrozen = ref(false)
 const isVictory = ref(false)
+
+// 血月閃過效果狀態
+const isBloodMoonFlashing = ref(false)
+const bloodMoonWave = ref(1)
+let bloodMoonTimer: NodeJS.Timeout | null = null
 
 // Boss 移動配置
 const bossMovement = {
@@ -128,7 +145,44 @@ const initBossPosition = () => {
   bossPosition.value = { x: centerX, y: centerY }
   targetPosition.value = { x: centerX, y: centerY }
 
+  // 播放月球背景音樂
+  playMusic('moon-background-sound', true, 0.7)
+
+  // 延遲一點觸發第一波血月閃過
+  setTimeout(() => {
+    triggerBloodMoonFlash()
+  }, 3000)
+
   startMovement()
+}
+
+// 觸發血月閃過效果
+const triggerBloodMoonFlash = () => {
+  // 第一波
+  bloodMoonWave.value = 1
+  isBloodMoonFlashing.value = true
+  playSound('scary-1')
+
+  setTimeout(() => {
+    isBloodMoonFlashing.value = false
+
+    // 第二波
+    setTimeout(() => {
+      bloodMoonWave.value = 2
+      isBloodMoonFlashing.value = true
+      playSound('scary-2')
+
+      setTimeout(() => {
+        isBloodMoonFlashing.value = false
+
+        // 定期觸發血月閃過（隨機間隔）
+        const randomDelay = 15000 + Math.random() * 20000 // 15-35秒
+        bloodMoonTimer = setTimeout(() => {
+          triggerBloodMoonFlash()
+        }, randomDelay)
+      }, 800)
+    }, 1500)
+  }, 800)
 }
 
 // 開始移動
@@ -314,6 +368,7 @@ const enterBerserkMode = () => {
 const victory = () => {
   isVictory.value = true
   playSound('victory')
+  stopMusic() // 停止戰鬥音樂
 
   // 停止移動
   if (moveAnimationId) {
@@ -322,6 +377,9 @@ const victory = () => {
   if (targetChangeTimer) {
     clearInterval(targetChangeTimer)
   }
+  if (bloodMoonTimer) {
+    clearTimeout(bloodMoonTimer)
+  }
 
   // 獎勵已在 gameStore.onBossDefeated() 中處理
 }
@@ -329,6 +387,7 @@ const victory = () => {
 // 關閉 Boss 戰鬥
 const closeBossBattle = () => {
   isVictory.value = false
+  stopMusic() // 確保停止音樂
   gameStore.exitMoonWorld()
 }
 
@@ -362,6 +421,10 @@ onUnmounted(() => {
   if (targetChangeTimer) {
     clearInterval(targetChangeTimer)
   }
+  if (bloodMoonTimer) {
+    clearTimeout(bloodMoonTimer)
+  }
+  stopMusic()
 })
 </script>
 
@@ -622,6 +685,119 @@ onUnmounted(() => {
 
   .victory-reward {
     font-size: 1.5rem;
+  }
+}
+
+/* 血月閃過效果 */
+.blood-moon-flash {
+  position: fixed;
+  top: 0;
+  left: -200%;
+  width: 200%;
+  height: 100%;
+  z-index: 10001;
+  pointer-events: none;
+  animation: moonFlash 0.8s ease-out forwards;
+}
+
+.blood-moon-flash.second-wave {
+  animation: moonFlashReverse 0.8s ease-out forwards;
+}
+
+.blood-moon-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at 30% 30%,
+    rgba(139, 0, 0, 0.9) 0%,
+    rgba(220, 0, 0, 0.8) 30%,
+    rgba(139, 0, 0, 0.7) 60%,
+    rgba(70, 0, 0, 0.6) 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 100px rgba(220, 0, 0, 0.9),
+              0 0 200px rgba(139, 0, 0, 0.7),
+              inset 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes moonFlash {
+  0% {
+    left: -200%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes moonFlashReverse {
+  0% {
+    left: 100%;
+  }
+  100% {
+    left: -200%;
+  }
+}
+
+/* 固定紅色軌跡（尖角處） */
+.sharp-corner-trail {
+  position: fixed;
+  pointer-events: none;
+  z-index: 998;
+}
+
+.corner-top-left {
+  top: 50px;
+  left: 50px;
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, transparent 40%, rgba(220, 0, 0, 0.3) 50%, transparent 60%);
+  transform: rotate(45deg);
+  animation: cornerPulse 3s ease-in-out infinite;
+}
+
+.corner-bottom-right {
+  bottom: 50px;
+  right: 50px;
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, transparent 40%, rgba(220, 0, 0, 0.3) 50%, transparent 60%);
+  transform: rotate(45deg);
+  animation: cornerPulse 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes cornerPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: rotate(45deg) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: rotate(45deg) scale(1.2);
+  }
+}
+
+.corner-top-left::before,
+.corner-bottom-right::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(220, 0, 0, 0.8) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: trailGlow 2s ease-in-out infinite;
+}
+
+@keyframes trailGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(220, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(220, 0, 0, 1);
   }
 }
 </style>
