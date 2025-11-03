@@ -145,8 +145,8 @@ const initBossPosition = () => {
   bossPosition.value = { x: centerX, y: centerY }
   targetPosition.value = { x: centerX, y: centerY }
 
-  // 播放月球背景音樂
-  playMusic('moon-background-sound', true, 0.7)
+  // 播放戰鬥背景音樂
+  playMusic('fast-chiptune-instrumental-2-minute-boss-fight-254040', true, 0.6)
 
   // 延遲一點觸發第一波血月閃過
   setTimeout(() => {

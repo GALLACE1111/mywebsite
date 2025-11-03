@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 const gameStore = useGameStore()
-const { playSound } = useAudio()
+const { playSound, playMusic, stopMusic } = useAudio()
 
 const showDialogue = ref(false)
 const currentDialogue = ref('')
@@ -85,12 +85,14 @@ const handleDialogueAction = () => {
 // 開始 Boss 戰鬥
 const startBossBattle = () => {
   showDialogue.value = false
+  stopMusic() // 停止月球背景音樂
   gameStore.initBoss()
   // Boss戰鬥音效會在BossBattle組件中播放
 }
 
 // 退出月球世界
 const exitMoonWorld = () => {
+  stopMusic() // 停止月球背景音樂
   gameStore.exitMoonWorld()
   playSound('teleport')
 }
@@ -119,9 +121,17 @@ watch(() => gameStore.inMoonWorld, (newValue) => {
     // 播放進入月球的開場音效
     playSound('moon-start')
 
+    // 延遲播放月球背景音樂（讓開場音效先播放）
+    setTimeout(() => {
+      playMusic('moon-background-sound', true, 0.5) // 循環播放，音量50%
+    }, 2000)
+
     setTimeout(() => {
       initDialogue()
     }, 500)
+  } else if (!newValue) {
+    // 離開月球世界時停止音樂
+    stopMusic()
   }
 })
 
@@ -131,10 +141,20 @@ onMounted(() => {
     // 播放進入月球的開場音效
     playSound('moon-start')
 
+    // 延遲播放月球背景音樂（讓開場音效先播放）
+    setTimeout(() => {
+      playMusic('moon-background-sound', true, 0.5) // 循環播放，音量50%
+    }, 2000)
+
     setTimeout(() => {
       initDialogue()
     }, 500)
   }
+})
+
+// 清理
+onUnmounted(() => {
+  stopMusic()
 })
 </script>
 
