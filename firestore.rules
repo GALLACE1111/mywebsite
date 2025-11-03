@@ -2,12 +2,76 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 開發測試模式 - 允許所有讀寫
-    // 這個規則適合開發和測試使用
-    // 生產環境請記得更新為更嚴格的規則
+    // Production security rules
 
-    match /{document=**} {
-      allow read, write: if true;
+    // userTotals collection - Public leaderboard
+    match /userTotals/{userId} {
+      // Anyone can read the leaderboard
+      allow read: if true;
+
+      // Only allow writes with valid data structure
+      // Prevent score manipulation by limiting updates
+      allow create: if request.resource.data.keys().hasAll(['username', 'totalScore', 'lastUpdated']) &&
+                      request.resource.data.totalScore is number &&
+                      request.resource.data.totalScore >= 0 &&
+                      request.resource.data.totalScore <= 999999 &&
+                      request.resource.data.username is string &&
+                      request.resource.data.username.size() > 0 &&
+                      request.resource.data.username.size() <= 50;
+
+      allow update: if request.resource.data.keys().hasAll(['username', 'totalScore', 'lastUpdated']) &&
+                      request.resource.data.totalScore is number &&
+                      request.resource.data.totalScore >= 0 &&
+                      request.resource.data.totalScore <= 999999 &&
+                      request.resource.data.username is string &&
+                      request.resource.data.username.size() > 0 &&
+                      request.resource.data.username.size() <= 50 &&
+                      // Prevent massive score jumps (anti-cheat)
+                      request.resource.data.totalScore <= resource.data.totalScore + 10000;
+
+      // Users can only delete their own records
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // wishes collection - Wishing well feature
+    match /wishes/{wishId} {
+      // Anyone can read wishes
+      allow read: if true;
+
+      // Allow creating wishes with proper structure
+      allow create: if request.resource.data.keys().hasAll(['player_id', 'content', 'likes', 'created_at']) &&
+                      request.resource.data.content is string &&
+                      request.resource.data.content.size() > 0 &&
+                      request.resource.data.content.size() <= 500 &&
+                      request.resource.data.likes == 0 &&
+                      request.resource.data.player_id is string;
+
+      // Allow updating likes only (increment by 1)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) &&
+                      request.resource.data.likes == resource.data.likes + 1;
+
+      // No deletion allowed for wishes
+      allow delete: if false;
+    }
+
+    // feedback collection - User feedback
+    match /feedback/{feedbackId} {
+      // Only admin can read feedback (would need auth check)
+      allow read: if false; // Change to proper admin auth check when implemented
+
+      // Anyone can submit feedback
+      allow create: if request.resource.data.keys().hasAll(['player_id', 'category', 'message', 'status', 'created_at']) &&
+                      request.resource.data.message is string &&
+                      request.resource.data.message.size() > 0 &&
+                      request.resource.data.message.size() <= 1000 &&
+                      request.resource.data.category is string &&
+                      request.resource.data.status == 'pending';
+
+      // No updates allowed from users
+      allow update: if false;
+
+      // No deletion allowed
+      allow delete: if false;
     }
   }
 }

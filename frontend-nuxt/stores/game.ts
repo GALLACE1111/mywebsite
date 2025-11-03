@@ -84,7 +84,7 @@ export const useGameStore = defineStore('game', {
       const storedId = localStorage.getItem('playerId')
       if (storedId) return storedId
 
-      const newId = `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const newId = `player_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
       localStorage.setItem('playerId', newId)
       return newId
     },
