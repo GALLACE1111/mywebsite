@@ -1,0 +1,17 @@
+{
+  "name": "愛心互動遊戲",
+  "short_name": "愛心遊戲",
+  "description": "一款充滿愛心的互動網頁遊戲！點擊收集愛心、探索月球世界、挑戰血月守護者",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
