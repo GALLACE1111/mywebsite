@@ -76,7 +76,7 @@ onMounted(async () => {
     await leaderboardStore.fetchLeaderboard()
 
     totalPlayers.value = leaderboardStore.total
-    if (leaderboardStore.players.length > 0) {
+    if (leaderboardStore.players.length > 0 && leaderboardStore.players[0]) {
       topScore.value = leaderboardStore.players[0].score
     }
   } catch (error) {

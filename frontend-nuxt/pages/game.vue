@@ -6,7 +6,8 @@
     <!-- Boss 戰鬥 -->
     <BossBattle />
 
-    <!-- 愛心互動組件 -->
+    <!-- 滑鼠點擊互動區域:點擊滑鼠會冒出愛心,使用物理引擎 (Matter.js) -->
+    <!-- 滑鼠游標有可愛 icon -->
     <HeartInteraction v-if="!gameStore.inMoonWorld" />
 
     <!-- 排行榜組件 -->
@@ -24,25 +25,8 @@
     <!-- 意見回饋 -->
     <Feedback ref="feedbackRef" />
 
-    <!-- 控制面板 -->
-    <div class="control-panel" v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle">
-      <!-- 音效控制 -->
-      <button @click="toggleMusic" class="control-btn" :class="{ active: gameStore.musicEnabled }">
-        {{ gameStore.musicEnabled ? '🔊' : '🔇' }} 音樂
-      </button>
-
-      <button @click="toggleSound" class="control-btn" :class="{ active: gameStore.soundEnabled }">
-        {{ gameStore.soundEnabled ? '🔔' : '🔕' }} 音效
-      </button>
-
-      <!-- 提交分數 -->
-      <button @click="submitScore" class="control-btn submit-btn" :disabled="submitting || gameStore.heartCount === 0">
-        {{ submitting ? '提交中...' : '💾 提交分數' }}
-      </button>
-    </div>
-
     <!-- 功能面板 -->
-    <div class="function-panel" v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle">
+    <div class="function-panel-right" v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle">
       <button @click="openProfile" class="function-btn">
         👤 個人資料
       </button>
@@ -105,71 +89,35 @@ const focusTimerRef = ref()
 const playerProfileRef = ref()
 const feedbackRef = ref()
 
-const submitting = ref(false)
 const showMessage = ref(false)
 const message = ref('')
 const messageType = ref<'success' | 'error' | 'info'>('info')
 
-// 玩家頭像
+// 玩家頭像：從 LocalStorage 或後端獲取玩家上傳的頭像
+// 如果玩家沒有上傳頭像，使用預設頭像
 const playerAvatar = computed(() => {
-  // 可以從後端獲取，暫時使用預設
+  // TODO: 實作從後端獲取玩家頭像的邏輯
+  // 目前 gameStore 尚未實作 playerAvatar 屬性，暫時使用預設頭像
   return '/images/default-avatar.png'
 })
 
-// 初始化
+// 頁面初始化：當遊戲頁面載入時執行
 onMounted(() => {
-  // 初始化玩家
+  // 1. 初始化玩家資料（從 LocalStorage 讀取或創建新玩家）
   gameStore.initPlayer()
 
-  // 更新時段
+  // 2. 更新當前時段顯示（早晨/下午/晚上/深夜）
   gameStore.updateTimeOfDay()
 
-  // 如果啟用音樂，播放背景音樂
+  // 3. 自動播放背景音樂（如果玩家已啟用音樂）
+  // 預設音量：30%（0.3）
   if (gameStore.musicEnabled) {
     playMusic('background', true, 0.3)
   }
 })
 
-// 切換音樂
-const toggleMusic = () => {
-  gameStore.toggleMusic()
-
-  if (gameStore.musicEnabled) {
-    playMusic('background', true, 0.3)
-  } else {
-    stopMusic()
-  }
-}
-
-// 切換音效
-const toggleSound = () => {
-  gameStore.toggleSound()
-}
-
-// 提交分數
-const submitScore = async () => {
-  if (submitting.value || gameStore.heartCount === 0) return
-
-  submitting.value = true
-
-  try {
-    await leaderboardStore.submitScore(
-      gameStore.playerId,
-      gameStore.username,
-      gameStore.heartCount
-    )
-
-    showToast('分數提交成功！🎉', 'success')
-
-    // 重置當前愛心數（但保留總數）
-    gameStore.heartCount = 0
-    gameStore.saveToStorage()
-  } catch (error: any) {
-    showToast(error.message || '分數提交失敗', 'error')
-  } finally {
-    submitting.value = false
-  }
-}
+// 自動提交分數：當玩家獲得愛心時，由 HeartInteraction 組件自動調用 leaderboardStore.submitScore()
+// 不需要手動提交按鈕，分數會即時同步到排行榜
 
 // 顯示提示訊息
 const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -208,20 +156,23 @@ const openFeedback = () => {
   feedbackRef.value?.open()
 }
 
-// 進入月球世界
+// 進入月球世界：有兩種方式
+// 1. 點擊「網頁中間上方的進入月球按鈕」
+// 2. 雙擊「右上角的圓形時鐘」
+// 進入後會播放下雨聲 BGM
 const enterMoonWorld = () => {
   gameStore.enterMoonWorld()
 }
 
 // 設置頁面 SEO
 useHead({
-  title: '開始遊戲',
+  title: '阿賢的小窩 - 愛心互動遊戲',
   meta: [
-    { name: 'description', content: '開始你的愛心收集之旅！點擊愛心、探索月球世界、挑戰血月 Boss、使用專注鬧鐘、在許願池許願，還能查看全球排行榜與其他玩家競爭。' },
-    { name: 'keywords', content: '開始遊戲,愛心收集,Boss戰鬥,月球探索,排行榜,許願池,專注鬧鐘' },
-    { property: 'og:title', content: '開始遊戲 | 愛心互動遊戲' },
-    { property: 'og:description', content: '開始你的愛心收集之旅！點擊愛心、探索月球世界、挑戰血月 Boss。' },
-    { name: 'twitter:title', content: '開始遊戲 | 愛心互動遊戲' }
+    { name: 'description', content: '點擊滑鼠冒出愛心，挑戰血月守護者 Boss，在許願池許願，使用專注鬧鐘，查看排行榜與全球玩家競爭！' },
+    { name: 'keywords', content: '愛心遊戲,Boss戰鬥,月球世界,排行榜,許願池,專注鬧鐘,物理引擎' },
+    { property: 'og:title', content: '阿賢的小窩 | 愛心互動遊戲' },
+    { property: 'og:description', content: '點擊滑鼠冒出愛心，挑戰血月守護者 Boss，在許願池許願！' },
+    { name: 'twitter:title', content: '阿賢的小窩 | 愛心互動遊戲' }
   ]
 })
 </script>
@@ -232,64 +183,6 @@ useHead({
   width: 100%;
   height: 100vh;
   overflow: hidden;
-}
-
-.control-panel {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  z-index: 100;
-}
-
-.control-btn {
-  padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(102, 126, 234, 0.3);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  min-width: 120px;
-}
-
-.control-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 1);
-  border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.control-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.control-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.control-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  border-color: transparent;
-}
-
-.submit-btn {
-  background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
-  color: #fff;
-  border-color: transparent;
-}
-
-.submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4);
 }
 
 .player-info-card {
@@ -407,10 +300,12 @@ useHead({
   }
 }
 
-.function-panel {
+/* 功能按鈕面板：右側置中（垂直排列，貼平網頁右側）*/
+.function-panel-right {
   position: fixed;
-  bottom: 1rem;
-  right: 1rem;
+  right: 1rem; /* 貼平右側 */
+  top: 50%; /* 垂直置中 */
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -452,23 +347,6 @@ useHead({
 
 /* 響應式設計 */
 @media (max-width: 768px) {
-  .control-panel {
-    top: auto;
-    bottom: 5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    flex-direction: row;
-    width: calc(100% - 2rem);
-    max-width: 400px;
-  }
-
-  .control-btn {
-    flex: 1;
-    min-width: auto;
-    padding: 0.75rem;
-    font-size: 0.85rem;
-  }
-
   .player-info-card {
     left: 50%;
     transform: translateX(-50%);
@@ -491,11 +369,12 @@ useHead({
     font-size: 0.85rem;
   }
 
-  .function-panel {
+  .function-panel-right {
     bottom: auto;
     top: 1rem;
     right: 1rem;
     left: auto;
+    transform: none;
     flex-direction: column;
     gap: 0.5rem;
   }
