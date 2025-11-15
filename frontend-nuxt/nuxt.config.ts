@@ -26,7 +26,7 @@ export default defineNuxtConfig({
 
   // App 配置
   app: {
-    baseURL: '/',
+    baseURL: '/mywebsite/',
     buildAssetsDir: '/_nuxt/',
     head: {
       title: '愛心互動遊戲 - 收集愛心、挑戰 Boss、登上排行榜',
@@ -49,19 +49,19 @@ export default defineNuxtConfig({
 
         // Open Graph / Facebook
         { property: 'og:type', content: 'website' },
-        { property: 'og:url', content: 'https://your-domain.com/' },
+        { property: 'og:url', content: 'https://gallace1111.github.io/mywebsite/' },
         { property: 'og:title', content: '愛心互動遊戲 - 收集愛心、挑戰 Boss、登上排行榜' },
         { property: 'og:description', content: '一款充滿愛心的互動網頁遊戲！點擊收集愛心、探索月球世界、挑戰血月守護者。完整的社交功能包括許願池、排行榜競爭。' },
-        { property: 'og:image', content: 'https://your-domain.com/og-image.jpg' },
+        { property: 'og:image', content: 'https://gallace1111.github.io/mywebsite/og-image.jpg' },
         { property: 'og:locale', content: 'zh_TW' },
         { property: 'og:site_name', content: '愛心互動遊戲' },
 
         // Twitter Card
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:url', content: 'https://your-domain.com/' },
+        { name: 'twitter:url', content: 'https://gallace1111.github.io/mywebsite/' },
         { name: 'twitter:title', content: '愛心互動遊戲 - 收集愛心、挑戰 Boss、登上排行榜' },
         { name: 'twitter:description', content: '一款充滿愛心的互動網頁遊戲！點擊收集愛心、探索月球世界、挑戰血月守護者。' },
-        { name: 'twitter:image', content: 'https://your-domain.com/og-image.jpg' },
+        { name: 'twitter:image', content: 'https://gallace1111.github.io/mywebsite/og-image.jpg' },
 
         // Mobile Web App
         { name: 'mobile-web-app-capable', content: 'yes' },
@@ -82,7 +82,7 @@ export default defineNuxtConfig({
         { rel: 'manifest', href: '/site.webmanifest' },
 
         // Canonical URL
-        { rel: 'canonical', href: 'https://your-domain.com/' }
+        { rel: 'canonical', href: 'https://gallace1111.github.io/mywebsite/' }
       ]
     }
   }
