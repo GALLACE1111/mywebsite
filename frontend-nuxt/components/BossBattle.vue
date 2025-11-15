@@ -1,5 +1,16 @@
 <template>
   <div v-if="gameStore.inBossBattle" class="boss-battle-container">
+    <!-- Boss 血條（固定在螢幕最上方）- 參考：frontend/index.html:99-108 -->
+    <div class="boss-health-container">
+      <div class="boss-health-title">🌙 血月 Boss</div>
+      <div class="boss-health-bar-bg">
+        <div class="boss-health-bar-fill" :style="{ width: gameStore.bossHealthPercent + '%' }"></div>
+        <div class="boss-health-text">
+          <span>{{ Math.ceil(gameStore.bossHealth) }}</span> / <span>{{ gameStore.maxBossHealth }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Boss（月球） -->
     <div
       ref="bossElement"
@@ -11,14 +22,6 @@
       :style="bossStyle"
       @click="attackBoss"
     >
-      <!-- Boss 血條 -->
-      <div class="boss-hp-bar">
-        <div class="hp-fill" :style="{ width: gameStore.bossHealthPercent + '%' }"></div>
-        <div class="hp-text">
-          {{ Math.ceil(gameStore.bossHealth) }} / {{ gameStore.maxBossHealth }}
-        </div>
-      </div>
-
       <!-- Boss 裂痕效果 -->
       <div class="boss-cracks" :style="cracksStyle"></div>
     </div>
@@ -36,6 +39,23 @@
       </div>
       <div v-if="isFrozen" class="status-badge frozen">
         ❄️ 停格中
+      </div>
+    </div>
+
+    <!-- 應援團容器（參考：frontend/index.html:111-128）-->
+    <div class="support-team-container">
+      <div
+        v-for="(character, index) in supportCharacters"
+        :key="index"
+        class="support-character"
+        :class="`support-char-${index + 1}`"
+      >
+        <div class="char-message">{{ character.currentMessage }}</div>
+        <img
+          :src="`/images/support-group${index + 1}.png`"
+          :alt="`應援角色${index + 1}`"
+          class="char-image"
+        >
       </div>
     </div>
 
@@ -58,6 +78,13 @@
     >
       <div class="blood-moon-image"></div>
     </div>
+
+    <!-- Boss 對話訊息（跟隨 Boss 移動） -->
+    <Transition name="bounce">
+      <div v-if="showBossMessage" class="boss-message" :style="bossMessageStyle">
+        {{ currentBossMessage }}
+      </div>
+    </Transition>
 
     <!-- 固定紅色軌跡（尖角處） -->
     <div class="sharp-corner-trail corner-top-left"></div>
@@ -84,6 +111,42 @@ const isVictory = ref(false)
 const isBloodMoonFlashing = ref(false)
 const bloodMoonWave = ref(1)
 let bloodMoonTimer: NodeJS.Timeout | null = null
+
+// 應援團訊息系統（參考：frontend/assets/js/script.js:1504-1595）
+// 每個角色有3種訊息
+const supportMessages = [
+  ['加油！主人！', '你可以的！', '我相信你！'],
+  ['你可以的呢！', '加油加油！', '不要放棄！'],
+  ['Fighting！先輩！', 'がんばって！', '全力応援！'],
+  ['頑張って！', 'ファイト！', '応援してるよ！']
+]
+
+// 應援角色數據
+const supportCharacters = ref([
+  { currentMessage: supportMessages[0][0] },
+  { currentMessage: supportMessages[1][0] },
+  { currentMessage: supportMessages[2][0] },
+  { currentMessage: supportMessages[3][0] }
+])
+
+let supportMessageInterval: NodeJS.Timeout | null = null
+
+// Boss 對話系統（參考：frontend/assets/js/script.js:528-1247）
+const bossDialogues = [
+  '我只是個鬧鐘',
+  '你確定要繼續攻擊我嗎？',
+  '我感覺好痛',
+  '你的手不酸嗎？',
+  '你弄得我好痛!',
+  '我快發狂了!',
+  '不要再打了~'
+]
+
+const currentDialogueIndex = ref(0)
+const currentBossMessage = ref('')
+const showBossMessage = ref(false)
+let lastDialogueTime = 0
+let dialogueInterval: NodeJS.Timeout | null = null
 
 // Boss 移動配置
 const bossMovement = {
@@ -137,6 +200,54 @@ const cracksStyle = computed(() => {
   }
 })
 
+// 啟動應援訊息隨機切換
+const startSupportMessages = () => {
+  // 每2秒隨機切換一次訊息
+  supportMessageInterval = setInterval(() => {
+    supportCharacters.value.forEach((character, index) => {
+      const messages = supportMessages[index]
+      const randomIndex = Math.floor(Math.random() * messages.length)
+      character.currentMessage = messages[randomIndex]
+    })
+  }, 2000)
+}
+
+// 停止應援訊息切換
+const stopSupportMessages = () => {
+  if (supportMessageInterval) {
+    clearInterval(supportMessageInterval)
+    supportMessageInterval = null
+  }
+}
+
+// 檢查並顯示 Boss 對話
+const checkBossDialogue = () => {
+  const now = Date.now()
+  if (now - lastDialogueTime < 2000) return
+
+  currentBossMessage.value = bossDialogues[currentDialogueIndex.value]
+  showBossMessage.value = true
+  lastDialogueTime = now
+
+  currentDialogueIndex.value = (currentDialogueIndex.value + 1) % bossDialogues.length
+
+  // 3 秒後隱藏
+  setTimeout(() => {
+    showBossMessage.value = false
+  }, 3000)
+}
+
+// 計算訊息位置（跟隨 Boss）
+const bossMessageStyle = computed(() => {
+  if (!bossElement.value) return {}
+
+  const rect = bossElement.value.getBoundingClientRect()
+  return {
+    left: `${rect.left - 50}px`,
+    top: `${rect.top - 60}px`
+  }
+})
+
 // 初始化 Boss 位置
 const initBossPosition = () => {
   const centerX = window.innerWidth / 2 - 75 // Boss 寬度150px的一半
@@ -147,6 +258,12 @@ const initBossPosition = () => {
 
   // 播放戰鬥背景音樂
   playMusic('fast-chiptune-instrumental-2-minute-boss-fight-254040', true, 0.6)
+
+  // 啟動應援團訊息切換
+  startSupportMessages()
+
+  // 啟動 Boss 對話系統（每2秒觸發一次）
+  dialogueInterval = setInterval(checkBossDialogue, 2000)
 
   // 延遲一點觸發第一波血月閃過
   setTimeout(() => {
@@ -381,6 +498,9 @@ const victory = () => {
     clearTimeout(bloodMoonTimer)
   }
 
+  // 停止應援訊息切換
+  stopSupportMessages()
+
   // 獎勵已在 gameStore.onBossDefeated() 中處理
 }
 
@@ -424,6 +544,10 @@ onUnmounted(() => {
   if (bloodMoonTimer) {
     clearTimeout(bloodMoonTimer)
   }
+  if (dialogueInterval) {
+    clearInterval(dialogueInterval)
+  }
+  stopSupportMessages()
   stopMusic()
 })
 </script>
@@ -475,38 +599,83 @@ onUnmounted(() => {
   }
 }
 
-.boss-hp-bar {
-  position: absolute;
-  top: -30px;
+/* ===== Boss 血條 UI（參考：frontend/assets/css/style.css:2012-2090）===== */
+.boss-health-container {
+  position: fixed;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
-  height: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 2px solid #8b0000;
-  border-radius: 10px;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 20px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(139, 0, 0, 0.6);
+  border: 3px solid rgba(255, 0, 0, 0.5);
+  min-width: 400px;
+}
+
+.boss-health-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff6b6b;
+  text-align: center;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+  animation: titleGlow 2s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 107, 107, 1);
+  }
+}
+
+.boss-health-bar-bg {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 15px;
   overflow: hidden;
+  border: 2px solid rgba(255, 107, 107, 0.5);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.hp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #dc0000 0%, #8b0000 100%);
-  transition: width 0.3s ease-out;
-}
-
-.hp-text {
+.boss-health-bar-fill {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 12px;
-  font-weight: bold;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 50%, #c44569 100%);
+  border-radius: 15px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+  animation: healthPulse 2s ease-in-out infinite;
+}
+
+@keyframes healthPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 107, 107, 1);
+  }
+}
+
+.boss-health-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  z-index: 1;
+  font-family: 'Courier New', monospace;
 }
 
 .boss-cracks {
@@ -663,30 +832,7 @@ onUnmounted(() => {
   }
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .boss-moon {
-    width: 100px;
-    height: 100px;
-  }
-
-  .boss-hp-bar {
-    width: 150px;
-    top: -25px;
-  }
-
-  .victory-title {
-    font-size: 3rem;
-  }
-
-  .victory-message {
-    font-size: 1.2rem;
-  }
-
-  .victory-reward {
-    font-size: 1.5rem;
-  }
-}
+/* 注意：響應式設計已刪除（參考交接文檔規定）*/
 
 /* 血月閃過效果 */
 .blood-moon-flash {
@@ -798,6 +944,134 @@ onUnmounted(() => {
   }
   50% {
     box-shadow: 0 0 30px rgba(220, 0, 0, 1);
+  }
+}
+
+/* ===== 應援團系統（參考：frontend/assets/css/style.css:2200-2332）===== */
+.support-team-container {
+  position: fixed;
+  bottom: 20px;
+  right: 210px; /* Boss 戰時更靠近中央 */
+  display: flex;
+  gap: 15px;
+  z-index: 9998;
+  pointer-events: none;
+}
+
+.support-character {
+  display: flex;
+  flex-direction: column; /* 訊息在上，圖片在下 */
+  align-items: center;
+  /* 頻繁的原地彈跳動畫 */
+  animation: supportBounce 0.8s ease-in-out infinite;
+}
+
+.support-char-1 { animation-delay: 0s; }
+.support-char-2 { animation-delay: 0.2s; }
+.support-char-3 { animation-delay: 0.4s; }
+.support-char-4 { animation-delay: 0.6s; }
+
+/* 應援團原地彈跳動畫 */
+@keyframes supportBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.char-image {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid rgba(231, 76, 60, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  /* 圖片本身也會彈跳 */
+  animation: charImageBounce 1s ease-in-out infinite;
+}
+
+@keyframes charImageBounce {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-15px) scale(1.1);
+  }
+}
+
+.char-message {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.95), rgba(192, 57, 43, 0.95));
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: messagePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes messagePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+  }
+}
+
+/* 注意：手機版響應式設計已永久關閉 */
+/* 不要添加任何 @media 查詢，手機用戶會自動重定向到維護頁面 */
+
+/* ===== Boss 對話訊息（參考：frontend/assets/js/script.js:528-1247）===== */
+.boss-message {
+  position: fixed;
+  background: rgba(139, 0, 0, 0.95);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* 彈跳動畫 */
+.bounce-enter-active {
+  animation: bounceIn 0.5s ease;
+}
+
+.bounce-leave-active {
+  animation: fadeOut 0.5s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 </style>

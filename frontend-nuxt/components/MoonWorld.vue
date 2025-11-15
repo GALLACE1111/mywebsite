@@ -25,9 +25,9 @@
         <div v-for="i in 50" :key="i" class="star" :style="getStarStyle(i)"></div>
       </div>
 
-      <!-- 關閉按鈕 -->
+      <!-- 返回魔王城按鈕 -->
       <button @click="exitMoonWorld" class="exit-btn">
-        ✕ 返回地球
+        🏰 返回魔王城
       </button>
     </div>
   </Teleport>
@@ -315,54 +315,34 @@ onUnmounted(() => {
   }
 }
 
+/* 返回魔王城按鈕（右下角） */
 .exit-btn {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: fixed;
+  bottom: 75px; /* 在音量調節器上方 */
+  right: 15px;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 700;
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s;
-  z-index: 100;
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+  z-index: 10001;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .exit-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(231, 76, 60, 0.6);
+  background: linear-gradient(135deg, #ff6b6b, #e74c3c);
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .dialogue-box {
-    max-width: 90%;
-    padding: 1.5rem;
-  }
-
-  .dialogue-text {
-    font-size: 1.1rem;
-  }
-
-  .dialogue-btn {
-    padding: 0.75rem 2rem;
-    font-size: 1rem;
-  }
-
-  .exit-btn {
-    top: 1rem;
-    right: 1rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .moon-crater {
-    display: none;
-  }
+.exit-btn:active {
+  transform: translateY(-1px) scale(1.02);
 }
 </style>

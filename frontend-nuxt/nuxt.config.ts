@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
 
+  // 静态网站生成配置
+  ssr: false, // 禁用服务器端渲染，生成纯静态 SPA
+
   // Pinia 狀態管理
   modules: ['@pinia/nuxt'],
 

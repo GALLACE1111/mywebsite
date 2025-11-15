@@ -6,13 +6,12 @@
       <button class="close-btn" @click="close">✕</button>
 
       <h2 class="title">📝 意見回饋 📝</h2>
-      <p class="subtitle">分享你的想法，幫助我們變得更好！</p>
 
       <!-- 回饋表單 -->
       <div class="feedback-form">
         <!-- 類型選擇 -->
         <div class="form-group">
-          <label for="feedback-category" class="label">回饋類型</label>
+          <label for="feedback-category" class="label">回饋類型：</label>
           <select id="feedback-category" v-model="feedbackCategory" class="category-select">
             <option value="bug">🐛 Bug 回報</option>
             <option value="feature">💡 功能建議</option>
@@ -23,7 +22,7 @@
 
         <!-- 訊息輸入 -->
         <div class="form-group">
-          <label for="feedback-message" class="label">你的意見</label>
+          <label for="feedback-message" class="label">你的意見：</label>
           <textarea
             id="feedback-message"
             v-model="feedbackMessage"
@@ -274,15 +273,8 @@ defineExpose({
 .title {
   font-size: 1.8rem;
   text-align: center;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
-.subtitle {
-  text-align: center;
-  color: #666;
   margin-bottom: 2rem;
-  font-size: 0.9rem;
+  color: #333;
 }
 
 .feedback-form {
@@ -455,23 +447,6 @@ defineExpose({
   }
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .modal-content {
-    width: 95%;
-    padding: 1.5rem;
-  }
-
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .subtitle {
-    font-size: 0.85rem;
-  }
-
-  .history-list {
-    max-height: 250px;
-  }
-}
+/* 注意：手機版響應式設計已永久關閉 */
+/* 不要添加任何 @media 查詢，手機用戶會自動重定向到維護頁面 */
 </style>

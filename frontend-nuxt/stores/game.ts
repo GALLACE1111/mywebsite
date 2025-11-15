@@ -19,6 +19,9 @@ export const useGameStore = defineStore('game', {
     bossHealth: 0 as number,
     maxBossHealth: 100 as number,
 
+    // Boss 戰鬥狀態
+    bossBattleStarted: false as boolean, // Boss 戰鬥是否已經開始過（用於判斷是否顯示確認對話框）
+
     // UI 狀態
     showLeaderboard: true as boolean,
     musicEnabled: true as boolean,
@@ -53,7 +56,7 @@ export const useGameStore = defineStore('game', {
      * 是否在 Boss 戰鬥中
      */
     inBossBattle(): boolean {
-      return this.inMoonWorld && this.bossHealth > 0
+      return this.bossBattleStarted && this.bossHealth > 0
     }
   },
 
@@ -124,6 +127,15 @@ export const useGameStore = defineStore('game', {
     },
 
     /**
+     * 開始 Boss 戰鬥
+     * 參考：frontend/assets/js/script.js:1140-1175
+     */
+    startBossBattle() {
+      this.bossBattleStarted = true
+      this.bossHealth = this.maxBossHealth
+    },
+
+    /**
      * 攻擊 Boss
      */
     attackBoss(damage: number) {
@@ -143,11 +155,21 @@ export const useGameStore = defineStore('game', {
       this.heartCount += 50
       this.totalHearts += 50
 
-      // 保存並離開
+      // 保存
       this.saveToStorage()
+
+      // 2秒後重置 Boss 血量（不重置 bossBattleStarted，這樣下次點擊可以直接發射）
       setTimeout(() => {
-        this.exitMoonWorld()
+        this.bossHealth = 0
       }, 2000)
+    },
+
+    /**
+     * 重置 Boss 戰鬥狀態（用於重新挑戰）
+     */
+    resetBossBattle() {
+      this.bossBattleStarted = false
+      this.bossHealth = 0
     },
 
     /**

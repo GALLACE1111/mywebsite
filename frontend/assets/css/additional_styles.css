@@ -1,0 +1,138 @@
+/* ===== 放鬆驚喜 ===== */
+.relaxation-surprise {
+  position: fixed;
+  font-size: 48px;
+  animation: surpriseFall 5s ease-out forwards;
+  z-index: 9996;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes surpriseFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+}
+
+.surprise-message {
+  position: fixed;
+  background: rgba(255, 182, 193, 0.95); /* 粉色背景 */
+  padding: 8px 24px;
+  border-radius: 6px; /* 從20px改為6px，橫幅矩形 */
+  font-size: 14px; /* 從16px改為14px */
+  font-weight: 700;
+  color: #c41e3a; /* 深紅色文字，在粉色背景上更清晰 */
+  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4); /* 粉色陰影 */
+  border: 2px solid #ff69b4; /* 粉色邊框 */
+  z-index: 9996;
+  pointer-events: none;
+  animation: messageFadeOut 3s ease-out forwards;
+  min-width: 120px; /* 確保橫幅有最小寬度 */
+  text-align: center; /* 文字居中 */
+}
+
+@keyframes messageFadeOut {
+  0%, 80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ===== 月球傳送門 ===== */
+.portal-active {
+  animation: portalPulse 1s ease-in-out infinite !important;
+}
+
+@keyframes portalPulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(255, 248, 220, 0.8), 0 0 60px rgba(240, 230, 140, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(255, 248, 220, 1), 0 0 100px rgba(240, 230, 140, 0.8);
+    transform: scale(1.05);
+  }
+}
+
+.moon-portal-dialog .portal-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.portal-icons .icon-item {
+  font-size: 32px;
+  animation: iconBounce 1s ease-in-out infinite;
+}
+
+.portal-icons .icon-item:nth-child(1) { animation-delay: 0s; }
+.portal-icons .icon-item:nth-child(2) { animation-delay: 0.2s; }
+.portal-icons .icon-item:nth-child(3) { animation-delay: 0.4s; }
+.portal-icons .icon-item:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.2); }
+}
+
+/* ===== 時鐘雙擊提示 ===== */
+.moon-hint-container {
+  position: fixed;
+  top: 50px;
+  right: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 999;
+  pointer-events: none;
+  animation: moonHintFade 3s ease-in-out infinite;
+}
+
+.moon-hint-arrow {
+  font-size: 32px;
+  animation: moonHintBounce 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.moon-hint-text {
+  background: linear-gradient(135deg, rgba(255, 248, 220, 0.95), rgba(240, 230, 140, 0.95));
+  color: #6b4423;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(255, 248, 220, 0.6);
+  border: 2px solid rgba(255, 248, 220, 0.8);
+}
+
+@keyframes moonHintBounce {
+  0%, 100% {
+    transform: translateY(0) rotate(-15deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-15deg);
+  }
+}
+
+@keyframes moonHintFade {
+  0%, 40% {
+    opacity: 1;
+  }
+  50%, 90% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 隱藏提示（用於已知用戶或月球世界） */
+.moon-hint-container.hidden {
+  display: none;
+}
+
+/* 月球世界中隱藏提示 */
+body.moon-world .moon-hint-container {
+  display: none;
+}
+

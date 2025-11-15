@@ -5,37 +5,47 @@
     <div class="modal-content">
       <button class="close-btn" @click="close">✕</button>
 
-      <h2 class="title">⏰ 專注鬧鐘</h2>
-      <p class="subtitle">設定專注時間，提升效率！</p>
+      <h2 class="title">⏰ 專注鬧鐘 ⏰</h2>
+      <p class="subtitle">設定專注時間，讓鬧鐘在時間到時提醒你休息 📚</p>
 
-      <!-- 時間顯示 -->
-      <div class="timer-display">
-        <div class="time">{{ displayTime }}</div>
-        <div class="status">{{ timerStatus }}</div>
+      <!-- 設定表單 -->
+      <div v-show="!isRunning" class="alarm-form">
+        <div class="input-group">
+          <label class="label">專注時間：</label>
+          <select v-model="selectedDuration" class="select">
+            <option value="5">5 分鐘</option>
+            <option value="10">10 分鐘</option>
+            <option value="15">15 分鐘</option>
+            <option value="20">20 分鐘</option>
+            <option value="25">25 分鐘（番茄鐘）</option>
+            <option value="30">30 分鐘</option>
+            <option value="45">45 分鐘</option>
+            <option value="60">60 分鐘</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="label">任務名稱：</label>
+          <input
+            v-model="taskName"
+            type="text"
+            class="task-input"
+            placeholder="例如：閱讀、寫作業、複習..."
+            maxlength="30"
+          />
+        </div>
+
+        <button @click="start" class="start-btn">開始專注 🎯</button>
       </div>
 
-      <!-- 控制按鈕 -->
-      <div v-if="!isRunning" class="time-presets">
-        <button @click="setTime(25)" class="preset-btn">25 分鐘</button>
-        <button @click="setTime(45)" class="preset-btn">45 分鐘</button>
-        <button @click="setTime(60)" class="preset-btn">60 分鐘</button>
-      </div>
-
-      <div class="controls">
-        <button v-if="!isRunning" @click="start" class="control-btn start-btn" :disabled="timeLeft === 0">
-          ▶️ 開始
-        </button>
-        <button v-else @click="pause" class="control-btn pause-btn">
-          ⏸️ 暫停
-        </button>
-        <button @click="reset" class="control-btn reset-btn">
-          🔄 重置
-        </button>
-      </div>
-
-      <!-- 進度條 -->
-      <div class="progress-bar">
-        <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+      <!-- 計時顯示 -->
+      <div v-show="isRunning" class="alarm-display">
+        <div class="timer">{{ displayTime }}</div>
+        <div class="task-display">任務：{{ displayTask }}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+        </div>
+        <button @click="stop" class="stop-btn">停止鬧鐘 ⏹️</button>
       </div>
     </div>
   </div>
@@ -46,96 +56,112 @@ const { playSound } = useAudio()
 
 const isOpen = ref(false)
 const isRunning = ref(false)
-const timeLeft = ref(0)
-const totalTime = ref(0)
+const selectedDuration = ref(25) // 預設 25 分鐘（番茄鐘）
+const taskName = ref('')
+const timeRemaining = ref(0) // 剩餘時間（秒）
+const totalTime = ref(0) // 總時間（秒）
+const displayTask = ref('') // 顯示的任務名稱
 
 let timerInterval: NodeJS.Timeout | null = null
 
+// 格式化顯示時間
 const displayTime = computed(() => {
-  const minutes = Math.floor(timeLeft.value / 60)
-  const seconds = timeLeft.value % 60
+  const minutes = Math.floor(timeRemaining.value / 60)
+  const seconds = timeRemaining.value % 60
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 })
 
-const timerStatus = computed(() => {
-  if (isRunning.value) return '專注中...'
-  if (timeLeft.value === 0) return '選擇時間開始專注'
-  return '已暫停'
-})
-
+// 進度百分比
 const progressPercent = computed(() => {
   if (totalTime.value === 0) return 0
-  return ((totalTime.value - timeLeft.value) / totalTime.value) * 100
+  return ((totalTime.value - timeRemaining.value) / totalTime.value) * 100
 })
 
+// 打開專注鬧鐘
 const open = () => {
   isOpen.value = true
 }
 
+// 關閉專注鬧鐘
 const close = () => {
   if (isRunning.value && !confirm('計時器正在運行，確定要關閉嗎？')) {
     return
   }
   isOpen.value = false
-  reset()
+  if (isRunning.value) {
+    stop()
+  }
 }
 
-const setTime = (minutes: number) => {
-  if (isRunning.value) return
-  timeLeft.value = minutes * 60
-  totalTime.value = minutes * 60
-}
-
+// 開始專注
 const start = () => {
-  if (timeLeft.value === 0) return
+  const duration = selectedDuration.value
+  const task = taskName.value.trim() || '專注學習'
 
+  totalTime.value = duration * 60 // 轉換為秒
+  timeRemaining.value = totalTime.value
+  displayTask.value = task
   isRunning.value = true
+
   playSound('timer-start')
 
-  timerInterval = setInterval(() => {
-    timeLeft.value--
+  // 開始計時
+  startTimer()
+}
 
-    if (timeLeft.value <= 0) {
-      finish()
+// 停止鬧鐘
+const stop = () => {
+  isRunning.value = false
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+  playSound('timer-stop')
+}
+
+// 計時器邏輯
+const startTimer = () => {
+  timerInterval = setInterval(() => {
+    timeRemaining.value--
+
+    if (timeRemaining.value <= 0) {
+      complete()
     }
   }, 1000)
 }
 
-const pause = () => {
+// 計時完成
+const complete = () => {
   isRunning.value = false
   if (timerInterval) {
     clearInterval(timerInterval)
-  }
-  playSound('timer-pause')
-}
-
-const reset = () => {
-  isRunning.value = false
-  timeLeft.value = 0
-  totalTime.value = 0
-  if (timerInterval) {
-    clearInterval(timerInterval)
-  }
-}
-
-const finish = () => {
-  isRunning.value = false
-  if (timerInterval) {
-    clearInterval(timerInterval)
+    timerInterval = null
   }
 
+  // 震動提醒
+  if ('vibrate' in navigator) {
+    navigator.vibrate([200, 100, 200, 100, 200])
+  }
+
+  // 播放提示音
   playSound('timer-finish')
-  alert('🎉 專注時間結束！做得好！')
 
-  reset()
+  // 提示訊息
+  alert('⏰ 時間到！休息一下吧！')
+
+  // 重置狀態
+  timeRemaining.value = 0
+  totalTime.value = 0
 }
 
+// 組件卸載時清理計時器
 onUnmounted(() => {
   if (timerInterval) {
     clearInterval(timerInterval)
   }
 })
 
+// 暴露給父組件
 defineExpose({
   open,
   close
@@ -163,13 +189,14 @@ defineExpose({
   height: 100%;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
   position: relative;
   width: 90%;
-  max-width: 400px;
-  background: #fff;
+  max-width: 500px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
@@ -183,7 +210,7 @@ defineExpose({
   right: 1rem;
   width: 40px;
   height: 40px;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.1);
   border: none;
   border-radius: 50%;
   font-size: 1.5rem;
@@ -193,129 +220,159 @@ defineExpose({
 }
 
 .close-btn:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.2);
   transform: rotate(90deg);
 }
 
 .title {
-  font-size: 1.8rem;
+  font-size: 2rem;
   text-align: center;
   margin-bottom: 0.5rem;
-  color: #333;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .subtitle {
   text-align: center;
   color: #666;
   margin-bottom: 2rem;
-  font-size: 0.9rem;
 }
 
-.timer-display {
-  text-align: center;
-  margin-bottom: 2rem;
+/* 設定表單 */
+.alarm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.time {
-  font-size: 4rem;
-  font-weight: bold;
-  color: #667eea;
-  font-variant-numeric: tabular-nums;
-  font-family: 'Courier New', monospace;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.status {
-  margin-top: 0.5rem;
-  color: #999;
+.label {
+  font-weight: 600;
+  color: #333;
   font-size: 1rem;
 }
 
-.time-presets {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.preset-btn {
-  flex: 1;
+.select {
   padding: 0.75rem;
-  background: rgba(102, 126, 234, 0.1);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid #ddd;
   border-radius: 12px;
-  color: #667eea;
-  font-weight: 600;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.3s;
 }
 
-.preset-btn:hover {
-  background: rgba(102, 126, 234, 0.2);
+.select:focus {
+  outline: none;
   border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.controls {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+.task-input {
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s;
 }
 
-.control-btn {
-  flex: 1;
+.task-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.start-btn {
+  width: 100%;
   padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s;
 }
 
-.start-btn {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-  color: #fff;
-}
-
-.start-btn:hover:not(:disabled) {
+.start-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.start-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* 計時顯示 */
+.alarm-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-.pause-btn {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-  color: #fff;
+.timer {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #667eea;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', monospace;
+  text-align: center;
 }
 
-.pause-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
-}
-
-.reset-btn {
-  background: rgba(0, 0, 0, 0.1);
-  color: #666;
-}
-
-.reset-btn:hover {
-  background: rgba(0, 0, 0, 0.15);
+.task-display {
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 600;
+  text-align: center;
 }
 
 .progress-bar {
   width: 100%;
-  height: 8px;
+  height: 12px;
   background: rgba(102, 126, 234, 0.1);
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-  transition: width 0.3s linear;
+  transition: width 1s linear;
+  border-radius: 6px;
+}
+
+.stop-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.stop-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -328,4 +385,7 @@ defineExpose({
     transform: translateY(0);
   }
 }
+
+/* 注意：手機版響應式設計已永久關閉 */
+/* 不要添加任何 @media 查詢，手機用戶會自動重定向到維護頁面 */
 </style>

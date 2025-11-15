@@ -5,15 +5,15 @@
     <div class="modal-content">
       <button class="close-btn" @click="close">✕</button>
 
-      <h2 class="title">🌟 許願池 🌟</h2>
-      <p class="subtitle">在這裡許下你的願望，或許會實現哦！</p>
+      <h2 class="title">🌠 許願池 🌠</h2>
+      <p class="subtitle">在這裡寫下你的願望，讓星空見證你的夢想 ✨</p>
 
       <!-- 許願表單 -->
       <div class="wish-form">
         <textarea
           v-model="wishText"
           class="wish-input"
-          placeholder="寫下你的願望..."
+          placeholder="寫下你的願望...&#10;&#10;例如：&#10;- 希望學業進步&#10;- 希望家人健康&#10;- 希望夢想成真"
           maxlength="200"
           rows="4"
         ></textarea>
@@ -24,13 +24,13 @@
           class="wish-btn"
           :disabled="!canMakeWish || submitting"
         >
-          {{ submitting ? '許願中...' : '投入許願池' }}
+          {{ submitting ? '許願中...' : '投入許願池 🌟' }}
         </button>
       </div>
 
       <!-- 願望列表 -->
       <div class="wishes-section">
-        <h3 class="section-title">最近的願望</h3>
+        <h3 class="section-title">💫 我的願望清單</h3>
 
         <div v-if="loadingWishes" class="loading">
           <div class="spinner"></div>
@@ -52,13 +52,6 @@
               <span class="wish-time">{{ formatTime(wish.created_at) }}</span>
             </div>
             <p class="wish-content">{{ wish.content }}</p>
-            <button
-              @click="handleLikeWish(wish.id)"
-              class="like-btn"
-              :class="{ liked: wish.liked }"
-            >
-              ❤️ {{ wish.likes || 0 }}
-            </button>
           </div>
         </div>
       </div>
@@ -69,15 +62,13 @@
 <script setup lang="ts">
 const gameStore = useGameStore()
 const { playSound } = useAudio()
-const { getWishes, createWish, likeWish } = useAPI()
+const { getWishes, createWish } = useAPI()
 
 interface Wish {
   id: string
   username: string
   player_id?: string
   content: string
-  likes: number
-  liked?: boolean
   created_at: string
 }
 
@@ -86,7 +77,6 @@ const wishText = ref('')
 const submitting = ref(false)
 const loadingWishes = ref(false)
 const wishes = ref<Wish[]>([])
-const likedWishes = ref<Set<string>>(new Set())
 
 const canMakeWish = computed(() => {
   return wishText.value.trim().length >= 5 && wishText.value.trim().length <= 200
@@ -95,7 +85,6 @@ const canMakeWish = computed(() => {
 // 打開許願池
 const open = () => {
   isOpen.value = true
-  loadLikedWishes() // 先載入點讚記錄
   loadWishes()
   playSound('open-modal')
 }
@@ -145,10 +134,7 @@ const loadWishes = async () => {
     const response = await getWishes(1, 20)
 
     if (response.success) {
-      wishes.value = response.wishes.map((wish: Wish) => ({
-        ...wish,
-        liked: likedWishes.value.has(wish.id)
-      }))
+      wishes.value = response.wishes
     }
   } catch (error) {
     console.error('載入願望失敗:', error)
@@ -156,49 +142,6 @@ const loadWishes = async () => {
     wishes.value = []
   } finally {
     loadingWishes.value = false
-  }
-}
-
-// 點讚
-const handleLikeWish = async (wishId: string) => {
-  const wish = wishes.value.find(w => w.id === wishId)
-  if (!wish) return
-
-  const action = wish.liked ? 'unlike' : 'like'
-
-  try {
-    const response = await likeWish(wishId, gameStore.playerId, action)
-
-    if (response.success) {
-      // 更新本地狀態
-      wish.likes = response.likes
-      wish.liked = !wish.liked
-
-      // 更新 likedWishes Set
-      if (wish.liked) {
-        likedWishes.value.add(wishId)
-        playSound('like')
-      } else {
-        likedWishes.value.delete(wishId)
-      }
-
-      // 保存到 localStorage
-      localStorage.setItem('likedWishes', JSON.stringify(Array.from(likedWishes.value)))
-    }
-  } catch (error) {
-    console.error('點讚失敗:', error)
-  }
-}
-
-// 載入已點讚的許願
-const loadLikedWishes = () => {
-  try {
-    const saved = localStorage.getItem('likedWishes')
-    if (saved) {
-      likedWishes.value = new Set(JSON.parse(saved))
-    }
-  } catch (error) {
-    console.error('載入點讚記錄失敗:', error)
   }
 }
 
@@ -427,27 +370,6 @@ defineExpose({
   margin-bottom: 0.75rem;
 }
 
-.like-btn {
-  padding: 0.5rem 1rem;
-  background: rgba(233, 30, 99, 0.1);
-  border: 1px solid rgba(233, 30, 99, 0.3);
-  border-radius: 20px;
-  color: #e91e63;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.like-btn:hover {
-  background: rgba(233, 30, 99, 0.2);
-}
-
-.like-btn.liked {
-  background: #e91e63;
-  color: #fff;
-  border-color: #e91e63;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -474,19 +396,6 @@ defineExpose({
   }
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .modal-content {
-    width: 95%;
-    padding: 1.5rem;
-  }
-
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .subtitle {
-    font-size: 0.9rem;
-  }
-}
+/* 注意：手機版響應式設計已永久關閉 */
+/* 不要添加任何 @media 查詢，手機用戶會自動重定向到維護頁面 */
 </style>

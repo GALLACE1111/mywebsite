@@ -1,14 +1,22 @@
 <template>
   <div class="game-page">
+    <!-- Canvas 動畫背景 (z-index: 0) - 最底層 -->
+    <CanvasBackground ref="canvasBackgroundRef" />
+
     <!-- 月球世界 -->
     <MoonWorld />
 
     <!-- Boss 戰鬥 -->
     <BossBattle />
 
-    <!-- 滑鼠點擊互動區域:點擊滑鼠會冒出愛心,使用物理引擎 (Matter.js) -->
-    <!-- 滑鼠游標有可愛 icon -->
-    <HeartInteraction v-if="!gameStore.inMoonWorld" />
+    <!-- 像素風角色 (z-index: 5) - 左下角 -->
+    <CharacterAnimation v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle" />
+
+    <!-- 歡迎卡片 (z-index: 10) - 正中央 -->
+    <WelcomeCard
+      v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle"
+      @enter-moon="showMoonDialog"
+    />
 
     <!-- 排行榜組件 -->
     <Leaderboard v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle" />
@@ -19,18 +27,11 @@
     <!-- 專注鬧鐘 -->
     <FocusTimer ref="focusTimerRef" />
 
-    <!-- 個人資料 -->
-    <PlayerProfile ref="playerProfileRef" />
-
     <!-- 意見回饋 -->
     <Feedback ref="feedbackRef" />
 
     <!-- 功能面板 -->
     <div class="function-panel-right" v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle">
-      <button @click="openProfile" class="function-btn">
-        👤 個人資料
-      </button>
-
       <button @click="openWishingWell" class="function-btn">
         🌟 許願池
       </button>
@@ -42,34 +43,32 @@
       <button @click="openFeedback" class="function-btn">
         ⚙️ 意見回饋
       </button>
-
-      <button @click="enterMoonWorld" class="function-btn moon-btn">
-        🌙 月球世界
-      </button>
     </div>
 
-    <!-- 玩家資訊卡片 -->
-    <div class="player-info-card">
-      <div class="player-avatar">
-        <img :src="playerAvatar" alt="玩家頭像" @error="handleAvatarError" />
-      </div>
-      <div class="player-details">
-        <div class="player-name">{{ gameStore.displayName }}</div>
-        <div class="player-stats">
-          <span class="stat">
-            <span class="label">當前:</span>
-            <span class="value">{{ gameStore.heartCount }} ❤️</span>
-          </span>
-          <span class="stat">
-            <span class="label">總計:</span>
-            <span class="value">{{ gameStore.totalHearts }} ❤️</span>
-          </span>
-        </div>
-        <div v-if="gameStore.currentTitle" class="player-title">
-          {{ gameStore.currentTitle }}
-        </div>
-      </div>
-    </div>
+    <!-- 時段顯示器 (z-index: 999) - 左上角 -->
+    <TimeDisplay />
+
+    <!-- 月球雙擊提示 (z-index: 999) - 右上角月亮附近 -->
+    <MoonHint />
+
+    <!-- 音量控制器 (z-index: 1000) - 右下角 -->
+    <VolumeControl />
+
+    <!-- 社交媒體面板 (z-index: 1000) - 左側中央 -->
+    <SocialLinks v-if="!gameStore.inMoonWorld && !gameStore.inBossBattle" />
+
+    <!-- 星星發射器提示 (z-index: 1000) - 下方中央 -->
+    <StarHint />
+
+    <!-- 月亮時鐘 + 愛心計數器 (z-index: 9999) - 右上角 -->
+    <MoonClock @enter-moon="showMoonDialog" />
+
+    <!-- 進入月球確認對話框 (z-index: 10000) - 最上層 -->
+    <MoonDialog
+      :show="isMoonDialogVisible"
+      @confirm="confirmEnterMoon"
+      @cancel="cancelEnterMoon"
+    />
 
     <!-- 提示訊息 -->
     <div v-if="showMessage" class="message-toast" :class="messageType">
@@ -83,23 +82,29 @@ const gameStore = useGameStore()
 const leaderboardStore = useLeaderboardStore()
 const { playMusic, stopMusic } = useAudio()
 
+// 愛心點擊系統：全局點擊監聽，在點擊位置創建浮動愛心特效
+// 參考：frontend/assets/js/script.js:2664-2693
+useHeartClick()
+
 // 組件 refs
+const canvasBackgroundRef = ref()
 const wishingWellRef = ref()
 const focusTimerRef = ref()
-const playerProfileRef = ref()
 const feedbackRef = ref()
+
+// Provide shootStars 方法給子組件（StarHint）
+provide('shootStars', () => {
+  if (canvasBackgroundRef.value?.shootStars) {
+    canvasBackgroundRef.value.shootStars()
+  }
+})
 
 const showMessage = ref(false)
 const message = ref('')
 const messageType = ref<'success' | 'error' | 'info'>('info')
 
-// 玩家頭像：從 LocalStorage 或後端獲取玩家上傳的頭像
-// 如果玩家沒有上傳頭像，使用預設頭像
-const playerAvatar = computed(() => {
-  // TODO: 實作從後端獲取玩家頭像的邏輯
-  // 目前 gameStore 尚未實作 playerAvatar 屬性，暫時使用預設頭像
-  return '/images/default-avatar.png'
-})
+// 月球對話框控制
+const isMoonDialogVisible = ref(false)
 
 // 頁面初始化：當遊戲頁面載入時執行
 onMounted(() => {
@@ -116,9 +121,6 @@ onMounted(() => {
   }
 })
 
-// 自動提交分數：當玩家獲得愛心時，由 HeartInteraction 組件自動調用 leaderboardStore.submitScore()
-// 不需要手動提交按鈕，分數會即時同步到排行榜
-
 // 顯示提示訊息
 const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
   message.value = msg
@@ -128,17 +130,6 @@ const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'info') => 
   setTimeout(() => {
     showMessage.value = false
   }, 3000)
-}
-
-// 處理頭像錯誤
-const handleAvatarError = (event: Event) => {
-  const img = event.target as HTMLImageElement
-  img.src = '/images/default-avatar.png'
-}
-
-// 打開個人資料
-const openProfile = () => {
-  playerProfileRef.value?.open()
 }
 
 // 打開許願池
@@ -156,12 +147,23 @@ const openFeedback = () => {
   feedbackRef.value?.open()
 }
 
-// 進入月球世界：有兩種方式
-// 1. 點擊「網頁中間上方的進入月球按鈕」
-// 2. 雙擊「右上角的圓形時鐘」
+// 顯示月球對話框：有兩種觸發方式
+// 1. 點擊「WelcomeCard 中的進入月球按鈕」
+// 2. 雙擊「MoonClock（右上角的圓形時鐘）」
+const showMoonDialog = () => {
+  isMoonDialogVisible.value = true
+}
+
+// 確認進入月球世界
 // 進入後會播放下雨聲 BGM
-const enterMoonWorld = () => {
+const confirmEnterMoon = () => {
+  isMoonDialogVisible.value = false
   gameStore.enterMoonWorld()
+}
+
+// 取消進入月球世界
+const cancelEnterMoon = () => {
+  isMoonDialogVisible.value = false
 }
 
 // 設置頁面 SEO
@@ -183,79 +185,6 @@ useHead({
   width: 100%;
   height: 100vh;
   overflow: hidden;
-}
-
-.player-info-card {
-  position: fixed;
-  bottom: 1rem;
-  left: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  min-width: 280px;
-}
-
-.player-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid #667eea;
-  flex-shrink: 0;
-}
-
-.player-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.player-details {
-  flex: 1;
-}
-
-.player-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.player-stats {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.9rem;
-}
-
-.stat {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.stat .label {
-  color: #666;
-}
-
-.stat .value {
-  font-weight: 600;
-  color: #e91e63;
-}
-
-.player-title {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  font-size: 0.75rem;
-  border-radius: 12px;
-  margin-top: 0.5rem;
 }
 
 .message-toast {
@@ -345,54 +274,6 @@ useHead({
   box-shadow: 0 4px 12px rgba(74, 85, 104, 0.4);
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .player-info-card {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 0.5rem;
-    width: calc(100% - 2rem);
-    max-width: 400px;
-    min-width: auto;
-  }
-
-  .player-avatar {
-    width: 50px;
-    height: 50px;
-  }
-
-  .player-name {
-    font-size: 1rem;
-  }
-
-  .player-stats {
-    font-size: 0.85rem;
-  }
-
-  .function-panel-right {
-    bottom: auto;
-    top: 1rem;
-    right: 1rem;
-    left: auto;
-    transform: none;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .function-btn {
-    min-width: 120px;
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .message-toast {
-    width: calc(100% - 2rem);
-    left: 1rem;
-    transform: translateX(0) translateY(-50%);
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-  }
-}
+/* 注意：手機版響應式設計已永久關閉 */
+/* 不要添加任何 @media 查詢，手機用戶會自動重定向到維護頁面 */
 </style>
