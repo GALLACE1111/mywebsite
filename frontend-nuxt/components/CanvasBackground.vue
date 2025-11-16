@@ -15,6 +15,9 @@ import { ref, onMounted, onUnmounted } from 'vue'
 // 星星發射系統
 const { shootStars, updateParticles, drawParticles } = useStarShooter()
 
+// 獲取 Nuxt 配置（用於 baseURL）
+const config = useRuntimeConfig()
+
 /**
  * CanvasBackground 組件 - Canvas 動畫背景層
  *
@@ -68,6 +71,14 @@ const backgroundImagesLoaded = {
 // 背景循環開始時間
 let cycleStartTime = Date.now()
 
+// 背景循環時間間隔（毫秒）- 參照 frontend/assets/js/script.js 第 574 行
+// [早晨30s, 下午30s, 晚上30s, 深夜60s]
+const bgRotationIntervals = [30000, 30000, 30000, 60000]
+
+// BOSS 戰背景鎖定 - 參照 frontend/assets/js/script.js 第 575-576 行
+let bgRotationLocked = false
+let lockedBgIndex = 0
+
 /**
  * 設定 Canvas 尺寸為視窗大小
  * 參照 frontend/assets/js/script.js 第 630-633 行
@@ -82,67 +93,90 @@ function resizeCanvas(): void {
 /**
  * 載入背景圖片
  * 參照 frontend/assets/js/script.js 第 638-683 行
+ *
+ * 修復：添加 baseURL 支援以適配 GitHub Pages 部署
  */
 function loadBackgroundImages(): void {
+  // 獲取 baseURL（本地開發為 '/'，GitHub Pages 為 '/mywebsite/'）
+  const baseURL = config.app.baseURL || '/'
+
   // 早晨背景
   backgroundImages.morning = new Image()
-  backgroundImages.morning.src = '/images/morning.png'
+  backgroundImages.morning.src = `${baseURL}images/morning.png`
   backgroundImages.morning.onload = () => {
     backgroundImagesLoaded.morning = true
-    console.log('早晨背景載入成功！')
+    console.log('✅ 早晨背景載入成功！', backgroundImages.morning.src)
   }
   backgroundImages.morning.onerror = () => {
-    console.log('早晨背景載入失敗: /images/morning.png')
+    console.error('❌ 早晨背景載入失敗:', backgroundImages.morning.src)
   }
 
   // 下午背景
   backgroundImages.afternoon = new Image()
-  backgroundImages.afternoon.src = '/images/1219.png'
+  backgroundImages.afternoon.src = `${baseURL}images/1219.png`
   backgroundImages.afternoon.onload = () => {
     backgroundImagesLoaded.afternoon = true
-    console.log('下午背景載入成功！')
+    console.log('✅ 下午背景載入成功！', backgroundImages.afternoon.src)
   }
   backgroundImages.afternoon.onerror = () => {
-    console.log('下午背景載入失敗: /images/1219.png')
+    console.error('❌ 下午背景載入失敗:', backgroundImages.afternoon.src)
   }
 
   // 晚上背景
   backgroundImages.night = new Image()
-  backgroundImages.night.src = '/images/1922.png'
+  backgroundImages.night.src = `${baseURL}images/1922.png`
   backgroundImages.night.onload = () => {
     backgroundImagesLoaded.night = true
-    console.log('晚上背景載入成功！')
+    console.log('✅ 晚上背景載入成功！', backgroundImages.night.src)
   }
   backgroundImages.night.onerror = () => {
-    console.log('晚上背景載入失敗: /images/1922.png')
+    console.error('❌ 晚上背景載入失敗:', backgroundImages.night.src)
   }
 
   // 深夜背景
   backgroundImages.lateNight = new Image()
-  backgroundImages.lateNight.src = '/images/2206.png'
+  backgroundImages.lateNight.src = `${baseURL}images/2206.png`
   backgroundImages.lateNight.onload = () => {
     backgroundImagesLoaded.lateNight = true
-    console.log('深夜背景載入成功！')
+    console.log('✅ 深夜背景載入成功！', backgroundImages.lateNight.src)
   }
   backgroundImages.lateNight.onerror = () => {
-    console.log('深夜背景載入失敗: /images/2206.png')
+    console.error('❌ 深夜背景載入失敗:', backgroundImages.lateNight.src)
   }
 }
 
 /**
  * 獲取當前背景圖片索引
  * 循環順序：早晨(30s) → 下午(30s) → 晚上(30s) → 深夜(60s)
+ * 參照 frontend/assets/js/script.js 第 578-604 行
+ *
+ * 修復：使用毫秒精度 + 動態計算 + BOSS 鎖定支援
  */
 function getCurrentBackgroundIndex(): number {
-  const elapsed = (Date.now() - cycleStartTime) / 1000 // 秒
-  const cycleTime = 150 // 總循環時間 150 秒
+  // BOSS 戰期間返回鎖定的背景
+  if (bgRotationLocked) {
+    return lockedBgIndex
+  }
 
-  const progress = (elapsed % cycleTime) / cycleTime
+  // 計算經過的時間（毫秒）
+  const elapsed = Date.now() - cycleStartTime
 
-  if (progress < 0.2) return 0 // 早晨 (0-30s)
-  if (progress < 0.4) return 1 // 下午 (30-60s)
-  if (progress < 0.6) return 2 // 晚上 (60-90s)
-  return 3 // 深夜 (90-150s)
+  // 計算總循環時間（毫秒）
+  const cycleDuration = bgRotationIntervals.reduce((sum, interval) => sum + interval, 0)
+
+  // 當前在循環中的位置
+  const currentPosition = elapsed % cycleDuration
+
+  // 找出當前應該顯示哪個背景
+  let totalTime = 0
+  for (let i = 0; i < bgRotationIntervals.length; i++) {
+    totalTime += bgRotationIntervals[i]
+    if (currentPosition < totalTime) {
+      return i
+    }
+  }
+
+  return 0
 }
 
 /**
