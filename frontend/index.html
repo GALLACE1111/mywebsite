@@ -5,10 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>阿賢的小窩</title>
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/additional_styles.css">
+  <link rel="stylesheet" href="assets/css/additional_styles.css?v=2">
   <link rel="stylesheet" href="assets/css/leaderboard.css">
+  <link rel="stylesheet" href="assets/css/first-place-reward.css">
+  <link rel="stylesheet" href="assets/css/title-badge.css">
+  <link rel="stylesheet" href="assets/css/heart-physics.css">
+  <!-- 虛擬滾動庫 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/clusterize.js@0.18.0/clusterize.min.css">
 </head>
 <body>
+  <!-- 全服公告跑馬燈 -->
+  <div id="global-announcement" class="global-announcement" style="display: none;">
+    <div class="announcement-text"></div>
+  </div>
+
   <!-- Canvas 動畫背景層 -->
   <canvas id="mainCanvas"></canvas>
 
@@ -36,6 +46,32 @@
   <!-- 左上角時段顯示器 -->
   <div class="time-period-display" id="timePeriodDisplay">
     當前時段：載入中...
+  </div>
+
+  <!-- 左側排行榜顯示區域 -->
+  <div class="side-leaderboard" id="sideLeaderboard">
+    <div class="side-leaderboard-header">
+      <h3>🏆 愛心排行榜</h3>
+      <span class="expand-hint">點擊展開</span>
+    </div>
+    <div class="side-leaderboard-list" id="sideLeaderboardList">
+      <!-- 虛擬滾動容器 -->
+      <div id="scrollArea" class="clusterize-scroll">
+        <div id="contentArea" class="clusterize-content">
+          <div class="side-leaderboard-loading">載入中...</div>
+        </div>
+      </div>
+    </div>
+    <div class="side-leaderboard-user" id="sideLeaderboardUser">
+      <div class="user-rank-display">
+        <span class="user-rank-label">我的排名</span>
+        <span class="user-rank-value" id="userRankValue">-</span>
+      </div>
+      <div class="user-name-display" id="userNameDisplay">
+        <span class="user-name-text" id="userNameText">匿名玩家</span>
+        <button class="user-name-edit-btn" id="userNameEditBtn" title="點擊編輯名稱">✏️</button>
+      </div>
+    </div>
   </div>
 
   <!-- 右上角月亮顯示區域 -->
@@ -127,11 +163,6 @@
     </div>
   </div>
 
-  <!-- 愛心排行榜按鈕 -->
-  <button id="leaderboard-toggle" class="leaderboard-btn" title="愛心排行榜">
-    🏆
-  </button>
-
   <!-- 意見回饋按鈕 -->
   <button id="feedback-toggle" class="feedback-btn" title="設定">
     ⚙️
@@ -158,6 +189,7 @@
         <p>在這裡寫下你的願望，讓星空見證你的夢想 ✨</p>
       </div>
       <div class="wish-form">
+        <label for="wish-input" class="visually-hidden">願望內容</label>
         <textarea id="wish-input" class="wish-textarea" placeholder="寫下你的願望...&#10;&#10;例如：&#10;- 希望學業進步&#10;- 希望家人健康&#10;- 希望夢想成真" maxlength="200"></textarea>
         <div class="wish-char-count">
           <span id="wish-char-count">0</span> / 200 字
@@ -185,7 +217,7 @@
       </div>
       <div class="alarm-form">
         <div class="alarm-input-group">
-          <label class="alarm-label">專注時間：</label>
+          <label for="alarm-duration" class="alarm-label">專注時間：</label>
           <select id="alarm-duration" class="alarm-select">
             <option value="5">5 分鐘</option>
             <option value="10">10 分鐘</option>
@@ -198,7 +230,7 @@
           </select>
         </div>
         <div class="alarm-input-group">
-          <label class="alarm-label">任務名稱：</label>
+          <label for="alarm-task" class="alarm-label">任務名稱：</label>
           <input type="text" id="alarm-task" class="alarm-task-input" placeholder="例如：閱讀、寫作業、複習..." maxlength="30">
         </div>
         <button id="alarm-start-btn" class="alarm-start-btn">開始專注 🎯</button>
@@ -223,7 +255,7 @@
       </div>
       <div class="feedback-form">
         <div class="feedback-category-section">
-          <label class="feedback-label">回饋類型：</label>
+          <label for="feedback-category" class="feedback-label">回饋類型：</label>
           <select id="feedback-category" class="feedback-category">
             <option value="bug">🐛 Bug 回報</option>
             <option value="feature">💡 功能建議</option>
@@ -232,7 +264,7 @@
           </select>
         </div>
         <div class="feedback-input-section">
-          <label class="feedback-label">你的意見：</label>
+          <label for="feedback-message" class="feedback-label">你的意見：</label>
           <textarea id="feedback-message" class="feedback-textarea" placeholder="請分享你的想法、建議或遇到的問題...&#10;&#10;例如：&#10;- 發現了什麼 Bug&#10;- 希望新增的功能&#10;- 戰鬥平衡性建議&#10;- 任何讓網站更好的想法" maxlength="500"></textarea>
           <div class="feedback-char-count">
             <span id="feedback-char-count">0</span> / 500 字
@@ -276,10 +308,24 @@
     </div>
   </div>
 
-  <script src="assets/js/leaderboard.js"></script>
+  <!-- Matter.js 物理引擎 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+  <!-- 虛擬滾動庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/clusterize.js@0.18.0/clusterize.min.js"></script>
+
+  <script src="config.js"></script>
+  <script src="assets/js/avatar-upload.js"></script>
+  <!-- leaderboard.js 已移除 - 改用純後端 API -->
   <script src="assets/js/leaderboard-ui.js"></script>
+  <script src="assets/js/side-leaderboard.js"></script>
+  <script src="assets/js/heart-physics.js"></script>
+  <script src="assets/js/title-badge.js"></script>
+  <script src="assets/js/first-place-reward.js"></script>
+  <!-- <script src="assets/js/blood-particles.js"></script> -->
+  <script src="assets/js/boss-trail.js"></script>
   <script src="assets/js/script.js"></script>
-  <script src="assets/js/additional_scripts.js"></script>
+  <script src="assets/js/additional_scripts.js?v=2"></script>
 </body>
 </html>
 

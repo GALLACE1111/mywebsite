@@ -1,0 +1,89 @@
+/**
+ * 💖 愛心物理系統樣式
+ * 用於 Matter.js 物理引擎生成的愛心
+ */
+
+/* 物理愛心基礎樣式 */
+.physics-heart {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    user-select: none;
+    font-size: 30px;
+    line-height: 1;
+
+    /* 移除所有 CSS 動畫 - 位置由物理引擎控制 */
+    animation: none;
+
+    /* 輕微的陰影讓愛心更突出 */
+    filter: drop-shadow(0 2px 4px rgba(255, 105, 180, 0.3));
+
+    /* 確保愛心渲染清晰 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 點擊稱號時的愛心噴發效果 */
+.love-burst-heart {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    font-size: 24px;
+    user-select: none;
+
+    /* 這些愛心使用 CSS 動畫，但會在 1 秒後被移除 */
+    animation: love-burst-fly 1s ease-out forwards;
+
+    filter: drop-shadow(0 2px 4px rgba(255, 105, 180, 0.4));
+}
+
+/* 愛心噴發飛行動畫 */
+@keyframes love-burst-fly {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0.5) rotate(360deg);
+    }
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .physics-heart {
+        font-size: 24px; /* 手機上愛心小一點 */
+    }
+
+    .love-burst-heart {
+        font-size: 20px;
+    }
+}
+
+/* 高性能優化 */
+.physics-heart,
+.love-burst-heart {
+    will-change: transform, opacity;
+    transform: translateZ(0); /* 啟用硬體加速 */
+    backface-visibility: hidden;
+}
+
+/* 確保愛心在所有 UI 元素之上，但在一些特殊彈窗之下 */
+.physics-heart {
+    z-index: 9999;
+}
+
+/* 全螢幕對話框應該在愛心之上 */
+.full-screen-love-dialog {
+    z-index: 10001 !important;
+}
+
+/* 全域公告也應該在愛心之上 */
+#global-announcement {
+    z-index: 10002 !important;
+}
+
+/* 禮物盒動畫應該在愛心之上 */
+.gift-box-container {
+    z-index: 10003 !important;
+}
