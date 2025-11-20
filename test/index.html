@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試網站 - 功能驗證</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .test-section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .test-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .test-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .test-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .test-card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .test-card a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .test-card a:hover {
+            background: #5568d3;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.green {
+            background: #28a745;
+        }
+
+        .status-indicator.yellow {
+            background: #ffc107;
+        }
+
+        .status-indicator.red {
+            background: #dc3545;
+        }
+
+        .api-test {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #ffc107;
+        }
+
+        .api-test h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .test-button {
+            padding: 12px 24px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .test-button:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .test-button.secondary {
+            background: #6c757d;
+        }
+
+        .test-button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .result-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .result-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .device-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #0066cc;
+        }
+
+        .device-info h3 {
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .info-value {
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧪 測試網站</h1>
+            <p>功能驗證與 API 測試平台</p>
+        </header>
+
+        <!-- 裝置資訊區域 -->
+        <div class="test-section">
+            <h2>📱 裝置資訊</h2>
+            <div class="device-info" id="deviceInfo">
+                <h3>正在偵測裝置...</h3>
+            </div>
+        </div>
+
+        <!-- 頁面導航測試 -->
+        <div class="test-section">
+            <h2>🔗 頁面導航測試</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3><span class="status-indicator green"></span>主頁</h3>
+                    <p>測試主網站頁面是否正常載入</p>
+                    <a href="../index.html" target="_blank">開啟主頁</a>
+                </div>
+
+                <div class="test-card">
+                    <h3><span class="status-indicator yellow"></span>維護頁面</h3>
+                    <p>測試維護/開發中頁面的響應式顯示</p>
+                    <a href="../pages/maintenance.html" target="_blank">開啟維護頁</a>
+                </div>
+
+                <div class="test-card">
+                    <h3><span class="status-indicator green"></span>排行榜範例</h3>
+                    <p>測試排行榜前端整合範例</p>
+                    <a href="../../backend/examples/frontend-integration.html" target="_blank">開啟排行榜</a>
+                </div>
+
+                <div class="test-card">
+                    <h3><span class="status-indicator green"></span>測試頁面</h3>
+                    <p>當前測試頁面（本頁）</p>
+                    <a href="javascript:void(0)" onclick="alert('您已在測試頁面！')">當前頁面</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- API 測試區域 -->
+        <div class="test-section">
+            <h2>🔌 API 測試</h2>
+
+            <div class="api-test">
+                <h3>Node.js API 測試（排行榜）</h3>
+                <button class="test-button" onclick="testNodeAPI()">測試排行榜 API</button>
+                <button class="test-button" onclick="testUserRank()">測試個人排名</button>
+                <button class="test-button secondary" onclick="clearResult('nodeResult')">清除結果</button>
+                <div class="result-box" id="nodeResult">
+                    <pre>點擊上方按鈕開始測試...</pre>
+                </div>
+            </div>
+
+            <div class="api-test" style="background: #d4edda; border-color: #28a745;">
+                <h3 style="color: #155724;">PHP API 測試（分數提交）</h3>
+                <button class="test-button" onclick="testPHPAPI()">測試分數提交</button>
+                <button class="test-button secondary" onclick="clearResult('phpResult')">清除結果</button>
+                <div class="result-box" id="phpResult">
+                    <pre>點擊上方按鈕開始測試...</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能測試區域 -->
+        <div class="test-section">
+            <h2>⚙️ 功能測試</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>📊 LocalStorage 測試</h3>
+                    <p>測試瀏覽器儲存功能</p>
+                    <button class="test-button" onclick="testLocalStorage()">執行測試</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>🌐 網路狀態</h3>
+                    <p id="networkStatus">檢測中...</p>
+                    <button class="test-button" onclick="checkNetworkStatus()">重新檢測</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>🎨 CSS 動畫</h3>
+                    <p>測試 CSS3 動畫支援</p>
+                    <button class="test-button" onclick="testAnimation()">測試動畫</button>
+                </div>
+
+                <div class="test-card">
+                    <h3>📅 日期時間</h3>
+                    <p id="currentTime">載入中...</p>
+                    <button class="test-button" onclick="updateTime()">更新時間</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API 配置
+        const API_CONFIG = {
+            nodeAPI: 'http://localhost:3000/api',
+            phpAPI: 'http://localhost:8000'
+        };
+
+        // 偵測並顯示裝置資訊
+        function detectDeviceInfo() {
+            const deviceInfo = document.getElementById('deviceInfo');
+
+            const info = {
+                '瀏覽器': navigator.userAgent,
+                '平台': navigator.platform,
+                '語言': navigator.language,
+                '螢幕解析度': `${window.screen.width} x ${window.screen.height}`,
+                '視窗大小': `${window.innerWidth} x ${window.innerHeight}`,
+                '裝置類型': /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? '手機/平板' : '電腦',
+                '線上狀態': navigator.onLine ? '✅ 已連線' : '❌ 離線',
+                '時區': Intl.DateTimeFormat().resolvedOptions().timeZone,
+                '當前時間': new Date().toLocaleString('zh-TW')
+            };
+
+            let html = '<h3>📱 裝置詳細資訊</h3>';
+            for (const [label, value] of Object.entries(info)) {
+                html += `
+                    <div class="info-row">
+                        <span class="info-label">${label}:</span>
+                        <span class="info-value">${value}</span>
+                    </div>
+                `;
+            }
+
+            deviceInfo.innerHTML = html;
+        }
+
+        // 測試 Node.js API（排行榜）
+        async function testNodeAPI() {
+            const resultBox = document.getElementById('nodeResult');
+            resultBox.innerHTML = '<pre>⏳ 正在測試 Node.js API...</pre>';
+
+            try {
+                const response = await fetch(`${API_CONFIG.nodeAPI}/leaderboard?period=all&limit=5`);
+                const data = await response.json();
+
+                resultBox.innerHTML = `<pre>✅ API 測試成功！\n\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultBox.innerHTML = `<pre>❌ API 測試失敗\n\n錯誤訊息: ${error.message}\n\n請確認:\n1. Node.js 伺服器已啟動 (npm start)\n2. 伺服器運行在 http://localhost:3000\n3. CORS 設定正確</pre>`;
+            }
+        }
+
+        // 測試用戶排名
+        async function testUserRank() {
+            const resultBox = document.getElementById('nodeResult');
+            resultBox.innerHTML = '<pre>⏳ 正在測試用戶排名查詢...</pre>';
+
+            try {
+                const response = await fetch(`${API_CONFIG.nodeAPI}/leaderboard/my-rank/1?period=all`);
+                const data = await response.json();
+
+                resultBox.innerHTML = `<pre>✅ 排名查詢成功！\n\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultBox.innerHTML = `<pre>❌ 排名查詢失敗\n\n錯誤訊息: ${error.message}</pre>`;
+            }
+        }
+
+        // 測試 PHP API（分數提交）
+        async function testPHPAPI() {
+            const resultBox = document.getElementById('phpResult');
+            resultBox.innerHTML = '<pre>⏳ 正在測試 PHP API...</pre>';
+
+            try {
+                const response = await fetch(`${API_CONFIG.phpAPI}/submit-score.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: 1,
+                        score: Math.floor(Math.random() * 10000),
+                        game_type: 'default'
+                    })
+                });
+
+                const data = await response.json();
+
+                resultBox.innerHTML = `<pre>✅ API 測試成功！\n\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultBox.innerHTML = `<pre>❌ API 測試失敗\n\n錯誤訊息: ${error.message}\n\n請確認:\n1. PHP 伺服器已啟動 (php -S localhost:8000)\n2. 資料庫連線設定正確\n3. Redis 服務已啟動</pre>`;
+            }
+        }
+
+        // 清除結果
+        function clearResult(id) {
+            document.getElementById(id).innerHTML = '<pre>結果已清除</pre>';
+        }
+
+        // 測試 LocalStorage
+        function testLocalStorage() {
+            try {
+                const testKey = 'test_storage';
+                const testValue = 'Hello, LocalStorage!';
+
+                localStorage.setItem(testKey, testValue);
+                const retrievedValue = localStorage.getItem(testKey);
+
+                if (retrievedValue === testValue) {
+                    alert('✅ LocalStorage 功能正常！\n\n已成功儲存並讀取資料。');
+                } else {
+                    alert('❌ LocalStorage 讀取錯誤');
+                }
+
+                localStorage.removeItem(testKey);
+            } catch (error) {
+                alert('❌ LocalStorage 功能異常\n\n' + error.message);
+            }
+        }
+
+        // 檢查網路狀態
+        function checkNetworkStatus() {
+            const statusEl = document.getElementById('networkStatus');
+            const isOnline = navigator.onLine;
+
+            statusEl.innerHTML = isOnline
+                ? '<span style="color: #28a745;">✅ 網路連線正常</span>'
+                : '<span style="color: #dc3545;">❌ 網路已離線</span>';
+        }
+
+        // 測試動畫
+        function testAnimation() {
+            const cards = document.querySelectorAll('.test-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.transform = 'scale(1.1) rotate(5deg)';
+                    setTimeout(() => {
+                        card.style.transform = '';
+                    }, 300);
+                }, index * 100);
+            });
+            alert('✅ CSS 動畫測試完成！');
+        }
+
+        // 更新時間
+        function updateTime() {
+            const timeEl = document.getElementById('currentTime');
+            const now = new Date();
+            timeEl.innerHTML = now.toLocaleString('zh-TW', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            detectDeviceInfo();
+            checkNetworkStatus();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        // 監聽網路狀態變化
+        window.addEventListener('online', checkNetworkStatus);
+        window.addEventListener('offline', checkNetworkStatus);
+    </script>
+</body>
+</html>
