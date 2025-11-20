@@ -3,6 +3,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
 
+  // 开发服务器配置
+  devServer: {
+    port: 3001,
+    host: 'localhost'
+  },
+
   // 静态网站生成配置
   ssr: false, // 禁用服务器端渲染，生成纯静态 SPA
 
@@ -26,7 +32,8 @@ export default defineNuxtConfig({
 
   // App 配置
   app: {
-    baseURL: '/mywebsite/',
+    // 開發模式使用根路徑，生產模式使用 /mywebsite/
+    baseURL: process.env.NODE_ENV === 'production' ? '/mywebsite/' : '/',
     buildAssetsDir: '/_nuxt/',
     head: {
       title: '愛心互動遊戲 - 收集愛心、挑戰 Boss、登上排行榜',
